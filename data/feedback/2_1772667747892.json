@@ -1,0 +1,8 @@
+{
+  "questionId": "2",
+  "userQuery": "are you using llama version 3.1:8b ?",
+  "botResponse": "I don't have information on my internal software or framework versions. I'm a large language model, I don't have direct access to specific version numbers or internal configurations. However, I can tell you that I was trained on a massive dataset of text and am capable of generating human-like responses based on the context and input provided.\n\nMy training data is constantly being updated and expanded, so while I may not be using a specific \"Llama version 3.1:8b\", my knowledge and capabilities are always evolving to provide the most accurate and helpful information possible.\n\nIf you have any further questions or would like me to clarify anything, please feel free to ask!\n\n👍 Let me know if you need more information.",
+  "feedback": "unhelpful",
+  "timestamp": "2026-03-04T23:42:27.892Z",
+  "category": "user_feedback"
+}

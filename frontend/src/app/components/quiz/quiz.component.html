@@ -1,0 +1,127 @@
+<div class="page-container">
+  <!-- Start Screen -->
+  @if (screen === 'start') {
+    <div class="quiz-start">
+      <div class="quiz-hero">
+        <div class="quiz-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        </div>
+        <h1>Ready to Test Your Skills?</h1>
+        <p>Answer cybersecurity questions and see how you score</p>
+      </div>
+
+      <div class="quiz-options">
+        <div class="option-group">
+          <label>Difficulty</label>
+          <select [(ngModel)]="selectedDifficulty">
+            <option value="">All Levels</option>
+            <option value="beginner">Beginner</option>
+            <option value="intermediate">Intermediate</option>
+            <option value="advanced">Advanced</option>
+          </select>
+        </div>
+        <div class="option-group">
+          <label>Category</label>
+          <select [(ngModel)]="selectedCategory">
+            <option value="">All Categories</option>
+            @for (cat of categories; track cat) {
+              <option [value]="cat">{{ formatCategory(cat) }}</option>
+            }
+          </select>
+        </div>
+      </div>
+
+      <button class="btn-primary start-btn" (click)="startQuiz()">
+        Start Quiz
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+      </button>
+    </div>
+  }
+
+  <!-- Question Screen -->
+  @if (screen === 'question' && currentQuestion) {
+    <div class="quiz-question-view">
+      <div class="progress-section">
+        <div class="progress-bar"><div class="progress-fill" [style.width.%]="progressPercent"></div></div>
+        <span class="progress-text">{{ questionNumber }} / {{ totalQuestions }}</span>
+      </div>
+
+      <div class="question-card card">
+        <div class="question-meta">
+          <span class="badge category">{{ formatCategory(currentQuestion.category) }}</span>
+          <span class="badge" [class]="currentQuestion.difficulty">{{ currentQuestion.difficulty }}</span>
+        </div>
+        <h2>{{ currentQuestion.question }}</h2>
+
+        <div class="options-list">
+          @for (option of currentQuestion.options; track $index; let i = $index) {
+            <button
+              class="option-btn"
+              [class.selected]="selectedOption === i"
+              [class.correct]="showFeedback && feedbackCorrect && selectedOption === i"
+              [class.incorrect]="showFeedback && !feedbackCorrect && selectedOption === i"
+              [disabled]="optionsDisabled"
+              (click)="submitAnswer(i)"
+            >
+              <span class="option-letter">{{ letters[i] }}</span>
+              <span>{{ option }}</span>
+            </button>
+          }
+        </div>
+      </div>
+
+      @if (showFeedback) {
+        <div class="feedback-card" [class.correct]="feedbackCorrect" [class.incorrect]="!feedbackCorrect">
+          <div class="feedback-icon">{{ feedbackCorrect ? '&#10004;' : '&#10008;' }}</div>
+          <strong>{{ feedbackCorrect ? 'Correct!' : 'Incorrect' }}</strong>
+          <p>{{ feedbackMessage }}</p>
+          @if (questionNumber < totalQuestions) {
+            <button class="btn-primary" (click)="nextQuestion()">Next Question</button>
+          } @else {
+            <button class="btn-primary" (click)="restart()">See Results</button>
+          }
+        </div>
+      }
+    </div>
+  }
+
+  <!-- Results Screen -->
+  @if (screen === 'results' && results) {
+    <div class="quiz-results-view">
+      <div class="score-display">
+        <div class="score-circle">
+          <svg viewBox="0 0 100 100">
+            <circle class="score-bg-ring" cx="50" cy="50" r="42"/>
+            <circle class="score-fill-ring" cx="50" cy="50" r="42"
+              [style.stroke-dashoffset]="264 - (264 * results.percentage / 100)"/>
+          </svg>
+          <div class="score-label">
+            <span class="score-num">{{ results.percentage }}</span>
+            <span class="score-pct">%</span>
+          </div>
+        </div>
+        <h2>{{ results.percentage >= 80 ? 'Excellent!' : results.percentage >= 60 ? 'Good Job!' : results.percentage >= 40 ? 'Keep Learning!' : 'Practice Makes Perfect!' }}</h2>
+        <p>You scored {{ results.score }} out of {{ results.total }} &mdash; {{ results.timeTaken }}</p>
+      </div>
+
+      <div class="breakdown">
+        @for (item of results.breakdown; track $index) {
+          <div class="breakdown-item" [class.correct]="item.correct" [class.incorrect]="!item.correct">
+            <div class="breakdown-icon">{{ item.correct ? '&#10004;' : '&#10008;' }}</div>
+            <div class="breakdown-body">
+              <div class="breakdown-q">{{ item.question }}</div>
+              <div class="breakdown-a">
+                Your answer: {{ item.yourAnswer }}
+                @if (!item.correct) {
+                  <br>Correct: {{ item.correctAnswer }}
+                }
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+
+      <button class="btn-primary" (click)="restart()">Try Again</button>
+    </div>
+  }
+</div>

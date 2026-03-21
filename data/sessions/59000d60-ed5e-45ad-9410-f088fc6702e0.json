@@ -1,0 +1,17 @@
+{
+  "messages": [
+    {
+      "role": "user",
+      "content": "hello i would like to know a solution for backup data",
+      "timestamp": "2025-12-09T04:35:56.633Z",
+      "sentiment": "neutral"
+    },
+    {
+      "role": "bot",
+      "content": "To backup data safely: 1) Use cloud backup (Google Drive, OneDrive, Dropbox), 2) External hard drive (store offline), 3) Enable automatic backups, 4) Test recovery process, 5) Keep backup encrypted.",
+      "timestamp": "2025-12-09T04:35:56.633Z"
+    }
+  ],
+  "startTime": "2025-12-09T04:35:32.302Z",
+  "sessionId": "59000d60-ed5e-45ad-9410-f088fc6702e0"
+}

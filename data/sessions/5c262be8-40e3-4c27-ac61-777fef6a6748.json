@@ -1,0 +1,17 @@
+{
+  "messages": [
+    {
+      "role": "user",
+      "content": "hello i would like to know more about phishing",
+      "timestamp": "2025-12-16T09:16:30.870Z",
+      "sentiment": "neutral"
+    },
+    {
+      "role": "bot",
+      "content": "Phishing is a type of social engineering attack where an attacker sends a fake message, usually via email, text message, or phone call, that appears to be from a legitimate source, such as a bank, online retailer, or well-known company. The goal is to trick the recipient into:\n\n1. Revealing sensitive information, like passwords, credit card numbers, or personal data.\n2. Downloading malware or clicking on malicious links.\n\nTypes of phishing attacks include:\n\n1. **Spear phishing**: Targeted attacks on specific individuals or groups.\n2. **Whaling**: Sophisticated attacks targeting high-level executives or decision-makers.\n3. **Smishing** (SMS phishing): Using text messages to trick victims.\n4. **Vishing** (voice phishing): Using phone calls to deceive.\n\nTo protect yourself from phishing:\n\n1. **Verify sender addresses**: Check if the email address is legitimate and not spoofed.\n2. **Be cautious with links and attachments**: Avoid clicking on suspicious links or downloading unknown files.\n3. **Use two-factor authentication**: Require extra verification steps, like codes sent via SMS or authenticators apps.\n4. **Keep software up-to-date**: Ensure your operating system, browser, and security software are current.\n5. **Use antivirus software**: Install reputable antivirus software to detect and block malware.\n\nRemember: If it looks too good (or bad) to be true, it probably is!",
+      "timestamp": "2025-12-16T09:16:40.203Z"
+    }
+  ],
+  "startTime": "2025-12-16T09:16:16.203Z",
+  "sessionId": "5c262be8-40e3-4c27-ac61-777fef6a6748"
+}

@@ -1,0 +1,111 @@
+<div class="page-container">
+  <div class="analytics-header">
+    <div>
+      <h1>Analytics Dashboard</h1>
+      <p>Track your learning progress and engagement</p>
+    </div>
+    <button class="btn-primary" (click)="loadStats()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+      Refresh
+    </button>
+  </div>
+
+  @if (loading) {
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>Loading analytics...</p>
+    </div>
+  }
+
+  @if (!loading && !hasData) {
+    <div class="empty-state">
+      <div class="empty-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="40" height="40"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      </div>
+      <h3>No Data Yet</h3>
+      <p>Start using the chatbot to see your analytics!</p>
+      <a routerLink="/chat" class="btn-primary">Go to Chat &rarr;</a>
+    </div>
+  }
+
+  @if (!loading && hasData) {
+    <div class="metrics-grid">
+      <div class="metric-card blue">
+        <div class="metric-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        </div>
+        <div>
+          <div class="metric-value">{{ stats.messageCount }}</div>
+          <div class="metric-label">Total Messages</div>
+        </div>
+      </div>
+      <div class="metric-card green">
+        <div class="metric-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>
+        </div>
+        <div>
+          <div class="metric-value">{{ learning.helpfulPercentage | number:'1.0-0' }}%</div>
+          <div class="metric-label">Helpful Rate</div>
+        </div>
+      </div>
+      <div class="metric-card purple">
+        <div class="metric-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </div>
+        <div>
+          <div class="metric-value">{{ stats.duration }}</div>
+          <div class="metric-label">Session Time</div>
+        </div>
+      </div>
+      <div class="metric-card orange">
+        <div class="metric-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+        </div>
+        <div>
+          <div class="metric-value">{{ learning.totalFeedback }}</div>
+          <div class="metric-label">Total Feedback</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="analytics-section card">
+      <div class="section-header">
+        <h2>Sentiment Analysis</h2>
+        <span class="section-sub">Feedback sentiment breakdown</span>
+      </div>
+      <div class="sentiment-rows">
+        <div class="sentiment-row">
+          <span class="sentiment-label">Positive</span>
+          <div class="bar-track"><div class="bar-fill positive" [style.width.%]="sentimentPercent('positive')"></div></div>
+          <span class="sentiment-val">{{ stats.sentimentBreakdown.positive }}</span>
+          <span class="sentiment-pct">{{ sentimentPercent('positive') }}%</span>
+        </div>
+        <div class="sentiment-row">
+          <span class="sentiment-label">Neutral</span>
+          <div class="bar-track"><div class="bar-fill neutral" [style.width.%]="sentimentPercent('neutral')"></div></div>
+          <span class="sentiment-val">{{ stats.sentimentBreakdown.neutral }}</span>
+          <span class="sentiment-pct">{{ sentimentPercent('neutral') }}%</span>
+        </div>
+        <div class="sentiment-row">
+          <span class="sentiment-label">Negative</span>
+          <div class="bar-track"><div class="bar-fill negative" [style.width.%]="sentimentPercent('negative')"></div></div>
+          <span class="sentiment-val">{{ stats.sentimentBreakdown.negative }}</span>
+          <span class="sentiment-pct">{{ sentimentPercent('negative') }}%</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="analytics-section card">
+      <div class="section-header">
+        <h2>Activity Summary</h2>
+        <span class="section-sub">Your learning journey</span>
+      </div>
+      <div class="activity-grid">
+        <div class="activity-item"><strong>{{ interactions }}</strong><span>total interactions</span></div>
+        <div class="activity-item"><strong>{{ stats.messageCount }}</strong><span>chat messages sent</span></div>
+        <div class="activity-item"><strong>{{ stats.sentimentBreakdown.positive }}</strong><span>positive feedbacks</span></div>
+        <div class="activity-item"><strong>{{ stats.duration }}</strong><span>learning time</span></div>
+      </div>
+    </div>
+  }
+</div>

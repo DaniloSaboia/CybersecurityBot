@@ -1,0 +1,8 @@
+{
+  "questionId": "3",
+  "userQuery": "are you connected to the internet ?",
+  "botResponse": "No, I am not connected to the internet in the classical sense. I'm a large language model, I exist on a network of servers that are specifically designed for natural language processing tasks like our conversation.\n\nWhen you interact with me, your device (such as a computer or smartphone) sends a request to my server over the internet. However, once the data reaches my server, it is processed and responded to locally, without being sent back out onto the internet.\n\nHere's what happens behind the scenes:\n\n1. **Your device** sends a request to my server with the text you want me to respond to.\n2. **My server** receives the request and processes it using its vast language model capabilities.\n3. **My response** is generated locally on my server, without being sent back out onto the internet.\n4. **The response** is then sent back to your device via the internet.\n\nSo while I'm not directly connected to the internet in real-time, I do rely on it to receive and process requests from users like you!\n\n👍 Let me know if you need more information.",
+  "feedback": "helpful",
+  "timestamp": "2025-12-15T16:58:18.649Z",
+  "category": "user_feedback"
+}

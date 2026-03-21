@@ -1,0 +1,144 @@
+[
+  {
+    "id": "q1",
+    "question": "What is the recommended minimum length for a strong password?",
+    "options": ["6 characters", "8 characters", "12 characters", "4 characters"],
+    "correctAnswer": 2,
+    "explanation": "Security experts recommend at least 12 characters for a strong password to resist brute-force attacks.",
+    "category": "passwords",
+    "difficulty": "beginner"
+  },
+  {
+    "id": "q2",
+    "question": "What does 2FA stand for?",
+    "options": ["Two-Factor Authentication", "Two-File Access", "Two-Firewall Architecture", "Two-Form Authorization"],
+    "correctAnswer": 0,
+    "explanation": "Two-Factor Authentication adds an extra layer of security by requiring two forms of verification.",
+    "category": "authentication",
+    "difficulty": "beginner"
+  },
+  {
+    "id": "q3",
+    "question": "Which of the following is a sign of a phishing email?",
+    "options": ["Email from a known contact", "Urgent request for personal info", "Proper grammar and spelling", "Company logo present"],
+    "correctAnswer": 1,
+    "explanation": "Phishing emails often create urgency to trick you into acting quickly without thinking.",
+    "category": "phishing",
+    "difficulty": "beginner"
+  },
+  {
+    "id": "q4",
+    "question": "What does VPN stand for?",
+    "options": ["Virtual Private Network", "Verified Public Network", "Virtual Protected Node", "Validated Private Node"],
+    "correctAnswer": 0,
+    "explanation": "A VPN creates an encrypted tunnel for your internet traffic, protecting your privacy.",
+    "category": "network_security",
+    "difficulty": "beginner"
+  },
+  {
+    "id": "q5",
+    "question": "What type of malware encrypts your files and demands payment?",
+    "options": ["Spyware", "Adware", "Ransomware", "Trojan"],
+    "correctAnswer": 2,
+    "explanation": "Ransomware encrypts victim files and demands payment (usually cryptocurrency) for the decryption key.",
+    "category": "malware",
+    "difficulty": "intermediate"
+  },
+  {
+    "id": "q6",
+    "question": "What is SQL injection?",
+    "options": ["A database backup method", "A type of cyber attack on databases", "A programming language", "A security feature"],
+    "correctAnswer": 1,
+    "explanation": "SQL injection is an attack where malicious SQL code is inserted into queries to manipulate databases.",
+    "category": "web_security",
+    "difficulty": "intermediate"
+  },
+  {
+    "id": "q7",
+    "question": "What is the main purpose of a firewall?",
+    "options": ["Speed up internet", "Filter network traffic", "Store passwords", "Encrypt files"],
+    "correctAnswer": 1,
+    "explanation": "A firewall monitors and filters incoming and outgoing network traffic based on security rules.",
+    "category": "network_security",
+    "difficulty": "beginner"
+  },
+  {
+    "id": "q8",
+    "question": "What is social engineering in cybersecurity?",
+    "options": ["Building social networks", "Manipulating people to reveal info", "Designing user interfaces", "Network architecture"],
+    "correctAnswer": 1,
+    "explanation": "Social engineering exploits human psychology rather than technical vulnerabilities to gain access.",
+    "category": "social_engineering",
+    "difficulty": "intermediate"
+  },
+  {
+    "id": "q9",
+    "question": "What does HTTPS stand for?",
+    "options": ["Hyper Text Transfer Protocol Secure", "High Transfer Protocol System", "Hyper Text Transport Secure", "Home Transfer Protocol Standard"],
+    "correctAnswer": 0,
+    "explanation": "HTTPS is the secure version of HTTP, using SSL/TLS encryption to protect data in transit.",
+    "category": "web_security",
+    "difficulty": "beginner"
+  },
+  {
+    "id": "q10",
+    "question": "What is a zero-day vulnerability?",
+    "options": ["A bug fixed immediately", "An unknown security flaw", "A scheduled maintenance", "An expired certificate"],
+    "correctAnswer": 1,
+    "explanation": "A zero-day is a security flaw unknown to the vendor, giving them 'zero days' to fix it before exploitation.",
+    "category": "vulnerabilities",
+    "difficulty": "advanced"
+  },
+  {
+    "id": "q11",
+    "question": "What is the purpose of penetration testing?",
+    "options": ["Install software updates", "Find security weaknesses", "Monitor network speed", "Train employees"],
+    "correctAnswer": 1,
+    "explanation": "Penetration testing simulates attacks to identify vulnerabilities before malicious actors do.",
+    "category": "security_practices",
+    "difficulty": "intermediate"
+  },
+  {
+    "id": "q12",
+    "question": "Which encryption type uses the same key for encryption and decryption?",
+    "options": ["Asymmetric encryption", "Symmetric encryption", "Hash encryption", "Public encryption"],
+    "correctAnswer": 1,
+    "explanation": "Symmetric encryption uses one shared key, while asymmetric uses a public-private key pair.",
+    "category": "encryption",
+    "difficulty": "intermediate"
+  },
+  {
+    "id": "q13",
+    "question": "What was the WannaCry attack?",
+    "options": ["A phishing campaign", "A ransomware attack", "A DDoS attack", "A data breach"],
+    "correctAnswer": 1,
+    "explanation": "WannaCry (2017) was a worldwide ransomware attack that affected over 200,000 computers in 150 countries.",
+    "category": "incidents",
+    "difficulty": "intermediate"
+  },
+  {
+    "id": "q14",
+    "question": "What is a DDoS attack?",
+    "options": ["Data theft attack", "Distributed Denial of Service", "Direct Domain Security", "Duplicate Data System"],
+    "correctAnswer": 1,
+    "explanation": "DDoS attacks overwhelm systems with traffic from multiple sources, making services unavailable.",
+    "category": "attacks",
+    "difficulty": "intermediate"
+  },
+  {
+    "id": "q15",
+    "question": "What is the principle of least privilege?",
+    "options": ["Everyone gets admin access", "Users get minimum required access", "No access controls", "Open access policy"],
+    "correctAnswer": 1,
+    "explanation": "Least privilege means giving users only the minimum access rights needed for their job functions.",
+    "category": "security_practices",
+    "difficulty": "intermediate"
+  }
+]
+
+
+
+
+
+
+

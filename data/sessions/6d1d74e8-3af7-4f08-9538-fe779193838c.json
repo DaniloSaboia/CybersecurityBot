@@ -1,0 +1,83 @@
+{
+  "messages": [
+    {
+      "role": "user",
+      "content": "hello ",
+      "timestamp": "2025-12-09T04:25:38.173Z",
+      "sentiment": "neutral"
+    },
+    {
+      "role": "bot",
+      "content": "I'm not sure about that. Try asking about: passwords, phishing, encryption, malware, two-factor authentication, VPN, or updates.",
+      "timestamp": "2025-12-09T04:25:38.173Z"
+    },
+    {
+      "role": "user",
+      "content": "passwords",
+      "timestamp": "2025-12-09T04:25:46.508Z",
+      "sentiment": "neutral"
+    },
+    {
+      "role": "bot",
+      "content": "I'm not sure about that. Try asking about: passwords, phishing, encryption, malware, two-factor authentication, VPN, or updates.\n\n👍 Let me know if you need more information.",
+      "timestamp": "2025-12-09T04:25:46.509Z"
+    },
+    {
+      "role": "user",
+      "content": "phishing , should i open an email from any source?",
+      "timestamp": "2025-12-09T04:26:08.280Z",
+      "sentiment": "neutral"
+    },
+    {
+      "role": "bot",
+      "content": "I'm not sure about that. Try asking about: passwords, phishing, encryption, malware, two-factor authentication, VPN, or updates.\n\n👍 Let me know if you need more information.\n\n💡 Tip: 🛡️ Use a VPN on public WiFi networks.",
+      "timestamp": "2025-12-09T04:26:08.280Z"
+    },
+    {
+      "role": "user",
+      "content": "can you tell me another tip?",
+      "timestamp": "2025-12-09T04:26:30.715Z",
+      "sentiment": "neutral"
+    },
+    {
+      "role": "bot",
+      "content": "I'm not sure about that. Try asking about: passwords, phishing, encryption, malware, two-factor authentication, VPN, or updates.\n\n👍 Let me know if you need more information.",
+      "timestamp": "2025-12-09T04:26:30.715Z"
+    },
+    {
+      "role": "user",
+      "content": "malware",
+      "timestamp": "2025-12-09T04:26:36.667Z",
+      "sentiment": "neutral"
+    },
+    {
+      "role": "bot",
+      "content": "I'm not sure about that. Try asking about: passwords, phishing, encryption, malware, two-factor authentication, VPN, or updates.\n\n👍 Let me know if you need more information.",
+      "timestamp": "2025-12-09T04:26:36.667Z"
+    },
+    {
+      "role": "user",
+      "content": "malware, what should i do to avoid ?",
+      "timestamp": "2025-12-09T04:26:48.692Z",
+      "sentiment": "neutral"
+    },
+    {
+      "role": "bot",
+      "content": "I'm not sure about that. Try asking about: passwords, phishing, encryption, malware, two-factor authentication, VPN, or updates.\n\n👍 Let me know if you need more information.\n\n💡 Tip: 🔒 Never share personal information via email.",
+      "timestamp": "2025-12-09T04:26:48.692Z"
+    },
+    {
+      "role": "user",
+      "content": "lol",
+      "timestamp": "2025-12-09T04:26:54.074Z",
+      "sentiment": "neutral"
+    },
+    {
+      "role": "bot",
+      "content": "I'm not sure about that. Try asking about: passwords, phishing, encryption, malware, two-factor authentication, VPN, or updates.\n\n👍 Let me know if you need more information.",
+      "timestamp": "2025-12-09T04:26:54.074Z"
+    }
+  ],
+  "startTime": "2025-12-09T04:25:28.809Z",
+  "sessionId": "6d1d74e8-3af7-4f08-9538-fe779193838c"
+}

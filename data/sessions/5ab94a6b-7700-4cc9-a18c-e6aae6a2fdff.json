@@ -1,0 +1,17 @@
+{
+  "messages": [
+    {
+      "role": "user",
+      "content": "hello i would like to know how to open an email from an unkwon source",
+      "timestamp": "2025-12-12T13:36:46.216Z",
+      "sentiment": "neutral"
+    },
+    {
+      "role": "bot",
+      "content": "I encountered an error processing your request. Please try again.",
+      "timestamp": "2025-12-12T13:36:46.710Z"
+    }
+  ],
+  "startTime": "2025-12-12T13:36:22.526Z",
+  "sessionId": "5ab94a6b-7700-4cc9-a18c-e6aae6a2fdff"
+}

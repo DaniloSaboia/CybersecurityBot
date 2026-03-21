@@ -1,0 +1,39 @@
+{
+  "messages": [
+    {
+      "role": "user",
+      "content": "hello",
+      "timestamp": "2025-12-11T16:12:47.241Z",
+      "sentiment": "neutral"
+    },
+    {
+      "role": "bot",
+      "content": "I encountered an error processing your request. Please try again.",
+      "timestamp": "2025-12-11T16:12:48.292Z"
+    },
+    {
+      "role": "user",
+      "content": "how do i open an email from unknown source?",
+      "timestamp": "2025-12-11T16:13:24.770Z",
+      "sentiment": "neutral"
+    },
+    {
+      "role": "bot",
+      "content": "I encountered an error processing your request. Please try again.\n\n👍 Let me know if you need more information.",
+      "timestamp": "2025-12-11T16:13:26.875Z"
+    },
+    {
+      "role": "user",
+      "content": "gg",
+      "timestamp": "2025-12-11T16:14:40.080Z",
+      "sentiment": "neutral"
+    },
+    {
+      "role": "bot",
+      "content": "I encountered an error processing your request. Please try again.\n\n👍 Let me know if you need more information.\n\n💡 Tip: 🔑 Enable two-factor authentication whenever possible.",
+      "timestamp": "2025-12-11T16:14:40.870Z"
+    }
+  ],
+  "startTime": "2025-12-11T16:12:38.772Z",
+  "sessionId": "1263086c-1fc4-4807-a9ca-2b712adebacd"
+}

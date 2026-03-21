@@ -1,0 +1,8 @@
+{
+  "questionId": "1",
+  "userQuery": "Respondes em português ?",
+  "botResponse": "Sim, posso responder em português!\n\nPara criar uma senha forte, é recomendável seguir algumas diretrizes básicas:\n\n1. **Mínimo de 12 caracteres**: evite senhas curtas e fáceis de adivinhar.\n2. **Misture maiúsculas e minúsculas**: combine letras maiúsculas com minúsculas para tornar mais difícil o processo de tentativa.\n3. **Inclua números e símbolos**: adicione números e símbolos para aumentar a complexidade da senha.\n4. **Evite palavras comuns ou informações pessoais**: não use nomes de família, datas de nascimento ou outras informações pessoais que possam ser facilmente associadas à sua identidade.\n5. **Use uma senha única para cada conta**: evite reutilizar senhas para várias contas, pois isso pode aumentar o risco de exposição em caso de vazamento de dados.\n\nLembre-se de que a segurança online é fundamental e criar senhas fortes é um passo importante para proteger sua identidade e seus dados.",
+  "feedback": "unhelpful",
+  "timestamp": "2025-12-16T19:21:15.732Z",
+  "category": "user_feedback"
+}

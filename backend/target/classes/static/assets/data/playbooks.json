@@ -1,0 +1,3093 @@
+[
+  {
+    "id": "incident-response",
+    "title": "General Incident Response",
+    "description": "A structured approach to handling security incidents effectively",
+    "severity": "critical",
+    "icon": "red",
+    "category": "Incident Response",
+    "steps": [
+      {
+        "title": "Identify & Confirm",
+        "content": "Verify the incident is real. Gather initial information about what happened, when, and what systems are affected.",
+        "tip": "Use a dedicated incident tracking system to log all actions."
+      },
+      {
+        "title": "Contain the Threat",
+        "content": "Isolate affected systems from the network to prevent spread. Disconnect from the internet but keep systems powered on.",
+        "warning": "Do NOT turn off systems - this may destroy volatile memory evidence."
+      },
+      {
+        "title": "Notify Stakeholders",
+        "content": "Alert the incident response team, management, and legal/compliance as needed."
+      },
+      {
+        "title": "Investigate & Analyze",
+        "content": "Collect logs, memory dumps, and forensic images. Determine the attack vector and scope."
+      },
+      {
+        "title": "Eradicate & Recover",
+        "content": "Remove malware, close vulnerabilities, reset credentials. Restore from clean backups."
+      },
+      {
+        "title": "Post-Incident Review",
+        "content": "Document lessons learned and update security controls within 72 hours."
+      }
+    ]
+  },
+  {
+    "id": "phishing-response",
+    "title": "Phishing Attack Response",
+    "description": "Steps to take if you clicked a phishing link or provided information",
+    "severity": "high",
+    "icon": "orange",
+    "category": "Incident Response",
+    "steps": [
+      {
+        "title": "Disconnect Immediately",
+        "content": "Close the phishing page and disconnect from the network to prevent malware communication."
+      },
+      {
+        "title": "Document What Happened",
+        "content": "Write down exactly what you clicked, entered, or downloaded while it's fresh in memory."
+      },
+      {
+        "title": "Change Compromised Credentials",
+        "content": "Change passwords immediately, starting with the compromised account.",
+        "warning": "Use a different, clean device to change passwords."
+      },
+      {
+        "title": "Enable 2FA",
+        "content": "Add two-factor authentication to all important accounts."
+      },
+      {
+        "title": "Scan for Malware",
+        "content": "Run a full antivirus scan. Consider using multiple scanners."
+      },
+      {
+        "title": "Monitor Accounts",
+        "content": "Check bank statements and account activity for unauthorized access."
+      },
+      {
+        "title": "Report the Phishing",
+        "content": "Report to IT, forward to reportphishing@apwg.org, and notify the impersonated company."
+      }
+    ]
+  },
+  {
+    "id": "ransomware-response",
+    "title": "Ransomware Attack Response",
+    "description": "Critical steps when your systems are encrypted by ransomware",
+    "severity": "critical",
+    "icon": "purple",
+    "category": "Incident Response",
+    "steps": [
+      {
+        "title": "Isolate Infected Systems",
+        "content": "Disconnect affected computers from the network immediately.",
+        "warning": "Do not turn off the computer - it may destroy decryption keys."
+      },
+      {
+        "title": "Identify the Ransomware",
+        "content": "Take photos of the ransom note. Check nomoreransom.org for free decryptors."
+      },
+      {
+        "title": "Report to Authorities",
+        "content": "File a report with FBI IC3, local law enforcement, and CISA."
+      },
+      {
+        "title": "Do NOT Pay",
+        "content": "Paying doesn't guarantee recovery and funds criminal operations.",
+        "warning": "Only 8% of payers get all data back. Many are attacked again."
+      },
+      {
+        "title": "Preserve Evidence",
+        "content": "Create forensic images before recovery attempts."
+      },
+      {
+        "title": "Check for Decryptors",
+        "content": "Visit nomoreransom.org for your ransomware variant."
+      },
+      {
+        "title": "Restore from Backups",
+        "content": "Wipe infected systems and restore from clean, offline backups."
+      },
+      {
+        "title": "Strengthen Defenses",
+        "content": "Implement 3-2-1 backup strategy, patch systems, deploy EDR."
+      }
+    ]
+  },
+  {
+    "id": "data-breach-personal",
+    "title": "Personal Data Breach Response",
+    "description": "What to do when your personal information is exposed",
+    "severity": "high",
+    "icon": "cyan",
+    "category": "Incident Response",
+    "steps": [
+      {
+        "title": "Confirm the Breach",
+        "content": "Verify through official communications. Check haveibeenpwned.com."
+      },
+      {
+        "title": "Identify Exposed Data",
+        "content": "Determine what was compromised: passwords, financial info, SSN, etc."
+      },
+      {
+        "title": "Change Passwords",
+        "content": "Change the breached account password and any accounts using the same password."
+      },
+      {
+        "title": "Enable 2FA",
+        "content": "Add two-factor authentication to all important accounts."
+      },
+      {
+        "title": "Monitor Financial Accounts",
+        "content": "Check statements for unauthorized transactions. Set up alerts."
+      },
+      {
+        "title": "Credit Freeze",
+        "content": "Place a free freeze with Equifax, Experian, and TransUnion if SSN was exposed."
+      },
+      {
+        "title": "Check Credit Reports",
+        "content": "Get free reports from annualcreditreport.com."
+      },
+      {
+        "title": "Watch for Phishing",
+        "content": "Be extra skeptical of communications referencing your personal info."
+      },
+      {
+        "title": "Document Everything",
+        "content": "Keep records for identity theft claims or lawsuits."
+      }
+    ]
+  },
+  {
+    "id": "account-compromise",
+    "title": "Account Compromised Recovery",
+    "description": "How to recover and secure a hacked account",
+    "severity": "high",
+    "icon": "green",
+    "category": "Incident Response",
+    "steps": [
+      {
+        "title": "Regain Access",
+        "content": "Use \"Forgot Password\" or contact platform support with identity verification."
+      },
+      {
+        "title": "Change Password",
+        "content": "Create a new, strong, unique password (16+ characters)."
+      },
+      {
+        "title": "Enable 2FA",
+        "content": "Set up two-factor authentication using an authenticator app."
+      },
+      {
+        "title": "Review Activity",
+        "content": "Check login history, sent messages, purchases, and connected apps."
+      },
+      {
+        "title": "Revoke Sessions",
+        "content": "Sign out of all other sessions/devices."
+      },
+      {
+        "title": "Remove Unauthorized Changes",
+        "content": "Check for changed recovery options, forwarding rules, or profile changes.",
+        "warning": "Hackers often add their own recovery options."
+      },
+      {
+        "title": "Check Connected Accounts",
+        "content": "Secure any accounts using OAuth/SSO with the compromised account."
+      },
+      {
+        "title": "Alert Contacts",
+        "content": "Inform contacts about the compromise - they may have received malicious messages."
+      }
+    ]
+  },
+  {
+    "id": "malware-infection",
+    "title": "Malware Infection Cleanup",
+    "description": "Steps to clean and recover from a malware infection",
+    "severity": "medium",
+    "icon": "yellow",
+    "category": "Incident Response",
+    "steps": [
+      {
+        "title": "Disconnect from Network",
+        "content": "Unplug ethernet and disable WiFi."
+      },
+      {
+        "title": "Enter Safe Mode",
+        "content": "Restart in Safe Mode to limit malware activity.",
+        "tip": "Windows: Hold Shift while clicking Restart."
+      },
+      {
+        "title": "Run Antivirus Scan",
+        "content": "Run full scans with multiple tools: your AV, Malwarebytes, HitmanPro."
+      },
+      {
+        "title": "Remove Suspicious Programs",
+        "content": "Check installed programs for unfamiliar items."
+      },
+      {
+        "title": "Clear Browser Data",
+        "content": "Remove suspicious extensions, clear cookies and cache."
+      },
+      {
+        "title": "Update Everything",
+        "content": "Update OS, browsers, and all software."
+      },
+      {
+        "title": "Change All Passwords",
+        "content": "Assume all passwords were stolen. Change from a clean device."
+      }
+    ]
+  },
+  {
+    "id": "ddos-response",
+    "title": "DDoS Attack Response",
+    "description": "How to respond to a distributed denial of service attack",
+    "severity": "critical",
+    "icon": "red",
+    "category": "Incident Response",
+    "steps": [
+      {
+        "title": "Confirm the Attack",
+        "content": "Distinguish between DDoS and legitimate traffic spikes or infrastructure issues."
+      },
+      {
+        "title": "Activate DDoS Protection",
+        "content": "Enable CDN/DDoS protection services like Cloudflare, AWS Shield, or Akamai."
+      },
+      {
+        "title": "Contact ISP",
+        "content": "Notify your ISP - they may be able to filter traffic upstream."
+      },
+      {
+        "title": "Implement Rate Limiting",
+        "content": "Configure aggressive rate limiting on firewalls and load balancers."
+      },
+      {
+        "title": "Block Attack Sources",
+        "content": "Identify and block attacking IP ranges if pattern is identifiable."
+      },
+      {
+        "title": "Scale Resources",
+        "content": "If using cloud, scale up to absorb attack traffic."
+      },
+      {
+        "title": "Document the Attack",
+        "content": "Log attack patterns, duration, and impact for analysis."
+      },
+      {
+        "title": "Post-Attack Analysis",
+        "content": "Review what worked, update DDoS response plan."
+      }
+    ]
+  },
+  {
+    "id": "insider-threat",
+    "title": "Insider Threat Response",
+    "description": "Handling suspected malicious insider activity",
+    "severity": "critical",
+    "icon": "red",
+    "category": "Incident Response",
+    "steps": [
+      {
+        "title": "Preserve Evidence Quietly",
+        "content": "Begin logging and monitoring without alerting the suspect."
+      },
+      {
+        "title": "Involve HR and Legal",
+        "content": "Consult HR and legal before taking action.",
+        "warning": "Improper handling can lead to legal liability."
+      },
+      {
+        "title": "Review Access Logs",
+        "content": "Analyze file access, email, and system logs for anomalies."
+      },
+      {
+        "title": "Assess Data Exposure",
+        "content": "Determine what data the insider accessed or exfiltrated."
+      },
+      {
+        "title": "Restrict Access",
+        "content": "Limit access to sensitive systems while investigating."
+      },
+      {
+        "title": "Conduct Interview",
+        "content": "Work with HR to conduct appropriate interviews."
+      },
+      {
+        "title": "Revoke Access",
+        "content": "When appropriate, revoke all access and collect company devices."
+      },
+      {
+        "title": "Review Policies",
+        "content": "Update access controls and monitoring based on lessons learned."
+      }
+    ]
+  },
+  {
+    "id": "supply-chain-attack",
+    "title": "Supply Chain Attack Response",
+    "description": "Responding to compromised vendor or software supply chain",
+    "severity": "critical",
+    "icon": "red",
+    "category": "Incident Response",
+    "steps": [
+      {
+        "title": "Identify Affected Systems",
+        "content": "Determine which systems use the compromised software/vendor."
+      },
+      {
+        "title": "Isolate Affected Systems",
+        "content": "Quarantine systems running compromised software."
+      },
+      {
+        "title": "Block C2 Communications",
+        "content": "Add known IOCs to firewall blocklists."
+      },
+      {
+        "title": "Assess Impact",
+        "content": "Determine if attackers gained access through the supply chain."
+      },
+      {
+        "title": "Contact Vendor",
+        "content": "Coordinate with the affected vendor for remediation guidance."
+      },
+      {
+        "title": "Roll Back or Patch",
+        "content": "Revert to known-good versions or apply vendor patches."
+      },
+      {
+        "title": "Hunt for Persistence",
+        "content": "Look for backdoors or persistence mechanisms left by attackers."
+      },
+      {
+        "title": "Review Vendor Security",
+        "content": "Assess vendor security practices and contract terms."
+      }
+    ]
+  },
+  {
+    "id": "cryptojacking",
+    "title": "Cryptojacking Response",
+    "description": "Detecting and removing unauthorized cryptocurrency mining",
+    "severity": "medium",
+    "icon": "orange",
+    "category": "Incident Response",
+    "steps": [
+      {
+        "title": "Identify Symptoms",
+        "content": "Look for high CPU usage, slow performance, overheating."
+      },
+      {
+        "title": "Check Running Processes",
+        "content": "Look for unknown processes consuming high CPU."
+      },
+      {
+        "title": "Check Browser Extensions",
+        "content": "Review and remove suspicious browser extensions."
+      },
+      {
+        "title": "Scan for Malware",
+        "content": "Run anti-malware scans to detect mining software."
+      },
+      {
+        "title": "Check Cron Jobs/Tasks",
+        "content": "Review scheduled tasks for mining scripts."
+      },
+      {
+        "title": "Block Mining Pools",
+        "content": "Add known mining pool domains to blocklists."
+      },
+      {
+        "title": "Update and Patch",
+        "content": "Update all software to close exploitation vectors."
+      }
+    ]
+  },
+  {
+    "id": "password-security",
+    "title": "Password Security Setup",
+    "description": "Establishing strong password hygiene from scratch",
+    "severity": "low",
+    "icon": "blue",
+    "category": "Authentication",
+    "steps": [
+      {
+        "title": "Get a Password Manager",
+        "content": "Choose Bitwarden (free), 1Password, or Dashlane.",
+        "tip": "Bitwarden is free and open-source."
+      },
+      {
+        "title": "Create Strong Master Password",
+        "content": "Use 16+ characters. Consider a passphrase.",
+        "warning": "This is the ONE password you must memorize."
+      },
+      {
+        "title": "Import Existing Passwords",
+        "content": "Export from browser and import to password manager."
+      },
+      {
+        "title": "Audit Your Passwords",
+        "content": "Use the security audit feature to find weak/reused passwords."
+      },
+      {
+        "title": "Replace Weak Passwords",
+        "content": "Generate new unique 16+ character passwords for each account."
+      },
+      {
+        "title": "Enable 2FA Everywhere",
+        "content": "Add two-factor authentication to all accounts that support it."
+      }
+    ]
+  },
+  {
+    "id": "mfa-setup",
+    "title": "Multi-Factor Authentication Setup",
+    "description": "Implementing strong MFA across your accounts",
+    "severity": "medium",
+    "icon": "green",
+    "category": "Authentication",
+    "steps": [
+      {
+        "title": "Choose Your Methods",
+        "content": "Prefer authenticator apps > SMS > email. Hardware keys are best."
+      },
+      {
+        "title": "Get an Authenticator App",
+        "content": "Install Authy, Google Authenticator, or Microsoft Authenticator."
+      },
+      {
+        "title": "Prioritize Critical Accounts",
+        "content": "Start with email, banking, and primary cloud accounts."
+      },
+      {
+        "title": "Enable MFA",
+        "content": "Go to security settings of each account and enable 2FA."
+      },
+      {
+        "title": "Save Backup Codes",
+        "content": "Store recovery codes securely in password manager or safe.",
+        "warning": "Without backup codes, you may lose account access."
+      },
+      {
+        "title": "Consider Hardware Keys",
+        "content": "For high-security accounts, use YubiKey or similar."
+      },
+      {
+        "title": "Test Recovery",
+        "content": "Verify you can recover access using backup methods."
+      }
+    ]
+  },
+  {
+    "id": "password-manager-setup",
+    "title": "Password Manager Implementation",
+    "description": "Complete guide to setting up a password manager",
+    "severity": "low",
+    "icon": "blue",
+    "category": "Authentication",
+    "steps": [
+      {
+        "title": "Choose a Manager",
+        "content": "Bitwarden (free/open), 1Password (family), LastPass, Dashlane."
+      },
+      {
+        "title": "Create Account",
+        "content": "Sign up with your email and create a strong master password."
+      },
+      {
+        "title": "Install Everywhere",
+        "content": "Install browser extensions and mobile apps."
+      },
+      {
+        "title": "Export Browser Passwords",
+        "content": "Export saved passwords from Chrome/Firefox/Safari."
+      },
+      {
+        "title": "Import to Manager",
+        "content": "Import the exported CSV into your password manager."
+      },
+      {
+        "title": "Delete Browser Passwords",
+        "content": "Clear saved passwords from browsers and disable saving."
+      },
+      {
+        "title": "Learn the Workflow",
+        "content": "Practice using the manager to fill and generate passwords."
+      },
+      {
+        "title": "Set Up Emergency Access",
+        "content": "Configure trusted contacts for emergency access."
+      }
+    ]
+  },
+  {
+    "id": "hardware-key-setup",
+    "title": "Hardware Security Key Setup",
+    "description": "Configuring YubiKey or similar hardware authentication",
+    "severity": "low",
+    "icon": "cyan",
+    "category": "Authentication",
+    "steps": [
+      {
+        "title": "Choose Your Keys",
+        "content": "Get at least 2 keys (YubiKey, Google Titan, SoloKeys).",
+        "tip": "Always have a backup key in case you lose one."
+      },
+      {
+        "title": "Register Primary Key",
+        "content": "Add the key to your most important accounts (Google, Microsoft, etc.)."
+      },
+      {
+        "title": "Register Backup Key",
+        "content": "Add your second key to the same accounts."
+      },
+      {
+        "title": "Store Backup Safely",
+        "content": "Keep backup key in a secure location (safe, bank box)."
+      },
+      {
+        "title": "Enable on Password Manager",
+        "content": "Add hardware key as 2FA for your password manager."
+      },
+      {
+        "title": "Test Both Keys",
+        "content": "Verify both keys work on all registered accounts."
+      },
+      {
+        "title": "Document Registrations",
+        "content": "Keep a list of which accounts have which keys registered."
+      }
+    ]
+  },
+  {
+    "id": "passkey-setup",
+    "title": "Passkey Implementation",
+    "description": "Setting up passwordless authentication with passkeys",
+    "severity": "low",
+    "icon": "purple",
+    "category": "Authentication",
+    "steps": [
+      {
+        "title": "Understand Passkeys",
+        "content": "Passkeys use biometrics/device PIN instead of passwords."
+      },
+      {
+        "title": "Check Device Support",
+        "content": "Ensure your devices support passkeys (iOS 16+, Android 9+, recent browsers)."
+      },
+      {
+        "title": "Start with Major Accounts",
+        "content": "Google, Microsoft, Apple, and GitHub support passkeys."
+      },
+      {
+        "title": "Create Passkey",
+        "content": "Go to account security settings and add a passkey."
+      },
+      {
+        "title": "Set Up on Multiple Devices",
+        "content": "Create passkeys on phone, computer, and tablet."
+      },
+      {
+        "title": "Keep Password as Backup",
+        "content": "Maintain a strong password until passkeys are widespread."
+      },
+      {
+        "title": "Sync Across Devices",
+        "content": "Use iCloud Keychain, Google Password Manager, or 1Password for sync."
+      }
+    ]
+  },
+  {
+    "id": "sso-security",
+    "title": "Single Sign-On Security",
+    "description": "Securing your SSO/OAuth connected accounts",
+    "severity": "medium",
+    "icon": "blue",
+    "category": "Authentication",
+    "steps": [
+      {
+        "title": "Identify SSO Accounts",
+        "content": "List all accounts where you \"Sign in with Google/Apple/Facebook\"."
+      },
+      {
+        "title": "Secure the Primary",
+        "content": "Your SSO provider account is critical - use strong password + 2FA."
+      },
+      {
+        "title": "Review Connected Apps",
+        "content": "Check Google/Facebook/Apple settings for connected applications."
+      },
+      {
+        "title": "Revoke Unused Access",
+        "content": "Remove apps you no longer use or don't recognize."
+      },
+      {
+        "title": "Check Permissions",
+        "content": "Review what data each connected app can access."
+      },
+      {
+        "title": "Consider Separation",
+        "content": "For critical accounts, use separate passwords instead of SSO."
+      },
+      {
+        "title": "Monitor Activity",
+        "content": "Regularly review SSO provider security activity logs."
+      }
+    ]
+  },
+  {
+    "id": "network-security",
+    "title": "Home Network Security",
+    "description": "Securing your home network against threats",
+    "severity": "medium",
+    "icon": "pink",
+    "category": "Network Security",
+    "steps": [
+      {
+        "title": "Access Router Settings",
+        "content": "Connect to router admin panel (usually 192.168.1.1)."
+      },
+      {
+        "title": "Change Default Credentials",
+        "content": "Change router admin password from default.",
+        "warning": "Admin password is different from WiFi password."
+      },
+      {
+        "title": "Update Firmware",
+        "content": "Check for and install firmware updates."
+      },
+      {
+        "title": "Use Strong Encryption",
+        "content": "Enable WPA3 or WPA2-AES. Never use WEP."
+      },
+      {
+        "title": "Change Network Name",
+        "content": "Use SSID that doesn't identify you or router brand."
+      },
+      {
+        "title": "Disable WPS",
+        "content": "WiFi Protected Setup has known vulnerabilities."
+      },
+      {
+        "title": "Create Guest Network",
+        "content": "Isolate visitors and IoT devices.",
+        "tip": "Put smart devices on guest network."
+      },
+      {
+        "title": "Enable Firewall",
+        "content": "Enable router firewall, disable remote management."
+      },
+      {
+        "title": "Use DNS Filtering",
+        "content": "Change DNS to Cloudflare (1.1.1.1) or Quad9 (9.9.9.9)."
+      },
+      {
+        "title": "Monitor Devices",
+        "content": "Regularly review connected devices."
+      }
+    ]
+  },
+  {
+    "id": "vpn-setup",
+    "title": "VPN Configuration",
+    "description": "Setting up and using a VPN for privacy and security",
+    "severity": "low",
+    "icon": "blue",
+    "category": "Network Security",
+    "steps": [
+      {
+        "title": "Choose a Provider",
+        "content": "Select reputable VPN: Mullvad, ProtonVPN, NordVPN, ExpressVPN."
+      },
+      {
+        "title": "Check Privacy Policy",
+        "content": "Verify no-logs policy and jurisdiction."
+      },
+      {
+        "title": "Install Applications",
+        "content": "Install VPN app on all devices."
+      },
+      {
+        "title": "Configure Kill Switch",
+        "content": "Enable kill switch to block traffic if VPN drops."
+      },
+      {
+        "title": "Select Protocols",
+        "content": "Use WireGuard or OpenVPN for best security."
+      },
+      {
+        "title": "Test for Leaks",
+        "content": "Check for DNS and IP leaks at ipleak.net."
+      },
+      {
+        "title": "Set Auto-Connect",
+        "content": "Configure to auto-connect on untrusted networks."
+      },
+      {
+        "title": "Choose Server Wisely",
+        "content": "Use nearby servers for speed, distant for privacy."
+      }
+    ]
+  },
+  {
+    "id": "public-wifi-safety",
+    "title": "Public WiFi Safety",
+    "description": "Staying secure on public wireless networks",
+    "severity": "medium",
+    "icon": "orange",
+    "category": "Network Security",
+    "steps": [
+      {
+        "title": "Use VPN Always",
+        "content": "Connect to VPN before using any public WiFi."
+      },
+      {
+        "title": "Verify Network Name",
+        "content": "Confirm the correct network name with staff.",
+        "warning": "Evil twin attacks use similar names."
+      },
+      {
+        "title": "Disable Auto-Connect",
+        "content": "Turn off automatic connection to open networks."
+      },
+      {
+        "title": "Use HTTPS Only",
+        "content": "Only visit HTTPS sites. Install HTTPS Everywhere."
+      },
+      {
+        "title": "Avoid Sensitive Activities",
+        "content": "Don't access banking or enter passwords."
+      },
+      {
+        "title": "Turn Off Sharing",
+        "content": "Disable file sharing and AirDrop."
+      },
+      {
+        "title": "Forget Network After",
+        "content": "Remove the network from saved networks when done."
+      },
+      {
+        "title": "Use Mobile Data Instead",
+        "content": "When possible, use phone hotspot instead."
+      }
+    ]
+  },
+  {
+    "id": "firewall-configuration",
+    "title": "Firewall Configuration",
+    "description": "Setting up personal and network firewalls",
+    "severity": "medium",
+    "icon": "cyan",
+    "category": "Network Security",
+    "steps": [
+      {
+        "title": "Enable OS Firewall",
+        "content": "Ensure Windows Firewall or macOS Firewall is on."
+      },
+      {
+        "title": "Review Inbound Rules",
+        "content": "Check which apps are allowed incoming connections."
+      },
+      {
+        "title": "Block by Default",
+        "content": "Set policy to deny incoming, allow outgoing."
+      },
+      {
+        "title": "Create App Rules",
+        "content": "Only allow necessary applications through firewall."
+      },
+      {
+        "title": "Enable Logging",
+        "content": "Turn on firewall logging to detect suspicious activity."
+      },
+      {
+        "title": "Configure Router Firewall",
+        "content": "Enable firewall on your router as first line of defense."
+      },
+      {
+        "title": "Consider Third-Party",
+        "content": "For advanced control, consider GlassWire or Little Snitch."
+      }
+    ]
+  },
+  {
+    "id": "dns-security",
+    "title": "DNS Security Setup",
+    "description": "Configuring secure and private DNS",
+    "severity": "low",
+    "icon": "green",
+    "category": "Network Security",
+    "steps": [
+      {
+        "title": "Choose DNS Provider",
+        "content": "Cloudflare (1.1.1.1), Quad9 (9.9.9.9), or NextDNS."
+      },
+      {
+        "title": "Configure on Router",
+        "content": "Change DNS in router settings to protect all devices."
+      },
+      {
+        "title": "Configure on Devices",
+        "content": "Set DNS on individual devices as backup."
+      },
+      {
+        "title": "Enable DoH/DoT",
+        "content": "Use DNS over HTTPS or DNS over TLS for encryption."
+      },
+      {
+        "title": "Enable Malware Blocking",
+        "content": "Use DNS providers with malware filtering."
+      },
+      {
+        "title": "Consider NextDNS",
+        "content": "For customizable filtering and logging."
+      },
+      {
+        "title": "Test Configuration",
+        "content": "Verify DNS is working at dnsleaktest.com."
+      }
+    ]
+  },
+  {
+    "id": "network-segmentation",
+    "title": "Network Segmentation",
+    "description": "Separating network zones for better security",
+    "severity": "medium",
+    "icon": "purple",
+    "category": "Network Security",
+    "steps": [
+      {
+        "title": "Identify Device Categories",
+        "content": "Group devices: work, personal, IoT, guests."
+      },
+      {
+        "title": "Create Separate Networks",
+        "content": "Use VLANs or separate SSIDs for each category."
+      },
+      {
+        "title": "Isolate IoT Devices",
+        "content": "Put smart home devices on their own network.",
+        "tip": "IoT devices are often poorly secured."
+      },
+      {
+        "title": "Create Guest Network",
+        "content": "Guests should not access your main network."
+      },
+      {
+        "title": "Configure Firewall Rules",
+        "content": "Restrict traffic between network segments."
+      },
+      {
+        "title": "Separate Work Devices",
+        "content": "Keep work devices on dedicated network if possible."
+      },
+      {
+        "title": "Document Configuration",
+        "content": "Keep records of network layout and rules."
+      }
+    ]
+  },
+  {
+    "id": "router-security",
+    "title": "Router Security Hardening",
+    "description": "Comprehensive router security configuration",
+    "severity": "medium",
+    "icon": "cyan",
+    "category": "Network Security",
+    "steps": [
+      {
+        "title": "Update Firmware",
+        "content": "Install latest firmware and enable auto-updates."
+      },
+      {
+        "title": "Change Admin Credentials",
+        "content": "Use strong, unique admin password."
+      },
+      {
+        "title": "Disable Remote Management",
+        "content": "Turn off remote administration unless needed."
+      },
+      {
+        "title": "Disable UPnP",
+        "content": "Universal Plug and Play can be exploited.",
+        "warning": "Some devices may require UPnP to function."
+      },
+      {
+        "title": "Enable WPA3",
+        "content": "Use strongest available encryption."
+      },
+      {
+        "title": "Disable WPS",
+        "content": "WiFi Protected Setup is vulnerable to attacks."
+      },
+      {
+        "title": "Change Default SSID",
+        "content": "Don't reveal router brand in network name."
+      },
+      {
+        "title": "Enable MAC Filtering",
+        "content": "Optional: whitelist known devices."
+      },
+      {
+        "title": "Review Port Forwarding",
+        "content": "Remove unnecessary port forwarding rules."
+      },
+      {
+        "title": "Enable Logging",
+        "content": "Turn on access logs for security monitoring."
+      }
+    ]
+  },
+  {
+    "id": "mobile-device-security",
+    "title": "Mobile Device Security",
+    "description": "Securing your smartphone or tablet",
+    "severity": "medium",
+    "icon": "blue",
+    "category": "Mobile Security",
+    "steps": [
+      {
+        "title": "Set Strong Lock",
+        "content": "Use 6+ digit PIN, pattern, or biometric lock."
+      },
+      {
+        "title": "Enable Encryption",
+        "content": "Ensure device encryption is enabled (default on modern devices)."
+      },
+      {
+        "title": "Enable Find My Device",
+        "content": "Set up Find My iPhone or Find My Device for Android."
+      },
+      {
+        "title": "Update Regularly",
+        "content": "Install OS and app updates promptly."
+      },
+      {
+        "title": "Review App Permissions",
+        "content": "Audit and restrict app permissions."
+      },
+      {
+        "title": "Install from Official Stores",
+        "content": "Only use App Store or Google Play."
+      },
+      {
+        "title": "Enable Remote Wipe",
+        "content": "Ensure you can remotely wipe if lost."
+      },
+      {
+        "title": "Use Secure Messaging",
+        "content": "Use Signal or WhatsApp for encrypted messaging."
+      }
+    ]
+  },
+  {
+    "id": "app-permission-audit",
+    "title": "App Permission Audit",
+    "description": "Reviewing and restricting mobile app permissions",
+    "severity": "low",
+    "icon": "green",
+    "category": "Mobile Security",
+    "steps": [
+      {
+        "title": "Access Permission Settings",
+        "content": "iOS: Settings > Privacy. Android: Settings > Apps > Permissions."
+      },
+      {
+        "title": "Review Location Access",
+        "content": "Limit to \"While Using\" or \"Never\" for most apps."
+      },
+      {
+        "title": "Review Camera/Microphone",
+        "content": "Only allow for apps that genuinely need it."
+      },
+      {
+        "title": "Check Contacts Access",
+        "content": "Many apps request contacts unnecessarily."
+      },
+      {
+        "title": "Review Photos Access",
+        "content": "Consider \"Selected Photos\" instead of \"All Photos\"."
+      },
+      {
+        "title": "Disable Background Refresh",
+        "content": "Turn off for apps that don't need it."
+      },
+      {
+        "title": "Review Tracking",
+        "content": "iOS: Disable \"Allow Apps to Request to Track\"."
+      },
+      {
+        "title": "Repeat Regularly",
+        "content": "Audit permissions monthly or after installing new apps."
+      }
+    ]
+  },
+  {
+    "id": "lost-phone-response",
+    "title": "Lost/Stolen Phone Response",
+    "description": "What to do when your phone is lost or stolen",
+    "severity": "high",
+    "icon": "red",
+    "category": "Mobile Security",
+    "steps": [
+      {
+        "title": "Try to Locate",
+        "content": "Use Find My iPhone or Find My Device to locate."
+      },
+      {
+        "title": "Mark as Lost",
+        "content": "Enable Lost Mode to lock and display contact info."
+      },
+      {
+        "title": "Remote Wipe if Needed",
+        "content": "If recovery unlikely and contains sensitive data, remote wipe.",
+        "warning": "Wiping is irreversible - try location first."
+      },
+      {
+        "title": "Change Passwords",
+        "content": "Change passwords for accounts accessed on the phone."
+      },
+      {
+        "title": "Deauthorize Device",
+        "content": "Remove the device from account trusted devices."
+      },
+      {
+        "title": "Contact Carrier",
+        "content": "Report to carrier to suspend SIM and prevent charges."
+      },
+      {
+        "title": "File Police Report",
+        "content": "Report theft to police with device details."
+      },
+      {
+        "title": "Monitor Accounts",
+        "content": "Watch for unauthorized access to your accounts."
+      }
+    ]
+  },
+  {
+    "id": "byod-security",
+    "title": "BYOD Security",
+    "description": "Securing personal devices used for work",
+    "severity": "medium",
+    "icon": "purple",
+    "category": "Mobile Security",
+    "steps": [
+      {
+        "title": "Understand Policies",
+        "content": "Know your organization's BYOD policy and requirements."
+      },
+      {
+        "title": "Enable Device Encryption",
+        "content": "Ensure full device encryption is enabled."
+      },
+      {
+        "title": "Use Work Profile",
+        "content": "Separate work and personal data using work profiles."
+      },
+      {
+        "title": "Install MDM if Required",
+        "content": "Install required mobile device management software."
+      },
+      {
+        "title": "Use Strong Authentication",
+        "content": "Enable biometric + PIN for device access."
+      },
+      {
+        "title": "Keep Updated",
+        "content": "Maintain current OS and security patches."
+      },
+      {
+        "title": "Use Approved Apps",
+        "content": "Only use approved apps for work tasks."
+      },
+      {
+        "title": "Secure Connections",
+        "content": "Use VPN when accessing work resources."
+      }
+    ]
+  },
+  {
+    "id": "mobile-malware-removal",
+    "title": "Mobile Malware Removal",
+    "description": "Cleaning malware from mobile devices",
+    "severity": "high",
+    "icon": "orange",
+    "category": "Mobile Security",
+    "steps": [
+      {
+        "title": "Identify Symptoms",
+        "content": "Look for battery drain, data usage spikes, popups, unknown apps."
+      },
+      {
+        "title": "Boot in Safe Mode",
+        "content": "Restart in Safe Mode to disable third-party apps."
+      },
+      {
+        "title": "Review Recent Apps",
+        "content": "Check apps installed around when problems started."
+      },
+      {
+        "title": "Uninstall Suspicious Apps",
+        "content": "Remove unfamiliar or recently installed apps."
+      },
+      {
+        "title": "Clear Browser Data",
+        "content": "Clear cache, cookies, and history from all browsers."
+      },
+      {
+        "title": "Run Security Scan",
+        "content": "Use Malwarebytes Mobile or similar scanner."
+      },
+      {
+        "title": "Factory Reset if Needed",
+        "content": "If problems persist, backup data and factory reset.",
+        "warning": "Factory reset erases everything."
+      },
+      {
+        "title": "Change Passwords",
+        "content": "Change passwords for accounts accessed on the device."
+      }
+    ]
+  },
+  {
+    "id": "sim-swap-protection",
+    "title": "SIM Swap Protection",
+    "description": "Preventing SIM swap attacks on your phone number",
+    "severity": "high",
+    "icon": "red",
+    "category": "Mobile Security",
+    "steps": [
+      {
+        "title": "Set Carrier PIN",
+        "content": "Add a PIN or password to your carrier account."
+      },
+      {
+        "title": "Enable Port Freeze",
+        "content": "Ask carrier to freeze number porting."
+      },
+      {
+        "title": "Use Non-SMS 2FA",
+        "content": "Switch from SMS to authenticator apps where possible."
+      },
+      {
+        "title": "Monitor for Signs",
+        "content": "Watch for unexpected \"No Service\" on your phone."
+      },
+      {
+        "title": "Limit Phone Exposure",
+        "content": "Don't publish phone number publicly."
+      },
+      {
+        "title": "Consider Google Voice",
+        "content": "Use Google Voice number for 2FA instead of real number."
+      },
+      {
+        "title": "Act Fast if Swapped",
+        "content": "If SIM swapped, contact carrier immediately."
+      }
+    ]
+  },
+  {
+    "id": "email-security",
+    "title": "Email Security Basics",
+    "description": "Securing your email accounts and communications",
+    "severity": "medium",
+    "icon": "orange",
+    "category": "Email Security",
+    "steps": [
+      {
+        "title": "Use Strong Password",
+        "content": "Email password should be unique and 16+ characters."
+      },
+      {
+        "title": "Enable 2FA",
+        "content": "Add two-factor authentication to all email accounts."
+      },
+      {
+        "title": "Review Connected Apps",
+        "content": "Check and revoke unnecessary third-party access."
+      },
+      {
+        "title": "Check Forwarding Rules",
+        "content": "Ensure no unauthorized forwarding is configured."
+      },
+      {
+        "title": "Review Recovery Options",
+        "content": "Verify recovery email and phone are yours."
+      },
+      {
+        "title": "Enable Security Alerts",
+        "content": "Turn on notifications for suspicious activity."
+      },
+      {
+        "title": "Be Wary of Links",
+        "content": "Hover over links before clicking. Verify senders."
+      },
+      {
+        "title": "Use Encrypted Email",
+        "content": "Consider ProtonMail or enable encryption for sensitive emails."
+      }
+    ]
+  },
+  {
+    "id": "email-phishing-detection",
+    "title": "Phishing Email Detection",
+    "description": "How to identify and handle phishing emails",
+    "severity": "medium",
+    "icon": "orange",
+    "category": "Email Security",
+    "steps": [
+      {
+        "title": "Check Sender Address",
+        "content": "Look at actual email address, not display name."
+      },
+      {
+        "title": "Look for Urgency",
+        "content": "Phishing creates false urgency to bypass thinking."
+      },
+      {
+        "title": "Hover Over Links",
+        "content": "Check URL before clicking - does it match the claimed sender?"
+      },
+      {
+        "title": "Check for Errors",
+        "content": "Look for spelling, grammar, or formatting issues."
+      },
+      {
+        "title": "Verify Through Other Channel",
+        "content": "Contact company directly through known channels."
+      },
+      {
+        "title": "Don't Download Attachments",
+        "content": "Unexpected attachments are high risk."
+      },
+      {
+        "title": "Report Phishing",
+        "content": "Forward to IT and/or phishing@company.com."
+      },
+      {
+        "title": "Delete the Email",
+        "content": "Remove from inbox and trash completely."
+      }
+    ]
+  },
+  {
+    "id": "email-encryption-setup",
+    "title": "Email Encryption Setup",
+    "description": "Setting up encrypted email communications",
+    "severity": "low",
+    "icon": "blue",
+    "category": "Email Security",
+    "steps": [
+      {
+        "title": "Choose a Method",
+        "content": "Options: ProtonMail, S/MIME, PGP, or provider encryption."
+      },
+      {
+        "title": "ProtonMail (Easiest)",
+        "content": "Create ProtonMail account for encrypted communications."
+      },
+      {
+        "title": "Enable Provider Encryption",
+        "content": "Gmail, Outlook have built-in encryption options."
+      },
+      {
+        "title": "Install PGP (Advanced)",
+        "content": "Install GPG/PGP tools for maximum control."
+      },
+      {
+        "title": "Generate Keys",
+        "content": "Create public/private key pair for PGP."
+      },
+      {
+        "title": "Exchange Public Keys",
+        "content": "Share public key with contacts who need to send encrypted mail."
+      },
+      {
+        "title": "Test Encryption",
+        "content": "Send test encrypted emails to verify setup."
+      }
+    ]
+  },
+  {
+    "id": "business-email-compromise",
+    "title": "Business Email Compromise Response",
+    "description": "Handling BEC attacks and wire fraud attempts",
+    "severity": "critical",
+    "icon": "red",
+    "category": "Email Security",
+    "steps": [
+      {
+        "title": "Stop the Transaction",
+        "content": "If money was sent, contact bank immediately to attempt recall.",
+        "warning": "Act within minutes for best chance of recovery."
+      },
+      {
+        "title": "Preserve Evidence",
+        "content": "Don't delete emails. Screenshot everything."
+      },
+      {
+        "title": "Report to FBI",
+        "content": "File report at ic3.gov immediately."
+      },
+      {
+        "title": "Notify Affected Parties",
+        "content": "Alert anyone whose info was in the emails."
+      },
+      {
+        "title": "Secure the Account",
+        "content": "If email was compromised, secure with new password and 2FA."
+      },
+      {
+        "title": "Check for Forwarding Rules",
+        "content": "Remove any rules set by attackers."
+      },
+      {
+        "title": "Review Other Transactions",
+        "content": "Check for other fraudulent requests."
+      },
+      {
+        "title": "Implement Verification Procedures",
+        "content": "Add phone verification for financial requests."
+      }
+    ]
+  },
+  {
+    "id": "social-media-security",
+    "title": "Social Media Account Security",
+    "description": "Securing your social media presence",
+    "severity": "medium",
+    "icon": "blue",
+    "category": "Social Media",
+    "steps": [
+      {
+        "title": "Use Unique Passwords",
+        "content": "Different strong password for each platform."
+      },
+      {
+        "title": "Enable 2FA",
+        "content": "Add two-factor to all social accounts."
+      },
+      {
+        "title": "Review Privacy Settings",
+        "content": "Set posts and profile to appropriate visibility."
+      },
+      {
+        "title": "Limit Personal Info",
+        "content": "Don't share birthdate, address, or phone publicly."
+      },
+      {
+        "title": "Review Connected Apps",
+        "content": "Remove apps you no longer use."
+      },
+      {
+        "title": "Check Active Sessions",
+        "content": "Review and terminate unknown sessions."
+      },
+      {
+        "title": "Be Careful What You Share",
+        "content": "Attackers use personal details for social engineering."
+      },
+      {
+        "title": "Watch for Impersonation",
+        "content": "Monitor for fake accounts using your identity."
+      }
+    ]
+  },
+  {
+    "id": "social-media-recovery",
+    "title": "Social Media Account Recovery",
+    "description": "Recovering hacked social media accounts",
+    "severity": "high",
+    "icon": "orange",
+    "category": "Social Media",
+    "steps": [
+      {
+        "title": "Try Password Reset",
+        "content": "Use official password reset process."
+      },
+      {
+        "title": "Use Platform Recovery",
+        "content": "Facebook, Instagram, Twitter have hacked account recovery forms."
+      },
+      {
+        "title": "Verify Identity",
+        "content": "Prepare ID for identity verification if required."
+      },
+      {
+        "title": "Secure Email First",
+        "content": "Ensure your email account is secure before recovery."
+      },
+      {
+        "title": "Report to Platform",
+        "content": "Report the account as compromised."
+      },
+      {
+        "title": "Once Recovered",
+        "content": "Change password, enable 2FA, review all settings."
+      },
+      {
+        "title": "Check Connected Accounts",
+        "content": "Secure accounts that used social login."
+      },
+      {
+        "title": "Alert Followers",
+        "content": "Notify followers about the compromise."
+      }
+    ]
+  },
+  {
+    "id": "doxxing-response",
+    "title": "Doxxing Response",
+    "description": "What to do if your personal information is published online",
+    "severity": "high",
+    "icon": "red",
+    "category": "Social Media",
+    "steps": [
+      {
+        "title": "Document Everything",
+        "content": "Screenshot the doxxing before it's removed."
+      },
+      {
+        "title": "Report to Platforms",
+        "content": "Report the content on each platform for removal."
+      },
+      {
+        "title": "Google Yourself",
+        "content": "Search for other instances of your info."
+      },
+      {
+        "title": "Request Removal",
+        "content": "Contact sites directly to remove information."
+      },
+      {
+        "title": "Secure Your Accounts",
+        "content": "Change passwords, enable 2FA on everything."
+      },
+      {
+        "title": "Alert Family",
+        "content": "Warn family members who might also be targeted."
+      },
+      {
+        "title": "Consider Police Report",
+        "content": "If threats accompany doxxing, file police report."
+      },
+      {
+        "title": "Use Removal Services",
+        "content": "Consider services like DeleteMe for data removal."
+      },
+      {
+        "title": "Lock Down Socials",
+        "content": "Set all social media to private temporarily."
+      }
+    ]
+  },
+  {
+    "id": "online-harassment-response",
+    "title": "Online Harassment Response",
+    "description": "Dealing with cyberbullying and online harassment",
+    "severity": "high",
+    "icon": "orange",
+    "category": "Social Media",
+    "steps": [
+      {
+        "title": "Don't Engage",
+        "content": "Engaging often escalates. Avoid responding."
+      },
+      {
+        "title": "Document Everything",
+        "content": "Screenshot all harassment with timestamps."
+      },
+      {
+        "title": "Block the Harasser",
+        "content": "Use platform blocking features."
+      },
+      {
+        "title": "Report to Platform",
+        "content": "Report harassment using official channels."
+      },
+      {
+        "title": "Adjust Privacy Settings",
+        "content": "Limit who can contact or mention you."
+      },
+      {
+        "title": "Secure Accounts",
+        "content": "Ensure all accounts have strong security."
+      },
+      {
+        "title": "Report to Police if Needed",
+        "content": "Threats of violence should be reported to authorities."
+      },
+      {
+        "title": "Seek Support",
+        "content": "Reach out to friends, family, or support organizations."
+      }
+    ]
+  },
+  {
+    "id": "cloud-storage-security",
+    "title": "Cloud Storage Security",
+    "description": "Securing files in cloud storage services",
+    "severity": "medium",
+    "icon": "blue",
+    "category": "Cloud Security",
+    "steps": [
+      {
+        "title": "Use Strong Authentication",
+        "content": "Enable 2FA on all cloud storage accounts."
+      },
+      {
+        "title": "Review Shared Files",
+        "content": "Audit and remove unnecessary shares."
+      },
+      {
+        "title": "Encrypt Sensitive Files",
+        "content": "Use Cryptomator or BoxCryptor for sensitive files."
+      },
+      {
+        "title": "Check Sharing Settings",
+        "content": "Ensure links aren't publicly accessible."
+      },
+      {
+        "title": "Review Connected Apps",
+        "content": "Remove third-party apps with access to files."
+      },
+      {
+        "title": "Enable Activity Alerts",
+        "content": "Get notifications for sharing changes."
+      },
+      {
+        "title": "Regular Backup",
+        "content": "Don't rely only on cloud - have local backups."
+      },
+      {
+        "title": "Know Your Provider",
+        "content": "Understand provider's encryption and access policies."
+      }
+    ]
+  },
+  {
+    "id": "aws-security-basics",
+    "title": "AWS Security Basics",
+    "description": "Essential security configurations for AWS accounts",
+    "severity": "high",
+    "icon": "orange",
+    "category": "Cloud Security",
+    "steps": [
+      {
+        "title": "Secure Root Account",
+        "content": "Enable MFA on root, never use for daily tasks."
+      },
+      {
+        "title": "Create IAM Users",
+        "content": "Create individual IAM users for everyone."
+      },
+      {
+        "title": "Implement Least Privilege",
+        "content": "Give minimum permissions needed."
+      },
+      {
+        "title": "Enable CloudTrail",
+        "content": "Enable CloudTrail for all regions for auditing."
+      },
+      {
+        "title": "Configure GuardDuty",
+        "content": "Enable GuardDuty for threat detection."
+      },
+      {
+        "title": "Secure S3 Buckets",
+        "content": "Block public access by default.",
+        "warning": "S3 misconfigurations are common breach causes."
+      },
+      {
+        "title": "Enable Config Rules",
+        "content": "Use AWS Config for compliance monitoring."
+      },
+      {
+        "title": "Review Security Hub",
+        "content": "Use Security Hub for centralized security view."
+      },
+      {
+        "title": "Rotate Access Keys",
+        "content": "Regularly rotate IAM access keys."
+      },
+      {
+        "title": "Set Billing Alerts",
+        "content": "Create billing alerts for unusual usage."
+      }
+    ]
+  },
+  {
+    "id": "cloud-access-review",
+    "title": "Cloud Access Review",
+    "description": "Auditing access to cloud services",
+    "severity": "medium",
+    "icon": "purple",
+    "category": "Cloud Security",
+    "steps": [
+      {
+        "title": "Inventory Cloud Services",
+        "content": "List all cloud services in use."
+      },
+      {
+        "title": "Identify Admins",
+        "content": "Document who has administrative access."
+      },
+      {
+        "title": "Review User Access",
+        "content": "Check each user's permissions are appropriate."
+      },
+      {
+        "title": "Remove Stale Accounts",
+        "content": "Disable accounts for departed employees."
+      },
+      {
+        "title": "Check API Keys",
+        "content": "Audit API keys and service accounts."
+      },
+      {
+        "title": "Review External Sharing",
+        "content": "Check what's shared with external users."
+      },
+      {
+        "title": "Document Findings",
+        "content": "Record issues and remediation actions."
+      },
+      {
+        "title": "Schedule Regular Reviews",
+        "content": "Conduct quarterly access reviews."
+      }
+    ]
+  },
+  {
+    "id": "saas-security",
+    "title": "SaaS Application Security",
+    "description": "Securing Software-as-a-Service applications",
+    "severity": "medium",
+    "icon": "cyan",
+    "category": "Cloud Security",
+    "steps": [
+      {
+        "title": "Inventory SaaS Apps",
+        "content": "Create list of all SaaS applications in use."
+      },
+      {
+        "title": "Implement SSO",
+        "content": "Use single sign-on where possible for central control."
+      },
+      {
+        "title": "Enforce MFA",
+        "content": "Require multi-factor authentication for all SaaS apps."
+      },
+      {
+        "title": "Review Permissions",
+        "content": "Audit user permissions in each application."
+      },
+      {
+        "title": "Monitor for Shadow IT",
+        "content": "Identify unauthorized SaaS usage."
+      },
+      {
+        "title": "Configure Security Settings",
+        "content": "Enable available security features in each app."
+      },
+      {
+        "title": "Review API Access",
+        "content": "Check third-party integrations and API access."
+      },
+      {
+        "title": "Data Export Policies",
+        "content": "Understand data portability and export options."
+      }
+    ]
+  },
+  {
+    "id": "browser-security",
+    "title": "Browser Security Hardening",
+    "description": "Securing your web browser against threats",
+    "severity": "medium",
+    "icon": "blue",
+    "category": "Browser Security",
+    "steps": [
+      {
+        "title": "Keep Updated",
+        "content": "Enable auto-updates for your browser."
+      },
+      {
+        "title": "Review Extensions",
+        "content": "Remove unnecessary extensions. They can be security risks."
+      },
+      {
+        "title": "Install Security Extensions",
+        "content": "Add uBlock Origin and HTTPS Everywhere."
+      },
+      {
+        "title": "Enable Safe Browsing",
+        "content": "Turn on phishing and malware protection."
+      },
+      {
+        "title": "Manage Cookies",
+        "content": "Configure to clear cookies on exit or use strict mode."
+      },
+      {
+        "title": "Disable Third-Party Cookies",
+        "content": "Block cross-site tracking cookies."
+      },
+      {
+        "title": "Review Site Permissions",
+        "content": "Audit camera, mic, location, notification permissions."
+      },
+      {
+        "title": "Use Private Browsing",
+        "content": "Use incognito mode for sensitive activities."
+      },
+      {
+        "title": "Consider Privacy Browser",
+        "content": "Brave or Firefox with privacy settings for daily use."
+      }
+    ]
+  },
+  {
+    "id": "browser-extension-audit",
+    "title": "Browser Extension Audit",
+    "description": "Reviewing and securing browser extensions",
+    "severity": "low",
+    "icon": "green",
+    "category": "Browser Security",
+    "steps": [
+      {
+        "title": "List All Extensions",
+        "content": "Go to extension settings and review installed extensions."
+      },
+      {
+        "title": "Remove Unused",
+        "content": "Delete extensions you don't actively use."
+      },
+      {
+        "title": "Check Permissions",
+        "content": "Review what data each extension can access.",
+        "warning": "Some extensions can read all website data."
+      },
+      {
+        "title": "Verify Sources",
+        "content": "Research unfamiliar extensions before keeping."
+      },
+      {
+        "title": "Check for Updates",
+        "content": "Ensure extensions are up to date."
+      },
+      {
+        "title": "Review Recently Installed",
+        "content": "Did problems start after installing an extension?"
+      },
+      {
+        "title": "Use Minimal Extensions",
+        "content": "Only install what you truly need."
+      }
+    ]
+  },
+  {
+    "id": "privacy-audit",
+    "title": "Personal Privacy Audit",
+    "description": "Comprehensive review of your digital privacy",
+    "severity": "low",
+    "icon": "purple",
+    "category": "Privacy",
+    "steps": [
+      {
+        "title": "Google Yourself",
+        "content": "Search your name and see what's publicly available."
+      },
+      {
+        "title": "Check Data Brokers",
+        "content": "Opt out from Spokeo, WhitePages, BeenVerified, etc."
+      },
+      {
+        "title": "Review Social Privacy",
+        "content": "Audit privacy settings on all social platforms."
+      },
+      {
+        "title": "Check Location History",
+        "content": "Review and delete Google, Apple location history."
+      },
+      {
+        "title": "Audit App Permissions",
+        "content": "Review what apps access on your devices."
+      },
+      {
+        "title": "Review Connected Accounts",
+        "content": "Check OAuth/connected apps on major accounts."
+      },
+      {
+        "title": "Check Ad Preferences",
+        "content": "Review and limit ad tracking settings."
+      },
+      {
+        "title": "Consider Privacy Tools",
+        "content": "Use VPN, privacy-focused browser, encrypted messaging."
+      }
+    ]
+  },
+  {
+    "id": "data-broker-removal",
+    "title": "Data Broker Opt-Out",
+    "description": "Removing your information from data broker sites",
+    "severity": "low",
+    "icon": "green",
+    "category": "Privacy",
+    "steps": [
+      {
+        "title": "Identify Data Brokers",
+        "content": "Major ones: Spokeo, WhitePages, BeenVerified, Intelius."
+      },
+      {
+        "title": "Search Each Site",
+        "content": "Find your listings on each data broker."
+      },
+      {
+        "title": "Submit Opt-Out Requests",
+        "content": "Use each site's opt-out process."
+      },
+      {
+        "title": "Document Requests",
+        "content": "Track which sites you've requested removal from."
+      },
+      {
+        "title": "Follow Up",
+        "content": "Verify removal after 30-60 days."
+      },
+      {
+        "title": "Repeat Periodically",
+        "content": "Data brokers may re-add you; check annually."
+      },
+      {
+        "title": "Consider Removal Service",
+        "content": "DeleteMe or Kanary automate this process."
+      }
+    ]
+  },
+  {
+    "id": "anonymous-browsing",
+    "title": "Anonymous Browsing Setup",
+    "description": "Setting up anonymous internet browsing",
+    "severity": "low",
+    "icon": "purple",
+    "category": "Privacy",
+    "steps": [
+      {
+        "title": "Install Tor Browser",
+        "content": "Download Tor from torproject.org for anonymous browsing."
+      },
+      {
+        "title": "Use VPN",
+        "content": "Route traffic through VPN for additional privacy."
+      },
+      {
+        "title": "Privacy-Focused Browser",
+        "content": "Use Brave or hardened Firefox for daily browsing."
+      },
+      {
+        "title": "Block Trackers",
+        "content": "Install uBlock Origin and Privacy Badger."
+      },
+      {
+        "title": "Use Private Search",
+        "content": "DuckDuckGo or Startpage instead of Google."
+      },
+      {
+        "title": "Manage Cookies",
+        "content": "Auto-clear cookies or use containers."
+      },
+      {
+        "title": "Disable WebRTC",
+        "content": "WebRTC can leak your IP even with VPN."
+      },
+      {
+        "title": "Use Compartmentalization",
+        "content": "Different browsers for different activities."
+      }
+    ]
+  },
+  {
+    "id": "laptop-security",
+    "title": "Laptop Security Setup",
+    "description": "Securing your laptop computer",
+    "severity": "medium",
+    "icon": "blue",
+    "category": "Device Security",
+    "steps": [
+      {
+        "title": "Enable Full Disk Encryption",
+        "content": "Use BitLocker (Windows) or FileVault (Mac)."
+      },
+      {
+        "title": "Set Strong Password",
+        "content": "Use complex password for login."
+      },
+      {
+        "title": "Enable Auto-Lock",
+        "content": "Lock after 5 minutes of inactivity."
+      },
+      {
+        "title": "Enable Find My Device",
+        "content": "Configure tracking for lost device recovery."
+      },
+      {
+        "title": "Install Updates",
+        "content": "Enable automatic OS and software updates."
+      },
+      {
+        "title": "Use Antivirus",
+        "content": "Enable Windows Defender or install reputable AV."
+      },
+      {
+        "title": "Enable Firewall",
+        "content": "Ensure OS firewall is enabled."
+      },
+      {
+        "title": "Physical Security",
+        "content": "Use cable lock in public places."
+      },
+      {
+        "title": "Backup Regularly",
+        "content": "Maintain regular backups of important data."
+      }
+    ]
+  },
+  {
+    "id": "desktop-security",
+    "title": "Desktop Computer Security",
+    "description": "Securing your desktop workstation",
+    "severity": "medium",
+    "icon": "cyan",
+    "category": "Device Security",
+    "steps": [
+      {
+        "title": "Enable Encryption",
+        "content": "BitLocker, FileVault, or LUKS for full disk encryption."
+      },
+      {
+        "title": "Strong Login Credentials",
+        "content": "Use password or PIN for login."
+      },
+      {
+        "title": "Separate Admin Account",
+        "content": "Use standard account for daily use, admin for changes."
+      },
+      {
+        "title": "Enable Firewall",
+        "content": "Configure and enable OS firewall."
+      },
+      {
+        "title": "Update Regularly",
+        "content": "Enable automatic updates for OS and software."
+      },
+      {
+        "title": "Use Antimalware",
+        "content": "Install and maintain updated antimalware."
+      },
+      {
+        "title": "Physical Security",
+        "content": "Lock room or use Kensington lock."
+      },
+      {
+        "title": "BIOS Password",
+        "content": "Set BIOS password for additional security."
+      }
+    ]
+  },
+  {
+    "id": "usb-security",
+    "title": "USB Drive Security",
+    "description": "Safely using USB drives",
+    "severity": "medium",
+    "icon": "orange",
+    "category": "Device Security",
+    "steps": [
+      {
+        "title": "Don't Use Unknown USBs",
+        "content": "Never plug in found or unknown USB drives.",
+        "warning": "Malicious USBs are a common attack vector."
+      },
+      {
+        "title": "Encrypt USB Drives",
+        "content": "Use BitLocker To Go or VeraCrypt."
+      },
+      {
+        "title": "Disable AutoRun",
+        "content": "Prevent automatic execution when plugged in."
+      },
+      {
+        "title": "Scan Before Opening",
+        "content": "Scan USB drives with antivirus before accessing."
+      },
+      {
+        "title": "Use Data Blockers",
+        "content": "For public USB charging, use USB data blocker."
+      },
+      {
+        "title": "Secure Important USBs",
+        "content": "Track and secure USB drives with sensitive data."
+      },
+      {
+        "title": "Wipe Before Disposal",
+        "content": "Securely wipe USB drives before discarding."
+      }
+    ]
+  },
+  {
+    "id": "iot-security",
+    "title": "IoT Device Security",
+    "description": "Securing smart home and IoT devices",
+    "severity": "medium",
+    "icon": "pink",
+    "category": "Device Security",
+    "steps": [
+      {
+        "title": "Change Default Passwords",
+        "content": "Never leave factory default passwords."
+      },
+      {
+        "title": "Update Firmware",
+        "content": "Keep device firmware updated."
+      },
+      {
+        "title": "Separate Network",
+        "content": "Put IoT devices on guest network.",
+        "tip": "Isolates them from your main devices."
+      },
+      {
+        "title": "Disable Unused Features",
+        "content": "Turn off remote access if not needed."
+      },
+      {
+        "title": "Review Privacy Settings",
+        "content": "Limit data collection where possible."
+      },
+      {
+        "title": "Research Before Buying",
+        "content": "Check manufacturer security reputation."
+      },
+      {
+        "title": "Disable UPnP",
+        "content": "Turn off Universal Plug and Play on devices."
+      },
+      {
+        "title": "Monitor Network",
+        "content": "Watch for unusual traffic from IoT devices."
+      }
+    ]
+  },
+  {
+    "id": "backup-strategy",
+    "title": "3-2-1 Backup Strategy",
+    "description": "Implementing a robust backup system",
+    "severity": "medium",
+    "icon": "blue",
+    "category": "Backup & Recovery",
+    "steps": [
+      {
+        "title": "Understand 3-2-1",
+        "content": "3 copies, 2 different media, 1 offsite."
+      },
+      {
+        "title": "Primary Copy",
+        "content": "Your working data on your computer."
+      },
+      {
+        "title": "Local Backup",
+        "content": "External drive or NAS for first backup."
+      },
+      {
+        "title": "Offsite Backup",
+        "content": "Cloud backup or drive at different location."
+      },
+      {
+        "title": "Automate Backups",
+        "content": "Schedule automatic backups."
+      },
+      {
+        "title": "Encrypt Backups",
+        "content": "Encrypt backup data, especially cloud backups."
+      },
+      {
+        "title": "Test Restores",
+        "content": "Regularly verify you can restore from backups."
+      },
+      {
+        "title": "Document Procedures",
+        "content": "Write down backup and restore procedures."
+      }
+    ]
+  },
+  {
+    "id": "time-machine-setup",
+    "title": "Time Machine Setup (Mac)",
+    "description": "Configuring Time Machine backups on macOS",
+    "severity": "low",
+    "icon": "green",
+    "category": "Backup & Recovery",
+    "steps": [
+      {
+        "title": "Get External Drive",
+        "content": "Use drive 2x your Mac's storage or larger."
+      },
+      {
+        "title": "Format Drive",
+        "content": "Format as APFS or Mac OS Extended (Journaled)."
+      },
+      {
+        "title": "Enable Time Machine",
+        "content": "System Preferences > Time Machine > Select Disk."
+      },
+      {
+        "title": "Enable Encryption",
+        "content": "Check \"Encrypt backups\" for security."
+      },
+      {
+        "title": "Exclude Unnecessary",
+        "content": "Exclude large files you don't need backed up."
+      },
+      {
+        "title": "Let It Complete",
+        "content": "First backup takes time - let it finish."
+      },
+      {
+        "title": "Test Restore",
+        "content": "Practice restoring a file to verify it works."
+      }
+    ]
+  },
+  {
+    "id": "windows-backup-setup",
+    "title": "Windows Backup Setup",
+    "description": "Configuring backups on Windows",
+    "severity": "low",
+    "icon": "green",
+    "category": "Backup & Recovery",
+    "steps": [
+      {
+        "title": "Use File History",
+        "content": "Settings > Update & Security > Backup."
+      },
+      {
+        "title": "Add External Drive",
+        "content": "Connect and select backup drive."
+      },
+      {
+        "title": "Configure File History",
+        "content": "Select folders to back up."
+      },
+      {
+        "title": "Set Backup Frequency",
+        "content": "Choose how often to save copies."
+      },
+      {
+        "title": "Consider System Image",
+        "content": "Create system image for full recovery."
+      },
+      {
+        "title": "Add Cloud Backup",
+        "content": "Use OneDrive or third-party for offsite."
+      },
+      {
+        "title": "Test Restore",
+        "content": "Verify you can restore files."
+      }
+    ]
+  },
+  {
+    "id": "cloud-backup-setup",
+    "title": "Cloud Backup Setup",
+    "description": "Setting up secure cloud backup",
+    "severity": "medium",
+    "icon": "blue",
+    "category": "Backup & Recovery",
+    "steps": [
+      {
+        "title": "Choose Provider",
+        "content": "Backblaze, iDrive, Carbonite, or cloud storage."
+      },
+      {
+        "title": "Enable Encryption",
+        "content": "Use client-side encryption before upload."
+      },
+      {
+        "title": "Select Backup Scope",
+        "content": "Choose what files to back up."
+      },
+      {
+        "title": "Configure Schedule",
+        "content": "Set continuous or scheduled backups."
+      },
+      {
+        "title": "Secure the Account",
+        "content": "Strong password and 2FA on backup account."
+      },
+      {
+        "title": "Monitor Backups",
+        "content": "Check that backups complete successfully."
+      },
+      {
+        "title": "Test Restore",
+        "content": "Periodically download and verify files."
+      }
+    ]
+  },
+  {
+    "id": "secure-coding",
+    "title": "Secure Coding Practices",
+    "description": "Writing secure code from the start",
+    "severity": "medium",
+    "icon": "purple",
+    "category": "Developer Security",
+    "steps": [
+      {
+        "title": "Validate All Input",
+        "content": "Never trust user input. Validate and sanitize."
+      },
+      {
+        "title": "Parameterize Queries",
+        "content": "Use parameterized queries to prevent SQL injection."
+      },
+      {
+        "title": "Encode Output",
+        "content": "Encode data when outputting to prevent XSS."
+      },
+      {
+        "title": "Use HTTPS",
+        "content": "Always use HTTPS for data in transit."
+      },
+      {
+        "title": "Hash Passwords",
+        "content": "Use bcrypt, Argon2, or PBKDF2 for passwords."
+      },
+      {
+        "title": "Implement Auth Properly",
+        "content": "Use proven auth libraries, not custom solutions."
+      },
+      {
+        "title": "Handle Errors Safely",
+        "content": "Don't expose sensitive info in error messages."
+      },
+      {
+        "title": "Keep Dependencies Updated",
+        "content": "Regularly update libraries and dependencies."
+      },
+      {
+        "title": "Use Security Headers",
+        "content": "Implement CSP, HSTS, X-Frame-Options, etc."
+      }
+    ]
+  },
+  {
+    "id": "git-security",
+    "title": "Git Security Best Practices",
+    "description": "Securing your Git repositories and workflow",
+    "severity": "medium",
+    "icon": "orange",
+    "category": "Developer Security",
+    "steps": [
+      {
+        "title": "Never Commit Secrets",
+        "content": "Use .gitignore for config files with secrets.",
+        "warning": "Git history preserves deleted secrets."
+      },
+      {
+        "title": "Use Git Hooks",
+        "content": "Pre-commit hooks to detect secrets before push."
+      },
+      {
+        "title": "Sign Commits",
+        "content": "Use GPG signing to verify commit authenticity."
+      },
+      {
+        "title": "Protect Branches",
+        "content": "Require reviews for main/master branch."
+      },
+      {
+        "title": "Use SSH Keys",
+        "content": "Prefer SSH over HTTPS for authentication."
+      },
+      {
+        "title": "Enable 2FA",
+        "content": "Enable 2FA on GitHub/GitLab accounts."
+      },
+      {
+        "title": "Review Access",
+        "content": "Regularly audit who has repo access."
+      },
+      {
+        "title": "Scan for Secrets",
+        "content": "Use tools like git-secrets or truffleHog."
+      }
+    ]
+  },
+  {
+    "id": "api-security",
+    "title": "API Security",
+    "description": "Securing APIs and web services",
+    "severity": "high",
+    "icon": "cyan",
+    "category": "Developer Security",
+    "steps": [
+      {
+        "title": "Use Authentication",
+        "content": "Require auth for all API endpoints."
+      },
+      {
+        "title": "Use HTTPS Only",
+        "content": "Never allow API calls over HTTP."
+      },
+      {
+        "title": "Implement Rate Limiting",
+        "content": "Prevent abuse with rate limits."
+      },
+      {
+        "title": "Validate Input",
+        "content": "Validate all request parameters."
+      },
+      {
+        "title": "Use Proper Auth",
+        "content": "OAuth 2.0 or API keys with rotation."
+      },
+      {
+        "title": "Don't Expose Internals",
+        "content": "Generic error messages, no stack traces."
+      },
+      {
+        "title": "Log API Access",
+        "content": "Maintain logs of API usage."
+      },
+      {
+        "title": "Version Your API",
+        "content": "Allow deprecation without breaking clients."
+      }
+    ]
+  },
+  {
+    "id": "dependency-security",
+    "title": "Dependency Security",
+    "description": "Managing third-party dependency risks",
+    "severity": "medium",
+    "icon": "orange",
+    "category": "Developer Security",
+    "steps": [
+      {
+        "title": "Audit Dependencies",
+        "content": "Run npm audit, pip check, or equivalent."
+      },
+      {
+        "title": "Update Regularly",
+        "content": "Keep dependencies updated."
+      },
+      {
+        "title": "Review Before Adding",
+        "content": "Check package reputation before installing."
+      },
+      {
+        "title": "Pin Versions",
+        "content": "Use lock files and pin specific versions."
+      },
+      {
+        "title": "Monitor for CVEs",
+        "content": "Use Dependabot or Snyk for alerts."
+      },
+      {
+        "title": "Remove Unused",
+        "content": "Delete dependencies you no longer need."
+      },
+      {
+        "title": "Private Registry",
+        "content": "Consider private npm/PyPI for control."
+      }
+    ]
+  },
+  {
+    "id": "secrets-management",
+    "title": "Secrets Management",
+    "description": "Properly handling API keys and credentials",
+    "severity": "high",
+    "icon": "red",
+    "category": "Developer Security",
+    "steps": [
+      {
+        "title": "Never Hardcode",
+        "content": "Never put secrets directly in code."
+      },
+      {
+        "title": "Use Environment Variables",
+        "content": "Load secrets from environment variables."
+      },
+      {
+        "title": "Use Secrets Manager",
+        "content": "AWS Secrets Manager, HashiCorp Vault, etc."
+      },
+      {
+        "title": "Rotate Regularly",
+        "content": "Rotate API keys and credentials periodically."
+      },
+      {
+        "title": "Limit Scope",
+        "content": "Use least-privilege for API keys."
+      },
+      {
+        "title": "Audit Access",
+        "content": "Log and monitor secret access."
+      },
+      {
+        "title": "Encrypt at Rest",
+        "content": "Encrypt secrets in configuration files."
+      }
+    ]
+  },
+  {
+    "id": "container-security",
+    "title": "Container Security",
+    "description": "Securing Docker and container deployments",
+    "severity": "medium",
+    "icon": "purple",
+    "category": "Developer Security",
+    "steps": [
+      {
+        "title": "Use Official Images",
+        "content": "Start from official, maintained base images."
+      },
+      {
+        "title": "Scan Images",
+        "content": "Use Trivy, Clair, or Snyk for vulnerability scanning."
+      },
+      {
+        "title": "Minimize Image",
+        "content": "Use slim images, remove unnecessary packages."
+      },
+      {
+        "title": "Don't Run as Root",
+        "content": "Use non-root user in containers."
+      },
+      {
+        "title": "Use Read-Only FS",
+        "content": "Mount filesystems as read-only where possible."
+      },
+      {
+        "title": "Limit Resources",
+        "content": "Set CPU and memory limits."
+      },
+      {
+        "title": "Sign Images",
+        "content": "Use content trust to sign and verify images."
+      },
+      {
+        "title": "Update Base Images",
+        "content": "Regularly rebuild with updated base images."
+      }
+    ]
+  },
+  {
+    "id": "travel-security",
+    "title": "Travel Security",
+    "description": "Protecting devices and data while traveling",
+    "severity": "medium",
+    "icon": "orange",
+    "category": "Physical Security",
+    "steps": [
+      {
+        "title": "Backup Before Travel",
+        "content": "Full backup before you leave."
+      },
+      {
+        "title": "Minimal Data",
+        "content": "Only take data you need. Consider travel-only device."
+      },
+      {
+        "title": "Enable Encryption",
+        "content": "Ensure full disk encryption is enabled."
+      },
+      {
+        "title": "Strong Lock Screen",
+        "content": "Use strong PIN/password, not face unlock at borders."
+      },
+      {
+        "title": "Use VPN",
+        "content": "Connect through VPN on all networks."
+      },
+      {
+        "title": "Physical Security",
+        "content": "Don't leave devices unattended."
+      },
+      {
+        "title": "Hotel Safe Limitations",
+        "content": "Hotel safes aren't very secure. Keep devices with you."
+      },
+      {
+        "title": "Border Crossings",
+        "content": "Know your rights. Consider powered-off devices."
+      },
+      {
+        "title": "Public WiFi Caution",
+        "content": "Assume all public networks are hostile."
+      }
+    ]
+  },
+  {
+    "id": "clean-desk-policy",
+    "title": "Clean Desk Policy",
+    "description": "Physical security for your workspace",
+    "severity": "low",
+    "icon": "green",
+    "category": "Physical Security",
+    "steps": [
+      {
+        "title": "Lock Computer",
+        "content": "Lock screen when stepping away. Win+L or Ctrl+Cmd+Q."
+      },
+      {
+        "title": "Secure Documents",
+        "content": "Put sensitive papers in locked drawer."
+      },
+      {
+        "title": "Shred Sensitive Items",
+        "content": "Shred papers with personal/business info."
+      },
+      {
+        "title": "Secure Portable Media",
+        "content": "Lock up USB drives and external drives."
+      },
+      {
+        "title": "Clean Whiteboards",
+        "content": "Erase sensitive info from whiteboards."
+      },
+      {
+        "title": "End of Day",
+        "content": "Clear desk and lock everything at end of day."
+      },
+      {
+        "title": "Visitor Awareness",
+        "content": "Be conscious of what visitors can see."
+      }
+    ]
+  },
+  {
+    "id": "secure-disposal",
+    "title": "Secure Device Disposal",
+    "description": "Safely disposing of old devices",
+    "severity": "medium",
+    "icon": "red",
+    "category": "Physical Security",
+    "steps": [
+      {
+        "title": "Backup Important Data",
+        "content": "Save anything you need before wiping."
+      },
+      {
+        "title": "Sign Out of Accounts",
+        "content": "Deauthorize and sign out of all accounts."
+      },
+      {
+        "title": "Factory Reset",
+        "content": "Perform factory reset on phones, tablets."
+      },
+      {
+        "title": "Secure Wipe Drives",
+        "content": "Use DBAN or manufacturer secure erase for HDDs."
+      },
+      {
+        "title": "SSD Considerations",
+        "content": "Use manufacturer secure erase for SSDs.",
+        "tip": "Normal wiping may leave data on SSDs."
+      },
+      {
+        "title": "Physical Destruction",
+        "content": "For highly sensitive data, physically destroy drives."
+      },
+      {
+        "title": "Recycle Properly",
+        "content": "Use certified e-waste recyclers."
+      }
+    ]
+  },
+  {
+    "id": "security-awareness",
+    "title": "Security Awareness Training",
+    "description": "Building security-conscious culture",
+    "severity": "low",
+    "icon": "green",
+    "category": "Security Culture",
+    "steps": [
+      {
+        "title": "Regular Training",
+        "content": "Conduct security training at least annually."
+      },
+      {
+        "title": "Phishing Simulations",
+        "content": "Run simulated phishing to test awareness."
+      },
+      {
+        "title": "Clear Policies",
+        "content": "Document and communicate security policies."
+      },
+      {
+        "title": "Report Mechanisms",
+        "content": "Make it easy to report suspicious activity."
+      },
+      {
+        "title": "No Blame Culture",
+        "content": "Encourage reporting without fear of punishment."
+      },
+      {
+        "title": "Real Examples",
+        "content": "Share real breach stories to illustrate risks."
+      },
+      {
+        "title": "Role-Specific Training",
+        "content": "Tailor training to job roles."
+      },
+      {
+        "title": "Measure Effectiveness",
+        "content": "Track metrics and improve training."
+      }
+    ]
+  },
+  {
+    "id": "incident-planning",
+    "title": "Incident Response Planning",
+    "description": "Preparing for security incidents before they happen",
+    "severity": "medium",
+    "icon": "purple",
+    "category": "Security Culture",
+    "steps": [
+      {
+        "title": "Create IR Team",
+        "content": "Define incident response team and roles."
+      },
+      {
+        "title": "Document Procedures",
+        "content": "Write step-by-step response procedures."
+      },
+      {
+        "title": "Communication Plan",
+        "content": "Define who to notify and how."
+      },
+      {
+        "title": "Contact Lists",
+        "content": "Maintain updated contact lists for all stakeholders."
+      },
+      {
+        "title": "Tabletop Exercises",
+        "content": "Practice response with simulated incidents."
+      },
+      {
+        "title": "Tools Ready",
+        "content": "Ensure forensic tools are available and team knows how to use them."
+      },
+      {
+        "title": "Legal Preparation",
+        "content": "Know notification requirements and legal obligations."
+      },
+      {
+        "title": "Review and Update",
+        "content": "Review plan annually or after incidents."
+      }
+    ]
+  },
+  {
+    "id": "vendor-security",
+    "title": "Vendor Security Assessment",
+    "description": "Evaluating third-party security",
+    "severity": "medium",
+    "icon": "cyan",
+    "category": "Security Culture",
+    "steps": [
+      {
+        "title": "Create Questionnaire",
+        "content": "Develop standard security questionnaire."
+      },
+      {
+        "title": "Request Documentation",
+        "content": "Ask for SOC 2, ISO 27001, or similar."
+      },
+      {
+        "title": "Review Security Practices",
+        "content": "Evaluate encryption, access controls, incident response."
+      },
+      {
+        "title": "Check References",
+        "content": "Talk to other customers about security experiences."
+      },
+      {
+        "title": "Contract Requirements",
+        "content": "Include security requirements in contracts."
+      },
+      {
+        "title": "Regular Reviews",
+        "content": "Reassess vendors periodically."
+      },
+      {
+        "title": "Incident Notification",
+        "content": "Require notification of security incidents."
+      },
+      {
+        "title": "Data Handling",
+        "content": "Understand how vendor handles your data."
+      }
+    ]
+  },
+  {
+    "id": "cryptocurrency-security",
+    "title": "Cryptocurrency Security",
+    "description": "Securing crypto wallets and transactions",
+    "severity": "high",
+    "icon": "orange",
+    "category": "Financial Security",
+    "steps": [
+      {
+        "title": "Use Hardware Wallet",
+        "content": "Store significant holdings in Ledger or Trezor."
+      },
+      {
+        "title": "Backup Seed Phrase",
+        "content": "Write seed phrase on paper, store in safe.",
+        "warning": "Never store digitally or take photos."
+      },
+      {
+        "title": "Use Strong Passwords",
+        "content": "Unique passwords for each exchange."
+      },
+      {
+        "title": "Enable 2FA",
+        "content": "Use authenticator app, not SMS."
+      },
+      {
+        "title": "Verify Addresses",
+        "content": "Double-check addresses before sending."
+      },
+      {
+        "title": "Beware Phishing",
+        "content": "Bookmark official sites. Don't click email links."
+      },
+      {
+        "title": "Use Reputable Exchanges",
+        "content": "Stick to established exchanges."
+      },
+      {
+        "title": "Don't Share Holdings",
+        "content": "Avoid publicizing how much you own."
+      }
+    ]
+  },
+  {
+    "id": "gaming-security",
+    "title": "Gaming Account Security",
+    "description": "Protecting gaming accounts and in-game assets",
+    "severity": "medium",
+    "icon": "purple",
+    "category": "Account Security",
+    "steps": [
+      {
+        "title": "Unique Passwords",
+        "content": "Different password for each gaming platform."
+      },
+      {
+        "title": "Enable 2FA",
+        "content": "Add 2FA to Steam, Epic, PlayStation, Xbox, etc."
+      },
+      {
+        "title": "Secure Email",
+        "content": "Protect the email linked to gaming accounts."
+      },
+      {
+        "title": "Beware of Phishing",
+        "content": "Don't click links promising free items."
+      },
+      {
+        "title": "Don't Share Account",
+        "content": "Never share account credentials."
+      },
+      {
+        "title": "Review Authorized Apps",
+        "content": "Check connected third-party apps."
+      },
+      {
+        "title": "Privacy Settings",
+        "content": "Limit what others can see about you."
+      },
+      {
+        "title": "Trade Safely",
+        "content": "Use official trading systems only."
+      }
+    ]
+  },
+  {
+    "id": "child-safety-online",
+    "title": "Child Online Safety",
+    "description": "Protecting children on the internet",
+    "severity": "high",
+    "icon": "green",
+    "category": "Family Security",
+    "steps": [
+      {
+        "title": "Open Communication",
+        "content": "Talk to children about online safety."
+      },
+      {
+        "title": "Parental Controls",
+        "content": "Set up appropriate content filters."
+      },
+      {
+        "title": "Privacy Settings",
+        "content": "Configure privacy on all their accounts."
+      },
+      {
+        "title": "Monitor Activity",
+        "content": "Keep devices in common areas."
+      },
+      {
+        "title": "Stranger Danger Online",
+        "content": "Teach about not sharing personal info."
+      },
+      {
+        "title": "Time Limits",
+        "content": "Set appropriate screen time limits."
+      },
+      {
+        "title": "Report Mechanisms",
+        "content": "Teach how to report inappropriate content."
+      },
+      {
+        "title": "Lead by Example",
+        "content": "Model good digital citizenship."
+      }
+    ]
+  },
+  {
+    "id": "elderly-security",
+    "title": "Senior Citizen Security",
+    "description": "Helping older adults stay safe online",
+    "severity": "medium",
+    "icon": "blue",
+    "category": "Family Security",
+    "steps": [
+      {
+        "title": "Recognize Scams",
+        "content": "Teach common scam patterns and red flags."
+      },
+      {
+        "title": "Verify Callers",
+        "content": "Never give info to incoming callers - call back."
+      },
+      {
+        "title": "Secure Accounts",
+        "content": "Help set up strong passwords and 2FA."
+      },
+      {
+        "title": "Browser Safety",
+        "content": "Install ad blockers and safe browsing tools."
+      },
+      {
+        "title": "Payment Safety",
+        "content": "Teach safe online payment practices."
+      },
+      {
+        "title": "Regular Check-ins",
+        "content": "Check in regularly about online activities."
+      },
+      {
+        "title": "Recovery Plan",
+        "content": "Have a plan if they fall for a scam."
+      },
+      {
+        "title": "Trusted Contacts",
+        "content": "Set up trusted contacts on important accounts."
+      }
+    ]
+  },
+  {
+    "id": "work-from-home",
+    "title": "Work From Home Security",
+    "description": "Securing your remote work environment",
+    "severity": "medium",
+    "icon": "blue",
+    "category": "Remote Work",
+    "steps": [
+      {
+        "title": "Secure Home Network",
+        "content": "Implement home network security practices."
+      },
+      {
+        "title": "Use VPN",
+        "content": "Connect through company VPN for work."
+      },
+      {
+        "title": "Separate Work/Personal",
+        "content": "Use work device only for work."
+      },
+      {
+        "title": "Physical Security",
+        "content": "Lock screen, secure documents."
+      },
+      {
+        "title": "Secure Video Calls",
+        "content": "Use waiting rooms, passwords for meetings."
+      },
+      {
+        "title": "Backup Work",
+        "content": "Save work to company-approved locations."
+      },
+      {
+        "title": "Update Devices",
+        "content": "Keep all devices updated."
+      },
+      {
+        "title": "Report Issues",
+        "content": "Know how to report security concerns remotely."
+      }
+    ]
+  },
+  {
+    "id": "small-business-security",
+    "title": "Small Business Security Basics",
+    "description": "Essential security for small businesses",
+    "severity": "high",
+    "icon": "orange",
+    "category": "Business Security",
+    "steps": [
+      {
+        "title": "Asset Inventory",
+        "content": "Know all devices and data you have."
+      },
+      {
+        "title": "Backup Everything",
+        "content": "Implement 3-2-1 backup strategy."
+      },
+      {
+        "title": "Update and Patch",
+        "content": "Keep all systems updated."
+      },
+      {
+        "title": "Antimalware",
+        "content": "Install protection on all devices."
+      },
+      {
+        "title": "Employee Training",
+        "content": "Train staff on security basics."
+      },
+      {
+        "title": "Access Control",
+        "content": "Limit access to what each role needs."
+      },
+      {
+        "title": "Strong Passwords",
+        "content": "Require strong passwords and 2FA."
+      },
+      {
+        "title": "Incident Plan",
+        "content": "Have a plan for when something goes wrong."
+      },
+      {
+        "title": "Cyber Insurance",
+        "content": "Consider cyber liability insurance."
+      }
+    ]
+  },
+  {
+    "id": "wordpress-security",
+    "title": "WordPress Security",
+    "description": "Securing WordPress websites",
+    "severity": "medium",
+    "icon": "cyan",
+    "category": "Web Security",
+    "steps": [
+      {
+        "title": "Update Everything",
+        "content": "Keep WordPress, themes, and plugins updated."
+      },
+      {
+        "title": "Strong Passwords",
+        "content": "Use strong passwords for all accounts."
+      },
+      {
+        "title": "Limit Login Attempts",
+        "content": "Install plugin to limit failed logins."
+      },
+      {
+        "title": "Change Admin Username",
+        "content": "Don't use \"admin\" as username."
+      },
+      {
+        "title": "Install Security Plugin",
+        "content": "Wordfence, Sucuri, or iThemes Security."
+      },
+      {
+        "title": "Enable 2FA",
+        "content": "Add two-factor to admin accounts."
+      },
+      {
+        "title": "Regular Backups",
+        "content": "Backup site regularly with UpdraftPlus or similar."
+      },
+      {
+        "title": "Use HTTPS",
+        "content": "Install SSL certificate."
+      },
+      {
+        "title": "Remove Unused",
+        "content": "Delete unused themes and plugins."
+      },
+      {
+        "title": "File Permissions",
+        "content": "Set correct file permissions."
+      }
+    ]
+  },
+  {
+    "id": "zoom-security",
+    "title": "Zoom Meeting Security",
+    "description": "Securing video conferences",
+    "severity": "low",
+    "icon": "blue",
+    "category": "Productivity",
+    "steps": [
+      {
+        "title": "Require Password",
+        "content": "Enable meeting passwords."
+      },
+      {
+        "title": "Use Waiting Room",
+        "content": "Screen attendees before admitting."
+      },
+      {
+        "title": "Lock After Start",
+        "content": "Lock meeting once all participants join."
+      },
+      {
+        "title": "Control Screen Share",
+        "content": "Limit who can share screen."
+      },
+      {
+        "title": "Disable Join Before Host",
+        "content": "Prevent unauthorized early access."
+      },
+      {
+        "title": "Use Generated ID",
+        "content": "Don't use Personal Meeting ID for public meetings."
+      },
+      {
+        "title": "Remove Disruptors",
+        "content": "Know how to quickly remove bad actors."
+      },
+      {
+        "title": "Update Regularly",
+        "content": "Keep Zoom client updated."
+      }
+    ]
+  }
+]
