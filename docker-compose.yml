@@ -1,0 +1,70 @@
+# ============================================================================
+# Sentinel KMS — application stack (backend + frontend, optional Ollama).
+#
+# The Supabase Postgres + Auth + Studio stack is run SEPARATELY via the
+# Supabase CLI:   supabase start
+# This compose file runs the app and reaches that Postgres through
+# host.docker.internal:54322.
+#
+#   Mistral mode:  docker compose up --build
+#   Local  mode:   docker compose --profile local up --build
+#                  (then pull models — see README)
+# ============================================================================
+
+services:
+  backend:
+    build:
+      context: ./backend
+    container_name: sentinel-backend
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-mistral}
+      DB_URL: ${DB_URL:-jdbc:postgresql://host.docker.internal:54322/postgres}
+      DB_USERNAME: ${DB_USERNAME:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-postgres}
+      MISTRAL_API_KEY: ${MISTRAL_API_KEY:-}
+      MISTRAL_CHAT_MODEL: ${MISTRAL_CHAT_MODEL:-mistral-large-latest}
+      MISTRAL_EMBED_MODEL: ${MISTRAL_EMBED_MODEL:-mistral-embed}
+      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://ollama:11434}
+      OLLAMA_CHAT_MODEL: ${OLLAMA_CHAT_MODEL:-llama3.1}
+      OLLAMA_EMBED_MODEL: ${OLLAMA_EMBED_MODEL:-mxbai-embed-large}
+      EMBEDDING_DIMENSIONS: ${EMBEDDING_DIMENSIONS:-1024}
+      RAG_TOP_K: ${RAG_TOP_K:-6}
+      RAG_MIN_SCORE: ${RAG_MIN_SCORE:-0.30}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8080/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 40s
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: sentinel-frontend
+    ports:
+      - "5173:5173"
+    environment:
+      # Inside the compose network the backend is reachable as http://backend:8080
+      VITE_API_PROXY_TARGET: http://backend:8080
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+  # Optional local LLM runtime — only started with `--profile local`.
+  ollama:
+    image: ollama/ollama:latest
+    container_name: sentinel-ollama
+    profiles: ["local"]
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama-data:/root/.ollama
+    restart: unless-stopped
+
+volumes:
+  ollama-data:

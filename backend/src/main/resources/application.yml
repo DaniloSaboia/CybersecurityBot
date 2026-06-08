@@ -1,0 +1,81 @@
+server:
+  port: 8080
+  shutdown: graceful
+
+spring:
+  application:
+    name: sentinel-kms
+  profiles:
+    # default provider stack; override with SPRING_PROFILES_ACTIVE=local
+    active: ${SPRING_PROFILES_ACTIVE:mistral}
+
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://host.docker.internal:54322/postgres}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgres}
+    hikari:
+      maximum-pool-size: 10
+
+  jpa:
+    open-in-view: false
+    hibernate:
+      # The Supabase migration is the source of truth. We do NOT let Hibernate
+      # touch the schema. (validate can false-positive on text[]/jsonb columns;
+      # tighten to `validate` once you've confirmed it passes for your PG.)
+      ddl-auto: none
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+          lob:
+            non_contextual_creation: true
+
+  ai:
+    # ---- provider selection (overridden per-profile) ----
+    model:
+      chat: ${AI_CHAT_PROVIDER:mistral}
+      embedding: ${AI_EMBEDDING_PROVIDER:mistral}
+    # ---- pgvector store (schema created by the Supabase migration) ----
+    vectorstore:
+      pgvector:
+        initialize-schema: false
+        schema-name: public
+        table-name: vector_store
+        dimensions: ${EMBEDDING_DIMENSIONS:1024}
+        index-type: HNSW
+        distance-type: COSINE_DISTANCE
+
+# ---- application-specific knobs ----
+app:
+  cors:
+    allowed-origins: "http://localhost:5173,http://localhost:3000"
+  rag:
+    top-k: ${RAG_TOP_K:6}
+    min-score: ${RAG_MIN_SCORE:0.30}
+    max-context-chars: 9000
+  ingest:
+    chunk-size: 1200
+    chunk-overlap: 150
+    # simulate stage latency so the UI shows progress on seeded/demo jobs
+    simulate-latency-ms: 1200
+  seed:
+    enabled: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+
+logging:
+  level:
+    com.sentinel.kms: INFO
+    org.springframework.ai: INFO
