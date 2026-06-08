@@ -133,6 +133,11 @@ export function retryJob(id) {
   return request('/ingest/jobs/' + encodeURIComponent(id) + '/retry', { method: 'POST' });
 }
 
+// Delete an ingested job and remove its embeddings from the vector store.
+export function deleteJob(id) {
+  return request('/ingest/jobs/' + encodeURIComponent(id), { method: 'DELETE' });
+}
+
 export function getConnectors() {
   return request('/connectors');
 }

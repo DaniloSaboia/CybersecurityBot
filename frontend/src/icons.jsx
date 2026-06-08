@@ -4,6 +4,7 @@
 export const ICON_PATHS = {
   // brand mark — a stylized shield/scan
   shield: <><path d="M12 2 4 5v6c0 5 3.5 8.5 8 11 4.5-2.5 8-6 8-11V5l-8-3Z" /><path d="M8.5 12l2.5 2.5 4.5-5" /></>,
+  trash: <><path d="M4 7h16" /><path d="M10 4h4a1 1 0 0 1 1 1v2H9V5a1 1 0 0 1 1-1Z" /><path d="M6 7l1 13a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-13" /><path d="M10 11v6M14 11v6" /></>,
   chat: <><path d="M4 5h16v11H9l-4 3v-3H4V5Z" /><path d="M8 9.5h8M8 12.5h5" /></>,
   book: <><path d="M5 4h10a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3V4Z" /><path d="M5 17a3 3 0 0 1 3-3h10" /><path d="M9 8h6M9 11h4" /></>,
   ingest: <><path d="M12 3v10" /><path d="m8 9 4 4 4-4" /><path d="M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3" /></>,

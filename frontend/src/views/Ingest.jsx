@@ -5,7 +5,7 @@ import { useMutation } from '@tanstack/react-query';
 import { Icon } from '../icons.jsx';
 import { StatusDot, ConnectorIcon } from '../ui.jsx';
 import { useJobs, useConnectors, useVectorStoreStatus, queryClient } from '../lib/queries.js';
-import { uploadFile, addUrl, retryJob, syncConnector } from '../lib/api.js';
+import { uploadFile, addUrl, retryJob, deleteJob, syncConnector } from '../lib/api.js';
 
 const STAGE_LABEL = {
   extracting: 'Extracting', chunking: 'Chunking', embedding: 'Embedding',
@@ -34,6 +34,13 @@ export default function Ingest() {
   const uploadMut = useMutation({ mutationFn: uploadFile, onSuccess: refreshJobs });
   const urlMut = useMutation({ mutationFn: addUrl, onSuccess: refreshJobs });
   const retryMut = useMutation({ mutationFn: retryJob, onSuccess: refreshJobs });
+  const deleteMut = useMutation({
+    mutationFn: deleteJob,
+    onSuccess: () => {
+      refreshJobs();
+      queryClient.invalidateQueries({ queryKey: ['vectorstore'] });
+    },
+  });
 
   const [syncMsg, setSyncMsg] = useState('');
   const syncMut = useMutation({
@@ -111,7 +118,15 @@ export default function Ingest() {
             <span className="jobs-count">{jobs.length} jobs</span>
           </div>
           <div className="jobs-list">
-            {jobs.map((j) => <JobRow key={j.id} j={j} onRetry={() => retryMut.mutate(j.id)} />)}
+            {jobs.map((j) => (
+              <JobRow
+                key={j.id}
+                j={j}
+                onRetry={() => retryMut.mutate(j.id)}
+                onDelete={() => { if (window.confirm(`Delete "${j.name}" and remove its embeddings?`)) deleteMut.mutate(j.id); }}
+                deleting={deleteMut.isPending && deleteMut.variables === j.id}
+              />
+            ))}
           </div>
         </div>
 
@@ -166,7 +181,7 @@ function VectorCard({ vector }) {
   );
 }
 
-function JobRow({ j, onRetry }) {
+function JobRow({ j, onRetry, onDelete, deleting }) {
   const done = j.stage === 'indexed';
   const failed = j.stage === 'failed';
   const barColor = failed ? 'var(--sev-critical)' : done ? 'var(--accent)' : 'var(--sev-medium)';
@@ -190,6 +205,11 @@ function JobRow({ j, onRetry }) {
         )}
       </div>
       <div className="job-when">{done ? <span className="job-ok">indexed</span> : failed ? <button className="job-retry" onClick={onRetry}><Icon name="refresh" size={12} /> retry</button> : Math.round(j.pct) + '%'}</div>
+      {onDelete && (
+        <button className="job-delete" title="Delete ingested file & its embeddings" disabled={deleting} onClick={onDelete}>
+          <Icon name={deleting ? 'refresh' : 'trash'} size={14} />
+        </button>
+      )}
     </div>
   );
 }

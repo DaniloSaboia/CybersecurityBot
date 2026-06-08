@@ -24,4 +24,11 @@ public interface EmbeddingIndexService {
 
     /** Total number of indexed chunks (for the vector-store status card). */
     long count();
+
+    /**
+     * Remove every chunk indexed for an ingestion job (metadata {@code job_id}).
+     *
+     * @return number of chunks deleted
+     */
+    int deleteByJob(String jobId);
 }

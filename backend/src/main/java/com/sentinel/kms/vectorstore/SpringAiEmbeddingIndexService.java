@@ -76,4 +76,14 @@ public class SpringAiEmbeddingIndexService implements EmbeddingIndexService {
         Long n = jdbcTemplate.queryForObject("select count(*) from vector_store", Long.class);
         return n == null ? 0L : n;
     }
+
+    @Override
+    public int deleteByJob(String jobId) {
+        if (jobId == null || jobId.isBlank()) {
+            return 0;
+        }
+        // metadata is jsonb; chunks indexed for an upload/URL job carry job_id.
+        return jdbcTemplate.update(
+                "delete from vector_store where metadata->>'job_id' = ?", jobId);
+    }
 }

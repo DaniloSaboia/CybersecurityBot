@@ -1,5 +1,6 @@
 package com.sentinel.kms.ingest;
 
+import com.sentinel.kms.vectorstore.EmbeddingIndexService;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -7,6 +8,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
@@ -23,15 +25,18 @@ public class IngestService {
     private final IngestJobRepository jobs;
     private final ConnectorRepository connectors;
     private final JobProcessor processor;
+    private final EmbeddingIndexService embeddings;
 
     public IngestService(
             IngestJobRepository jobs,
             ConnectorRepository connectors,
-            JobProcessor processor
+            JobProcessor processor,
+            EmbeddingIndexService embeddings
     ) {
         this.jobs = jobs;
         this.connectors = connectors;
         this.processor = processor;
+        this.embeddings = embeddings;
     }
 
     public List<IngestJobDto> listJobs() {
@@ -107,6 +112,18 @@ public class IngestService {
             processor.process(job.getId(), null, synthesized);
         }
         return IngestJobDto.from(job);
+    }
+
+    /**
+     * Delete an ingested job and remove any chunks it indexed from the vector store.
+     * (Seeded demo jobs have no chunks tied to them, so only the row is removed.)
+     */
+    public int deleteJob(String id) {
+        IngestJob job = jobs.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("No such job: " + id));
+        int removed = embeddings.deleteByJob(job.getId());
+        jobs.delete(job);
+        return removed;
     }
 
     // ---- helpers ----

@@ -1,6 +1,8 @@
 package com.sentinel.kms.ingest;
 
 import jakarta.validation.Valid;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -43,5 +45,12 @@ public class IngestController {
     @PostMapping("/jobs/{id}/retry")
     public IngestJobDto retry(@PathVariable String id) {
         return service.retry(id);
+    }
+
+    /** Delete an ingested job and its embeddings from the vector store. */
+    @DeleteMapping("/jobs/{id}")
+    public ResponseEntity<Void> delete(@PathVariable String id) {
+        service.deleteJob(id);
+        return ResponseEntity.noContent().build();
     }
 }
