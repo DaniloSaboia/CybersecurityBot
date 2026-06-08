@@ -32,6 +32,9 @@ services:
       EMBEDDING_DIMENSIONS: ${EMBEDDING_DIMENSIONS:-1024}
       RAG_TOP_K: ${RAG_TOP_K:-6}
       RAG_MIN_SCORE: ${RAG_MIN_SCORE:-0.30}
+      # Supabase JWKS endpoint used to validate access tokens (ES256). The backend
+      # reaches local Supabase via host.docker.internal.
+      APP_SECURITY_JWKS_URI: ${SUPABASE_JWKS_URI:-http://host.docker.internal:54321/auth/v1/.well-known/jwks.json}
     extra_hosts:
       - "host.docker.internal:host-gateway"
     healthcheck:
@@ -51,6 +54,9 @@ services:
     environment:
       # Inside the compose network the backend is reachable as http://backend:8080
       VITE_API_PROXY_TARGET: http://backend:8080
+      # Browser-side Supabase auth (these are the standard local-dev values).
+      VITE_SUPABASE_URL: ${VITE_SUPABASE_URL:-http://localhost:54321}
+      VITE_SUPABASE_ANON_KEY: ${VITE_SUPABASE_ANON_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0}
     depends_on:
       - backend
     restart: unless-stopped

@@ -3,7 +3,8 @@
 import { useState, useRef, useEffect } from 'react';
 import { Icon } from '../icons.jsx';
 import { SourceChip, CopyBtn } from '../ui.jsx';
-import { useSuggestions, useChat, useArticleIndex } from '../lib/queries.js';
+import { useSuggestions, useArticleIndex } from '../lib/queries.js';
+import { chatStream } from '../lib/api.js';
 
 const INTRO_MSG = {
   role: 'assistant',
@@ -19,8 +20,8 @@ export default function Assistant({ onOpenArticle, pendingAsk }) {
   const scrollRef = useRef(null);
   const endRef = useRef(null);
 
-  const chat = useChat();
-  const thinking = chat.isPending;
+  const [busy, setBusy] = useState(false);
+  const [thinking, setThinking] = useState(false);
   const { index } = useArticleIndex();
   const { data: suggestions } = useSuggestions();
 
@@ -28,26 +29,54 @@ export default function Assistant({ onOpenArticle, pendingAsk }) {
     if (endRef.current) endRef.current.parentNode.scrollTop = endRef.current.parentNode.scrollHeight;
   }, [messages, thinking]);
 
+  // Stream the answer over SSE: show the thinking dots until the first token,
+  // then grow a live text block; finalize citations on the done event.
   function send(text) {
     const q = (text != null ? text : input).trim();
-    if (!q || thinking) return;
+    if (!q || busy) return;
     setMessages((m) => [...m, { role: 'user', text: q }]);
     setInput('');
-    chat.mutate(
+    setBusy(true);
+    setThinking(true);
+    let started = false;
+
+    chatStream(
       { message: q, conversationId },
       {
-        onSuccess: (res) => {
-          if (res && res.conversationId) setConversationId(res.conversationId);
-          setMessages((m) => [...m, {
-            role: 'assistant',
-            blocks: (res && res.blocks) || [],
-            citations: (res && res.citations) || [],
-          }]);
+        onDelta: (t) => {
+          setThinking(false);
+          setMessages((m) => {
+            if (!started) {
+              started = true;
+              return [...m, { role: 'assistant', streaming: true, blocks: [{ type: 'text', text: t }], citations: [] }];
+            }
+            const copy = m.slice();
+            const last = copy[copy.length - 1];
+            copy[copy.length - 1] = { ...last, blocks: [{ type: 'text', text: (last.blocks[0]?.text || '') + t }] };
+            return copy;
+          });
+        },
+        onDone: (evt) => {
+          setThinking(false);
+          setBusy(false);
+          if (evt && evt.conversationId) setConversationId(evt.conversationId);
+          setMessages((m) => {
+            const copy = m.slice();
+            const last = copy[copy.length - 1];
+            if (last && last.role === 'assistant' && last.streaming) {
+              copy[copy.length - 1] = { ...last, streaming: false, citations: (evt && evt.citations) || [] };
+            } else {
+              copy.push({ role: 'assistant', blocks: [{ type: 'text', text: 'No grounded answer was returned.' }], citations: (evt && evt.citations) || [] });
+            }
+            return copy;
+          });
         },
         onError: (err) => {
+          setThinking(false);
+          setBusy(false);
           setMessages((m) => [...m, {
             role: 'assistant',
-            blocks: [{ type: 'callout', tone: 'critical', title: 'Request failed', text: String(err.message || err) }],
+            blocks: [{ type: 'callout', tone: 'critical', title: 'Request failed', text: String((err && err.message) || err) }],
             citations: [],
           }]);
         },
@@ -61,7 +90,7 @@ export default function Assistant({ onOpenArticle, pendingAsk }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pendingAsk && pendingAsk.n]);
 
-  const showSuggestions = messages.length <= 1 && !thinking;
+  const showSuggestions = messages.length <= 1 && !busy;
 
   return (
     <div className="assistant">
@@ -82,7 +111,7 @@ export default function Assistant({ onOpenArticle, pendingAsk }) {
             m.role === 'user' ? (
               <UserBubble key={i} text={m.text} />
             ) : (
-              <AssistantTurn key={i} msg={m} onOpenArticle={onOpenArticle} index={index} fresh={i === messages.length - 1 && !m.intro} />
+              <AssistantTurn key={i} msg={m} onOpenArticle={onOpenArticle} index={index} fresh={false} />
             )
           )}
           {thinking && <Thinking />}

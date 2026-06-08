@@ -1,9 +1,11 @@
-// App.jsx — shell: nav rail, top bar, view routing, cross-view bridges.
+// App.jsx — shell: auth gate, nav rail, top bar, view routing, cross-view bridges.
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Icon } from './icons.jsx';
 import { Logo } from './ui.jsx';
 import { useMe, queryClient } from './lib/queries.js';
+import { useAuth } from './lib/auth.jsx';
+import Login from './views/Login.jsx';
 import Assistant from './views/Assistant.jsx';
 import KnowledgeBase from './views/KnowledgeBase.jsx';
 import Ingest from './views/Ingest.jsx';
@@ -15,12 +17,15 @@ const NAV = [
 ];
 
 export default function App() {
+  const { user, loading, signOut } = useAuth();
   const [view, setView] = useState('assistant');
   const [openId, setOpenId] = useState(null);
   const [pendingAsk, setPendingAsk] = useState(null);
   const [navOpen, setNavOpen] = useState(false);
-
   const { data: me } = useMe();
+
+  // Refetch everything with the new token whenever the signed-in user changes.
+  useEffect(() => { queryClient.invalidateQueries(); }, [user?.id]);
 
   // cross-view bridge: chat citation -> open the article in the KB
   function openArticle(id) {
@@ -36,9 +41,23 @@ export default function App() {
     setNavOpen(false);
   }
 
+  async function handleSignOut() {
+    await signOut();
+    queryClient.clear();
+  }
+
+  if (loading) {
+    return (
+      <div style={{ height: '100vh', display: 'grid', placeItems: 'center', fontFamily: 'var(--mono)', color: 'var(--text-3)', fontSize: 12 }}>
+        Loading…
+      </div>
+    );
+  }
+  if (!user) return <Login />;
+
   const envName = (me && me.env) || 'PROD · us-east';
   const envSub = (me && me.tenant) || 'SOC tenant';
-  const userName = (me && me.user) || 'r.castellano';
+  const userName = (me && me.user) || user.email || 'analyst';
   const userRole = (me && me.role) || 'Tier-3 Analyst';
 
   return (
@@ -61,7 +80,13 @@ export default function App() {
           </div>
           <div className="rail-user">
             <div className="avatar avatar-user sm"><Icon name="user" size={14} /></div>
-            <div><div className="user-name">{userName}</div><div className="user-role">{userRole}</div></div>
+            <div style={{ minWidth: 0, flex: 1 }}>
+              <div className="user-name" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{userName}</div>
+              <div className="user-role">{userRole}</div>
+            </div>
+            <button className="topbar-icon" title="Sign out" style={{ width: 30, height: 30 }} onClick={handleSignOut}>
+              <Icon name="arrowleft" size={14} />
+            </button>
           </div>
         </div>
       </aside>

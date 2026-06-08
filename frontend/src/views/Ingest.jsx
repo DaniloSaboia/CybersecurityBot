@@ -5,7 +5,7 @@ import { useMutation } from '@tanstack/react-query';
 import { Icon } from '../icons.jsx';
 import { StatusDot, ConnectorIcon } from '../ui.jsx';
 import { useJobs, useConnectors, useVectorStoreStatus, queryClient } from '../lib/queries.js';
-import { uploadFile, addUrl, retryJob } from '../lib/api.js';
+import { uploadFile, addUrl, retryJob, syncConnector } from '../lib/api.js';
 
 const STAGE_LABEL = {
   extracting: 'Extracting', chunking: 'Chunking', embedding: 'Embedding',
@@ -34,6 +34,17 @@ export default function Ingest() {
   const uploadMut = useMutation({ mutationFn: uploadFile, onSuccess: refreshJobs });
   const urlMut = useMutation({ mutationFn: addUrl, onSuccess: refreshJobs });
   const retryMut = useMutation({ mutationFn: retryJob, onSuccess: refreshJobs });
+
+  const [syncMsg, setSyncMsg] = useState('');
+  const syncMut = useMutation({
+    mutationFn: (id) => syncConnector(id),
+    onSuccess: (res) => {
+      ['connectors', 'vectorstore', 'articles', 'article-index'].forEach((k) =>
+        queryClient.invalidateQueries({ queryKey: [k] }));
+      if (res) setSyncMsg(`+${res.created} CVEs · ${res.embedded} embedded (of ${res.fetched} fetched)`);
+    },
+    onError: (err) => setSyncMsg('sync failed: ' + String(err.message || err)),
+  });
 
   function onPickFiles() { fileInputRef.current && fileInputRef.current.click(); }
   function onFilesSelected(e) {
@@ -109,8 +120,16 @@ export default function Ingest() {
             <span><Icon name="link" size={14} /> Source connectors</span>
             <button className="connectors-add"><Icon name="bolt" size={13} /> Add</button>
           </div>
+          {syncMsg && <div style={{ fontFamily: 'var(--mono)', fontSize: 10.5, color: 'var(--accent-dim)', margin: '-4px 0 8px' }}>{syncMsg}</div>}
           <div className="connectors-list">
-            {connectors.map((c) => <ConnectorRow key={c.id} c={c} />)}
+            {connectors.map((c) => (
+              <ConnectorRow
+                key={c.id}
+                c={c}
+                onSync={c.id === 'nvd' ? () => syncMut.mutate(c.id) : null}
+                syncing={syncMut.isPending && syncMut.variables === c.id}
+              />
+            ))}
           </div>
           <VectorCard vector={vector} />
         </div>
@@ -175,18 +194,23 @@ function JobRow({ j, onRetry }) {
   );
 }
 
-function ConnectorRow({ c }) {
+function ConnectorRow({ c, onSync, syncing }) {
   return (
     <div className="connector-row">
       <div className="connector-icon"><ConnectorIcon kind={c.kind} /></div>
       <div className="connector-main">
         <div className="connector-name">{c.name}</div>
         <div className="connector-meta">
-          <StatusDot status={c.status} />
-          <span className={'connector-status s-' + c.status}>{c.status}</span>
+          <StatusDot status={syncing ? 'syncing' : c.status} />
+          <span className={'connector-status s-' + (syncing ? 'syncing' : c.status)}>{syncing ? 'syncing' : c.status}</span>
           <span className="connector-docs">· {(c.docs || 0).toLocaleString()} docs · {c.last}</span>
         </div>
       </div>
+      {onSync && (
+        <button className="connectors-add" style={{ margin: 0 }} title="Pull recent CVEs from NVD" disabled={syncing} onClick={onSync}>
+          <Icon name="refresh" size={12} /> {syncing ? 'Syncing…' : 'Sync'}
+        </button>
+      )}
       <span className="connector-kind">{c.kind}</span>
     </div>
   );
