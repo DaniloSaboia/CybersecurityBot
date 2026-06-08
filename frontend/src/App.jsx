@@ -5,6 +5,7 @@ import { Icon } from './icons.jsx';
 import { Logo } from './ui.jsx';
 import { useMe, queryClient } from './lib/queries.js';
 import { useAuth } from './lib/auth.jsx';
+import { ErrorBoundary } from './ErrorBoundary.jsx';
 import Login from './views/Login.jsx';
 import Assistant from './views/Assistant.jsx';
 import KnowledgeBase from './views/KnowledgeBase.jsx';
@@ -104,9 +105,11 @@ export default function App() {
         </div>
 
         <div className="view-wrap">
-          {view === 'assistant' && <Assistant onOpenArticle={openArticle} pendingAsk={pendingAsk} />}
-          {view === 'kb' && <KnowledgeBase openId={openId} setOpenId={setOpenId} onAsk={askAssistant} />}
-          {view === 'ingest' && <Ingest />}
+          <ErrorBoundary key={view}>
+            {view === 'assistant' && <Assistant onOpenArticle={openArticle} pendingAsk={pendingAsk} />}
+            {view === 'kb' && <KnowledgeBase openId={openId} setOpenId={setOpenId} onAsk={askAssistant} />}
+            {view === 'ingest' && <Ingest />}
+          </ErrorBoundary>
         </div>
       </main>
     </div>

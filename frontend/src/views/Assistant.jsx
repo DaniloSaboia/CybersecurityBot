@@ -153,11 +153,13 @@ function UserBubble({ text }) {
 }
 
 function AssistantTurn({ msg, onOpenArticle, index, fresh }) {
-  const hasCites = msg.citations && msg.citations.length > 0;
+  const blocks = Array.isArray(msg.blocks) ? msg.blocks : [];
+  const cites = Array.isArray(msg.citations) ? msg.citations : [];
+  const hasCites = cites.length > 0;
   const [revealing, setRevealing] = useState(fresh);
   useEffect(() => {
     if (!fresh) return;
-    const n = msg.blocks.length + (hasCites ? 1 : 0);
+    const n = blocks.length + (hasCites ? 1 : 0);
     const t = setTimeout(() => setRevealing(false), n * 140 + 750);
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -166,17 +168,17 @@ function AssistantTurn({ msg, onOpenArticle, index, fresh }) {
     <div className={'turn turn-assistant' + (revealing ? ' fresh' : '')}>
       <div className="avatar avatar-bot"><Icon name="shield" size={15} /></div>
       <div className="turn-body">
-        {msg.blocks.map((b, i) => (
+        {blocks.map((b, i) => (
           <div className="block-anim" key={i} style={{ animationDelay: (i * 0.13 + 0.05) + 's' }}>
             <Block b={b} onOpen={onOpenArticle} index={index} />
           </div>
         ))}
         {hasCites && (
-          <div className="block-anim" style={{ animationDelay: (msg.blocks.length * 0.13 + 0.1) + 's' }}>
+          <div className="block-anim" style={{ animationDelay: (blocks.length * 0.13 + 0.1) + 's' }}>
             <div className="citations">
-              <div className="citations-label"><Icon name="link" size={12} /> Grounded in {msg.citations.length} source{msg.citations.length > 1 ? 's' : ''}</div>
+              <div className="citations-label"><Icon name="link" size={12} /> Grounded in {cites.length} source{cites.length > 1 ? 's' : ''}</div>
               <div className="citations-list">
-                {msg.citations.map((id) => <SourceChip key={id} id={id} onOpen={onOpenArticle} index={index} />)}
+                {cites.map((id) => <SourceChip key={id} id={id} onOpen={onOpenArticle} index={index} />)}
               </div>
             </div>
           </div>
@@ -188,7 +190,8 @@ function AssistantTurn({ msg, onOpenArticle, index, fresh }) {
 
 // supports **bold** and [ARTICLE-ID] inline citation chips (always clickable)
 function renderInline(text, onOpen) {
-  const parts = text.split(/(\*\*[^*]+\*\*|\[[A-Z0-9]+(?:-[A-Z0-9]+)*\])/g);
+  const s = text == null ? '' : String(text);
+  const parts = s.split(/(\*\*[^*]+\*\*|\[[A-Z0-9]+(?:-[A-Z0-9]+)*\])/g);
   return parts.map((p, i) => {
     if (p.startsWith('**') && p.endsWith('**')) return <strong key={i}>{p.slice(2, -2)}</strong>;
     if (p.startsWith('[') && p.endsWith(']')) {
@@ -204,15 +207,18 @@ function renderInline(text, onOpen) {
 }
 
 function Block({ b, onOpen }) {
+  if (!b) return null;
   if (b.type === 'text') return <p className="msg-text">{renderInline(b.text, onOpen)}</p>;
-  if (b.type === 'steps')
+  if (b.type === 'steps') {
+    const items = Array.isArray(b.items) ? b.items : [];
     return (
       <ol className="msg-steps">
-        {b.items.map((it, i) => (
+        {items.map((it, i) => (
           <li key={i}><span className="step-n">{String(i + 1).padStart(2, '0')}</span><span>{renderInline(it, onOpen)}</span></li>
         ))}
       </ol>
     );
+  }
   if (b.type === 'callout')
     return (
       <div className={`msg-callout tone-${b.tone}`}>
@@ -220,15 +226,17 @@ function Block({ b, onOpen }) {
         <div><div className="callout-title">{b.title}</div><div className="callout-text">{b.text}</div></div>
       </div>
     );
-  if (b.type === 'report')
+  if (b.type === 'report') {
+    const rows = Array.isArray(b.rows) ? b.rows : [];
     return (
       <div className="msg-report">
-        <div className="report-head"><Icon name="doc" size={14} /><span>{b.title}</span><CopyBtn className="report-copy" label="Copy" text={b.title + '\n\n' + b.rows.map((r) => r[0] + ': ' + r[1]).join('\n')} /></div>
+        <div className="report-head"><Icon name="doc" size={14} /><span>{b.title}</span><CopyBtn className="report-copy" label="Copy" text={(b.title || '') + '\n\n' + rows.map((r) => r[0] + ': ' + r[1]).join('\n')} /></div>
         <table className="report-table"><tbody>
-          {b.rows.map((r, i) => (<tr key={i}><th>{r[0]}</th><td>{r[1]}</td></tr>))}
+          {rows.map((r, i) => (<tr key={i}><th>{r[0]}</th><td>{r[1]}</td></tr>))}
         </tbody></table>
       </div>
     );
+  }
   return null;
 }
 
