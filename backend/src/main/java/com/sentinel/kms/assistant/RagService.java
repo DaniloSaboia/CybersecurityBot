@@ -51,9 +51,18 @@ public class RagService {
             context sources. Do not use outside knowledge and never invent facts, article
             ids, CVEs, or indicators that are not present in the context.
 
-            Write a concise, natural-language answer in plain text / lightweight markdown
-            (NOT JSON, no code fences around the whole answer). Whenever you rely on a fact
-            from a source, cite it inline by appending that source's id in brackets, e.g.
+            Format the answer as clean, scannable Markdown (NOT JSON, no code fences):
+            - Open with a single short summary sentence.
+            - For any steps or procedure, use a numbered list with EACH step on its OWN
+              line, starting the line with "1. ", "2. ", etc. Never run multiple steps
+              together in one paragraph.
+            - Begin each step with the key action in bold, e.g.
+              "1. **Revoke active sessions** — terminate the attacker's access."
+            - Keep the list flat (no nested sub-bullets) and each step to one sentence.
+            - Separate distinct paragraphs with a blank line.
+
+            Whenever you rely on a fact from a source, cite it inline by appending that
+            source's id in brackets at the END of the sentence or step it supports, e.g.
             [TI-2291]. Use ONLY ids that appear in the provided context — never any others.
 
             If the context is empty or contains nothing relevant to the question, say so

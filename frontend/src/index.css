@@ -158,6 +158,7 @@ code,.mono{ font-family:var(--mono); }
 .turn-assistant .turn-body{ min-width:0; flex:1; display:flex; flex-direction:column; gap:13px; padding-top:3px; }
 .bubble-user{ background:var(--panel-2); border:1px solid var(--border-2); border-radius:14px 14px 4px 14px; padding:11px 15px; font-size:14px; color:var(--text); max-width:560px; }
 
+.msg-rich{ display:flex; flex-direction:column; gap:11px; }
 .msg-text{ font-size:14.5px; line-height:1.65; color:var(--text); }
 .msg-text strong{ color:var(--text); font-weight:600; }
 .msg-steps{ list-style:none; display:flex; flex-direction:column; gap:9px; }
