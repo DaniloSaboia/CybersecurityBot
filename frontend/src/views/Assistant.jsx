@@ -38,22 +38,24 @@ export default function Assistant({ onOpenArticle, pendingAsk }) {
     setInput('');
     setBusy(true);
     setThinking(true);
-    let started = false;
 
     chatStream(
       { message: q, conversationId },
       {
         onDelta: (t) => {
           setThinking(false);
+          // Pure updater: append to the existing streaming turn if there is one,
+          // otherwise start a new one. (No external flag — StrictMode double-invokes
+          // updaters, so they must be pure and idempotent.)
           setMessages((m) => {
-            if (!started) {
-              started = true;
-              return [...m, { role: 'assistant', streaming: true, blocks: [{ type: 'text', text: t }], citations: [] }];
+            const last = m[m.length - 1];
+            if (last && last.role === 'assistant' && last.streaming) {
+              const prev = (last.blocks && last.blocks[0] && last.blocks[0].text) || '';
+              const copy = m.slice();
+              copy[copy.length - 1] = { ...last, blocks: [{ type: 'text', text: prev + t }] };
+              return copy;
             }
-            const copy = m.slice();
-            const last = copy[copy.length - 1];
-            copy[copy.length - 1] = { ...last, blocks: [{ type: 'text', text: (last.blocks[0]?.text || '') + t }] };
-            return copy;
+            return [...m, { role: 'assistant', streaming: true, blocks: [{ type: 'text', text: t }], citations: [] }];
           });
         },
         onDone: (evt) => {
