@@ -1,12 +1,11 @@
-// views/Login.jsx — Analyst access to the security knowledge workspace.
+// views/Login.jsx — sign in / sign up gate (Supabase auth).
 
 import { useState } from 'react';
 import { Icon } from '../icons.jsx';
 import { Logo } from '../ui.jsx';
 import { useAuth } from '../lib/auth.jsx';
-import './access.css';
 
-export default function Login({ sessionExpired = false }) {
+export default function Login() {
   const { signIn, signUp } = useAuth();
   const [mode, setMode] = useState('signin'); // 'signin' | 'signup'
   const [email, setEmail] = useState('');
@@ -27,9 +26,11 @@ export default function Login({ sessionExpired = false }) {
       if (err) {
         setError(err.message || 'Authentication failed');
       } else if (mode === 'signup' && !data.session) {
-        setNotice('Account created. Check your email for any required confirmation, then sign in.');
+        // Confirmations enabled — let the user know to confirm (local Inbucket/Mailpit).
+        setNotice('Account created. If email confirmation is on, check Inbucket at http://localhost:54324, then sign in.');
         setMode('signin');
       }
+      // On success the AuthProvider's onAuthStateChange swaps the gate for the app.
     } catch (err) {
       setError(String(err.message || err));
     } finally {
@@ -38,109 +39,54 @@ export default function Login({ sessionExpired = false }) {
   }
 
   return (
-    <main className="access-login">
-      <div className="access-layout">
-        <header className="access-brand"><Logo /></header>
-        <div className="access-grid">
-          <section className="access-intro" aria-labelledby="access-purpose">
-            <p className="access-eyebrow">Security research workspace</p>
-            <h2 id="access-purpose">Keep the source<br /> in view.</h2>
-            <p className="access-description">Search your knowledge base, investigate with the assistant, and trace answers back to their evidence.</p>
-          </section>
+    <div style={wrap}>
+      <form onSubmit={submit} style={card}>
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 6 }}><Logo /></div>
+        <h1 style={title}>{mode === 'signin' ? 'Sign in' : 'Create account'}</h1>
+        <p style={sub}>Access the SecOps knowledge console</p>
 
-          <figure className="access-workflow" aria-labelledby="access-workflow-caption">
-            <div className="access-source-stack">
-              <div className="access-source"><Icon name="doc" size={16} /><span>Documents</span></div>
-              <div className="access-source"><Icon name="link" size={16} /><span>URLs</span></div>
-              <div className="access-source"><Icon name="ingest" size={16} /><span>Feeds</span></div>
-            </div>
-            <div className="access-connector" aria-hidden="true"><span><Icon name="arrowright" size={15} /></span></div>
-            <div className="access-evidence">
-              <Icon name="book" size={20} />
-              <strong>Knowledge base</strong>
-              <span>Indexed passages</span>
-            </div>
-            <div className="access-answer">
-              <span className="access-answer-link" aria-hidden="true"><Icon name="arrowdown" size={13} /></span>
-              <Icon name="chat" size={17} />
-              <div><strong>Cited answers</strong><span>Return to the source</span></div>
-            </div>
-            <figcaption id="access-workflow-caption">From source material to evidence you can inspect.</figcaption>
-          </figure>
+        <label style={lbl}>Email</label>
+        <input style={field} type="email" autoComplete="email" value={email}
+               onChange={(e) => setEmail(e.target.value)} placeholder="analyst@sentinel.local" />
 
-          <form onSubmit={submit} className="access-form" aria-busy={busy}>
-            <div className="access-form-icon" aria-hidden="true"><Icon name="shield" size={22} /></div>
-            <h1 className="access-title">{mode === 'signin' ? 'Enter the Console' : 'Request Access'}</h1>
-            <p className="access-subtitle">Sentinel KMS · SecOps Knowledge System</p>
+        <label style={lbl}>Password</label>
+        <input style={field} type="password" autoComplete={mode === 'signin' ? 'current-password' : 'new-password'}
+               value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" />
 
-            {sessionExpired && (
-              <div role="status" aria-live="polite" className="access-feedback access-notice">
-                <Icon name="alert" size={14} />
-                <span>Session expired — sign in again to continue.</span>
-              </div>
-            )}
+        {error && <div style={errBox}><Icon name="alert" size={14} /> <span>{error}</span></div>}
+        {notice && <div style={noticeBox}><Icon name="check" size={14} /> <span>{notice}</span></div>}
 
-            <label htmlFor="auth-email" className="access-label">Operator email</label>
-            <input
-              id="auth-email"
-              className="access-field"
-              type="email"
-              required
-              autoComplete="email"
-              value={email}
-              aria-invalid={!!error}
-              aria-describedby={error || notice ? 'auth-feedback' : undefined}
-              onChange={(e) => { setEmail(e.target.value); if (error) setError(''); }}
-              placeholder="analyst@sentinel.io"
-            />
+        <button type="submit" style={{ ...primary, opacity: busy ? 0.6 : 1 }} disabled={busy}>
+          <Icon name="shield" size={15} /> {busy ? 'Working…' : mode === 'signin' ? 'Sign in' : 'Sign up'}
+        </button>
 
-            <label htmlFor="auth-password" className="access-label">Passcode</label>
-            <input
-              id="auth-password"
-              className="access-field"
-              type="password"
-              required
-              autoComplete={mode === 'signin' ? 'current-password' : 'new-password'}
-              value={password}
-              aria-invalid={!!error}
-              aria-describedby={error || notice ? 'auth-feedback' : undefined}
-              onChange={(e) => { setPassword(e.target.value); if (error) setError(''); }}
-              placeholder="••••••••"
-            />
-
-            {error && (
-              <div id="auth-feedback" role="alert" aria-live="assertive" className="access-feedback access-error">
-                <Icon name="alert" size={14} />
-                <span>Access denied — {error}</span>
-              </div>
-            )}
-            {notice && (
-              <div id="auth-feedback" role="status" aria-live="polite" className="access-feedback access-notice">
-                <Icon name="check" size={14} />
-                <span>{notice}</span>
-              </div>
-            )}
-
-            <button type="submit" className="shiny-cta access-submit" disabled={busy}>
-              <span className="access-submit-inner">
-                <Icon name="shield" size={15} />
-                {busy ? 'Verifying…' : mode === 'signin' ? 'Authenticate' : 'Create Account'}
-              </span>
-            </button>
-
-            <div className="access-switch">
-              <button
-                type="button"
-                className="access-switch-button"
-                onClick={() => { setMode(mode === 'signin' ? 'signup' : 'signin'); setError(''); setNotice(''); }}
-              >
-                {mode === 'signin' ? 'No account? Request access' : 'Have access? Sign in'}
-              </button>
-
-            </div>
-          </form>
-        </div>
-      </div>
-    </main>
+        <button type="button" style={switchBtn}
+                onClick={() => { setMode(mode === 'signin' ? 'signup' : 'signin'); setError(''); setNotice(''); }}>
+          {mode === 'signin' ? "No account? Create one" : 'Have an account? Sign in'}
+        </button>
+      </form>
+    </div>
   );
 }
+
+const wrap = { height: '100vh', display: 'grid', placeItems: 'center', padding: 24 };
+const card = {
+  width: 360, maxWidth: '100%', display: 'flex', flexDirection: 'column', gap: 8,
+  background: 'var(--panel)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-lg)',
+  padding: '26px 24px 22px', boxShadow: '0 1px 0 rgba(255,255,255,.02) inset, 0 18px 50px -24px rgba(0,0,0,.9)',
+};
+const title = { fontSize: 19, fontWeight: 700, textAlign: 'center', marginTop: 6 };
+const sub = { fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--text-3)', textAlign: 'center', marginBottom: 14, letterSpacing: '.02em' };
+const lbl = { fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--text-faint)', marginTop: 8 };
+const field = {
+  background: 'var(--panel-2)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-sm)',
+  color: 'var(--text)', padding: '10px 12px', fontSize: 14, outline: 'none',
+};
+const primary = {
+  marginTop: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+  fontFamily: 'var(--mono)', fontWeight: 600, fontSize: 13, color: '#04130d', background: 'var(--accent)',
+  borderRadius: 'var(--radius-sm)', padding: '11px 15px', boxShadow: '0 0 16px -5px var(--accent)',
+};
+const switchBtn = { marginTop: 10, fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--text-3)' };
+const errBox = { display: 'flex', alignItems: 'center', gap: 7, marginTop: 12, padding: '9px 11px', fontSize: 12, color: 'var(--sev-critical)', background: 'var(--sev-critical-bg)', border: '1px solid color-mix(in srgb,var(--sev-critical) 40%,transparent)', borderRadius: 'var(--radius-sm)' };
+const noticeBox = { display: 'flex', alignItems: 'center', gap: 7, marginTop: 12, padding: '9px 11px', fontSize: 12, color: 'var(--accent-dim)', background: 'var(--accent-soft)', border: '1px solid var(--accent-dim)', borderRadius: 'var(--radius-sm)' };

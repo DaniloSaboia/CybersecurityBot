@@ -28,6 +28,11 @@ additional_redirect_urls = ["http://localhost:5173"]
 jwt_expiry = 3600
 enable_signup = true
 
+[auth.email]
+enable_signup = true
+# Local dev convenience: no email confirmation step, so signup logs you straight in.
+enable_confirmations = false
+
 [inbucket]
 enabled = true
 port = 54324

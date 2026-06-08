@@ -3,13 +3,9 @@ package com.sentinel.kms.ingest;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
-import org.springframework.web.client.RestClientResponseException;
-import org.springframework.web.util.UriComponentsBuilder;
 
-import java.net.URI;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
@@ -20,10 +16,6 @@ import java.util.List;
  * Thin client over the public NVD CVE 2.0 API. Fetches recently published CVEs
  * and maps them to the lightweight {@link Cve} record consumed by
  * {@link NvdConnectorService}.
- *
- * <p>NVD heavily throttles anonymous clients (~5 requests / 30 s); set
- * {@code NVD_API_KEY} to use the authenticated allowance. Any failure is
- * reported clearly in the logs and degrades to an empty result.
  */
 @Component
 public class NvdClient {
@@ -35,12 +27,9 @@ public class NvdClient {
             DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS");
 
     private final RestClient restClient;
-    private final String apiKey;
 
-    public NvdClient(RestClient.Builder builder,
-                     @Value("${app.nvd.api-key:}") String apiKey) {
+    public NvdClient(RestClient.Builder builder) {
         this.restClient = builder.build();
-        this.apiKey = apiKey == null ? "" : apiKey.trim();
     }
 
     /**
@@ -51,35 +40,35 @@ public class NvdClient {
 
     /**
      * Fetch CVEs published in the last {@code days} days, capped to {@code max}.
-     * Returns an empty list on any error (with the reason logged).
+     * Returns an empty list on any error.
      */
     public List<Cve> fetchRecent(int days, int max) {
         List<Cve> out = new ArrayList<>();
         try {
             OffsetDateTime now = OffsetDateTime.now(ZoneOffset.UTC);
-            // Naive UTC timestamps (no offset suffix): NVD treats them as UTC, and a
-            // literal "+" in the value would be read as a space server-side.
-            URI uri = UriComponentsBuilder.fromHttpUrl(NVD_URL)
-                    .queryParam("pubStartDate", now.minusDays(days).format(NVD_FMT))
-                    .queryParam("pubEndDate", now.format(NVD_FMT))
-                    .queryParam("resultsPerPage", Math.min(max, 100))
-                    .build(true)
-                    .toUri();
+            String pubEndDate = now.format(NVD_FMT);
+            String pubStartDate = now.minusDays(days).format(NVD_FMT);
+            int resultsPerPage = Math.min(max, 100);
 
-            RestClient.RequestHeadersSpec<?> spec = restClient.get().uri(uri);
-            if (!apiKey.isEmpty()) {
-                spec = spec.header("apiKey", apiKey);
-            }
-            JsonNode root = spec.retrieve().body(JsonNode.class);
+            JsonNode root = restClient.get()
+                    .uri(uriBuilder -> uriBuilder
+                            .scheme("https")
+                            .host("services.nvd.nist.gov")
+                            .path("/rest/json/cves/2.0")
+                            .queryParam("pubStartDate", pubStartDate)
+                            .queryParam("pubEndDate", pubEndDate)
+                            .queryParam("resultsPerPage", resultsPerPage)
+                            .build())
+                    .retrieve()
+                    .body(JsonNode.class);
 
             if (root == null) {
-                log.warn("NVD fetch returned null body for {}", NVD_URL);
+                log.warn("NVD fetch returned null body for url {}", NVD_URL);
                 return out;
             }
 
             JsonNode vulnerabilities = root.path("vulnerabilities");
             if (!vulnerabilities.isArray()) {
-                log.warn("NVD fetch returned unexpected shape (no vulnerabilities array)");
                 return out;
             }
 
@@ -100,15 +89,6 @@ public class NvdClient {
                 Double baseScore = pickBaseScore(cve.path("metrics"));
                 out.add(new Cve(id, description, baseScore, published));
             }
-        } catch (RestClientResponseException e) {
-            if (e.getStatusCode().value() == 403 || e.getStatusCode().value() == 429) {
-                log.warn("NVD fetch throttled (HTTP {}){} — set NVD_API_KEY for the "
-                                + "authenticated rate limit, or retry later",
-                        e.getStatusCode().value(), apiKey.isEmpty() ? " without an API key" : "");
-            } else {
-                log.warn("NVD fetch failed: HTTP {} {}", e.getStatusCode().value(), e.getStatusText());
-            }
-            return new ArrayList<>();
         } catch (Exception e) {
             log.warn("NVD fetch failed: {}", e.getMessage());
             return new ArrayList<>();

@@ -3,11 +3,7 @@ package com.sentinel.kms.ingest;
 import com.sentinel.kms.kb.Article;
 import com.sentinel.kms.kb.ArticleRepository;
 import com.sentinel.kms.kb.ArticleSection;
-import com.sentinel.kms.kb.TrustedArticleRegistrationService;
-import com.sentinel.kms.kb.TrustedArticleSource;
 import com.sentinel.kms.vectorstore.EmbeddingIndexService;
-import com.sentinel.kms.watch.WatchlistService;
-import io.micrometer.core.instrument.MeterRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -15,45 +11,36 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
  * Pulls recent CVEs from the NVD API, materializes them as KB articles, and
- * queues governed canonical reindex work through trusted registration.  New
- * articles are also pushed past the watchlist matcher to fire user alerts.
+ * embeds them so they're searchable + citable by the RAG assistant.
  */
 @Service
 public class NvdConnectorService {
 
+    private static final Logger log = LoggerFactory.getLogger(NvdConnectorService.class);
+
     private final ArticleRepository articleRepository;
     private final ConnectorRepository connectorRepository;
+    private final EmbeddingIndexService embeddingIndexService;
     private final NvdClient nvdClient;
-    private final WatchlistService watchlistService;
-    private final MeterRegistry meters;
-    private final TrustedArticleRegistrationService trustedArticleRegistrationService;
 
     public NvdConnectorService(ArticleRepository articleRepository,
                                ConnectorRepository connectorRepository,
                                EmbeddingIndexService embeddingIndexService,
-                               NvdClient nvdClient,
-                               WatchlistService watchlistService,
-                               MeterRegistry meters,
-                               TrustedArticleRegistrationService trustedArticleRegistrationService) {
+                               NvdClient nvdClient) {
         this.articleRepository = articleRepository;
         this.connectorRepository = connectorRepository;
-        // Retained as a constructor argument for Spring/test compatibility.
-        // Article publication now creates durable canonical reindex work; this
-        // connector must never stamp a legacy article-only vector row.
+        this.embeddingIndexService = embeddingIndexService;
         this.nvdClient = nvdClient;
-        this.watchlistService = watchlistService;
-        this.meters = meters;
-        this.trustedArticleRegistrationService = trustedArticleRegistrationService;
     }
 
     /**
      * Result of a sync run.
      */
-    /** embedded remains a compatibility field; canonical work is queued, not synchronously embedded. */
     public record SyncResult(int fetched, int created, int embedded) {
     }
 
@@ -69,19 +56,28 @@ public class NvdConnectorService {
         }
 
         if (!toSave.isEmpty()) {
-            trustedArticleRegistrationService.persistAndRegister(
-                    articleRepository, toSave, TrustedArticleSource.NVD);
+            articleRepository.saveAll(toSave);
         }
         int created = toSave.size();
 
-        // trustedArticleRegistrationService atomically writes one fenced
-        // article_revision_reindex_outbox row per publication.  The worker
-        // derives chunk text and all evidence metadata from immutable rows.
         int embedded = 0;
+        for (Article article : toSave) {
+            try {
+                List<String> chunks = List.of(
+                        article.getTitle() + " — " + article.getSnippet(),
+                        "Description\n" + descriptionOf(article));
+                embeddingIndexService.index(chunks, Map.of(
+                        "article_id", article.getId(),
+                        "title", article.getTitle(),
+                        "source", "NVD API",
+                        "category", "advisories"));
+                embedded++;
+            } catch (Exception e) {
+                log.warn("Embedding failed for {}: {}", article.getId(), e.getMessage());
+            }
+        }
 
         updateConnector(created);
-        watchlistService.matchAndAlert(toSave);
-        meters.counter("sentinel.connector.syncs", "connector", "nvd").increment();
 
         return new SyncResult(cves.size(), created, embedded);
     }
@@ -121,6 +117,15 @@ public class NvdConnectorService {
         connector.setLastLabel("just now");
         connector.setStatus("connected");
         connectorRepository.save(connector);
+    }
+
+    /** Recover the original description from the body for embedding. */
+    private String descriptionOf(Article article) {
+        if (article.getBody() != null && !article.getBody().isEmpty()) {
+            String p = article.getBody().get(0).p();
+            return p == null ? "" : p;
+        }
+        return article.getSnippet() == null ? "" : article.getSnippet();
     }
 
     private String severityFromScore(Double score) {
