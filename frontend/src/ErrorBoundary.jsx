@@ -38,9 +38,8 @@ export class ErrorBoundary extends Component {
 
 const wrap = { height: '100%', display: 'grid', placeItems: 'center', padding: 24, overflow: 'auto' };
 const card = {
-  maxWidth: 680, width: '100%', background: 'var(--panel-solid)', border: '1px solid var(--sev-critical)',
-  borderRadius: 'var(--radius)', padding: '20px 22px',
-  boxShadow: '0 0 40px rgba(239, 35, 60, 0.15), 0 20px 50px rgba(0, 0, 0, 0.8)',
+  maxWidth: 680, width: '100%', background: 'var(--panel)', border: '1px solid var(--sev-critical)',
+  borderRadius: 'var(--radius-lg)', padding: '20px 22px',
 };
 const title = { fontFamily: 'var(--mono)', fontSize: 13, color: 'var(--sev-critical)', marginBottom: 12, letterSpacing: '.04em' };
 const pre = {
@@ -49,6 +48,6 @@ const pre = {
   borderRadius: 'var(--radius-sm)', padding: 12, maxHeight: 320, overflow: 'auto', margin: 0,
 };
 const btn = {
-  marginTop: 14, fontFamily: 'var(--mono)', fontSize: 12, fontWeight: 700, color: '#fff', background: 'var(--accent)',
-  borderRadius: 'var(--radius-pill)', padding: '9px 16px',
+  marginTop: 14, fontFamily: 'var(--mono)', fontSize: 12, color: '#04130d', background: 'var(--accent)',
+  borderRadius: 'var(--radius-sm)', padding: '8px 14px',
 };
