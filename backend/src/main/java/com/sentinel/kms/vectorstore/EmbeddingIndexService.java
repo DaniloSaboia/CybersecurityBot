@@ -122,6 +122,16 @@ public interface EmbeddingIndexService {
                 context == null ? null : context.subject(), filters);
     }
 
+    /**
+     * Hybrid retrieval: cosine-similarity vectors fused with Postgres full-text
+     * ranking (reciprocal-rank fusion). Exact tokens like CVE ids and hashes
+     * match reliably via the lexical leg even when embeddings score them low.
+     * Defaults to plain similarity search.
+     */
+    default List<RetrievedChunk> hybridSearch(String query, int topK, double minScore) {
+        return search(query, topK, minScore);
+    }
+
     /** Total number of indexed chunks (for the vector-store status card). */
     long count();
 

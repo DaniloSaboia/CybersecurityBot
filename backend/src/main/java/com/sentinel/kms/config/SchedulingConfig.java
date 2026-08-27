@@ -5,8 +5,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 /**
- * Legacy NVD configuration marker. Scheduling is enabled globally by KmsApplication;
- * individual source schedulers must guard their own enable flags.
+ * Scheduling is only wired when {@code app.nvd.sync-enabled=true}, so the
+ * default (dev/demo) setup runs no background jobs at all.
  */
 @Configuration
 @EnableScheduling

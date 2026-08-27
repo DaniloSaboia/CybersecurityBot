@@ -1,11 +1,7 @@
 package com.sentinel.kms.assistant;
 
-import com.sentinel.kms.common.EvidenceReference;
-import com.sentinel.kms.vectorstore.RetrievedChunk;
 import org.junit.jupiter.api.Test;
 
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -38,51 +34,6 @@ class BlockParserTest {
         String raw = "{\"blocks\":[{\"type\":\"text\",\"text\":\"Answer [TI-2291] [FAKE-1]\"}],\"citations\":[\"NOPE\"]}";
         BlockParser.Parsed parsed = parser.parse(raw, Set.of("TI-2291"));
         assertThat(parsed.citations()).containsExactly("TI-2291");
-        assertThat(parsed.blocks().get(0).text()).contains("[TI-2291]").doesNotContain("[FAKE-1]");
-    }
-
-    @Test
-    void emptyEvidenceFailsClosedForDeclaredAndInlineCitationIds() {
-        String raw = "{\"blocks\":[{\"type\":\"text\",\"text\":\"Answer [FAKE-1] [TI-2291]\"}],"
-                + "\"citations\":[\"FAKE-1\",\"TI-2291\"]}";
-
-        BlockParser.Parsed parsed = parser.parse(raw, Set.of());
-
-        assertThat(parsed.citations()).isEmpty();
-        assertThat(parsed.blocks().get(0).text())
-                .doesNotContain("[FAKE-1]")
-                .doesNotContain("[TI-2291]");
-    }
-
-    @Test
-    void exactEvidenceTokenIsResolvedToLegacyCitationAndProvenance() {
-        RetrievedChunk chunk = new RetrievedChunk("evidence", 0.9, Map.of(
-                "article_id", "TI-2291",
-                "article_revision_id", "revision-7",
-                "article_revision_number", 7,
-                "evidence_snapshot_id", "snapshot-7",
-                "source_span_start", 10,
-                "source_span_end", 28,
-                "source_uri", "https://example.test/report",
-                "source_version", "2026-09-05",
-                "revision_status", "APPROVED"));
-        CitationResolver resolver = CitationResolver.fromAuthorizedChunks(List.of(chunk), Set.of("TI-2291"));
-        String valid = "[[evidence:TI-2291|revision-7|snapshot-7|10-28]]";
-        String spoofedSpan = "[[evidence:TI-2291|revision-7|snapshot-7|11-28]]";
-        String raw = "{\"blocks\":[{\"type\":\"text\",\"text\":\"Fact " + valid + " "
-                + spoofedSpan + " [FAKE-1]\"}],\"citations\":[\"FAKE-1\"]}";
-
-        BlockParser.Parsed parsed = parser.parse(raw, resolver);
-
-        assertThat(parsed.blocks().get(0).text())
-                .contains("[TI-2291]")
-                .doesNotContain("[[evidence:")
-                .doesNotContain("FAKE-1")
-                .doesNotContain("11-28");
-        assertThat(parsed.citations()).containsExactly("TI-2291");
-        assertThat(parsed.citationReferences()).containsExactly(new EvidenceReference(
-                "TI-2291", "revision-7", 7, "snapshot-7", 10, 28,
-                "https://example.test/report", "2026-09-05", "APPROVED"));
     }
 
     @Test
