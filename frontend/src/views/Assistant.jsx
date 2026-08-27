@@ -1,15 +1,21 @@
 // views/Assistant.jsx — the RAG assistant / chatbot surface.
+//
+// Layout: a conversations rail on the left (thread list, new chat, delete)
+// and the chat column on the right. Answers stream over SSE; when a stream
+// finishes, its done event carries conversationId + messageId so the turn
+// becomes part of the persisted thread and can be rated (👍/👎 feedback).
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { Icon } from '../icons.jsx';
 import { SourceChip, CopyBtn } from '../ui.jsx';
-import { useSuggestions, useArticleIndex } from '../lib/queries.js';
-import { chatStream } from '../lib/api.js';
+import { useSuggestions, useArticleIndex, useConversations, useVectorStoreStatus, queryClient } from '../lib/queries.js';
+import { chatStream, deleteConversation, sendFeedback, getConversationMessages } from '../lib/api.js';
+import { renderInline, renderRichText } from '../lib/richText.jsx';
 
 const INTRO_MSG = {
   role: 'assistant',
   intro: true,
-  blocks: [{ type: 'text', text: "I'm your security knowledge assistant. I search across threat intel, playbooks, advisories, policies and postmortems — and I cite every source. Ask me to triage an alert, pull a playbook, or draft a report." }],
+  blocks: [{ type: 'text', text: "I'm your security knowledge assistant. I search across threat intel, playbooks, advisories, policies and postmortems — and I cite every source. Ask me to triage an alert, pull a playbook, look up an IOC, or draft a report." }],
   citations: [],
 };
 
@@ -24,10 +30,54 @@ export default function Assistant({ onOpenArticle, pendingAsk }) {
   const [thinking, setThinking] = useState(false);
   const { index } = useArticleIndex();
   const { data: suggestions } = useSuggestions();
+  const { data: conversations } = useConversations();
+  const { data: vectorStatus } = useVectorStoreStatus();
 
   useEffect(() => {
     if (endRef.current) endRef.current.parentNode.scrollTop = endRef.current.parentNode.scrollHeight;
   }, [messages, thinking]);
+
+  const refreshConversations = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: ['conversations'] });
+  }, []);
+
+  // Start a fresh thread (optionally after deleting / switching away from one).
+  function newChat() {
+    setConversationId(null);
+    setMessages([INTRO_MSG]);
+    setBusy(false);
+    setThinking(false);
+  }
+
+  // Load a persisted thread from the API and render it as turns.
+  async function openConversation(id) {
+    if (busy || id === conversationId) return;
+    setConversationId(id);
+    setMessages([{ role: 'assistant', loading: true, blocks: [], citations: [] }]);
+    try {
+      const history = await getConversationMessages(id);
+      const turns = history.map((m) =>
+        m.role === 'user'
+          ? { role: 'user', text: m.content }
+          : {
+              role: 'assistant',
+              id: m.id,
+              blocks: [{ type: 'text', text: m.content }],
+              citations: m.citations || [],
+              rating: m.rating,
+            }
+      );
+      setMessages(turns.length ? turns : [INTRO_MSG]);
+    } catch {
+      setMessages([INTRO_MSG]);
+    }
+  }
+
+  async function removeConversation(id) {
+    await deleteConversation(id);
+    if (id === conversationId) newChat();
+    refreshConversations();
+  }
 
   // Stream the answer over SSE: show the thinking dots until the first token,
   // then grow a live text block; finalize citations on the done event.
@@ -62,13 +112,19 @@ export default function Assistant({ onOpenArticle, pendingAsk }) {
           setThinking(false);
           setBusy(false);
           if (evt && evt.conversationId) setConversationId(evt.conversationId);
+          refreshConversations();
           setMessages((m) => {
             const copy = m.slice();
             const last = copy[copy.length - 1];
             if (last && last.role === 'assistant' && last.streaming) {
-              copy[copy.length - 1] = { ...last, streaming: false, citations: (evt && evt.citations) || [] };
+              copy[copy.length - 1] = {
+                ...last,
+                streaming: false,
+                id: evt && evt.messageId,
+                citations: (evt && evt.citations) || [],
+              };
             } else {
-              copy.push({ role: 'assistant', blocks: [{ type: 'text', text: 'No grounded answer was returned.' }], citations: (evt && evt.citations) || [] });
+              copy.push({ role: 'assistant', id: evt && evt.messageId, blocks: [{ type: 'text', text: 'No grounded answer was returned.' }], citations: (evt && evt.citations) || [] });
             }
             return copy;
           });
@@ -93,6 +149,8 @@ export default function Assistant({ onOpenArticle, pendingAsk }) {
   }, [pendingAsk && pendingAsk.n]);
 
   const showSuggestions = messages.length <= 1 && !busy;
+  const docCount = index.size || 0;
+  const chunkCount = vectorStatus && vectorStatus.chunks != null ? vectorStatus.chunks : '—';
 
   return (
     <div className="assistant">
@@ -103,42 +161,69 @@ export default function Assistant({ onOpenArticle, pendingAsk }) {
         </div>
         <div className="assistant-scope">
           <Icon name="database" size={14} />
-          <span>764 docs · 41.2k chunks indexed</span>
+          <span>{docCount} docs · {chunkCount} chunks indexed</span>
         </div>
       </div>
 
-      <div className="chat-stream" ref={scrollRef}>
-        <div className="chat-stream-inner">
-          {messages.map((m, i) =>
-            m.role === 'user' ? (
-              <UserBubble key={i} text={m.text} />
-            ) : (
-              <AssistantTurn key={i} msg={m} onOpenArticle={onOpenArticle} index={index} fresh={false} />
-            )
-          )}
-          {thinking && <Thinking />}
-          {showSuggestions && <Suggestions items={suggestions} onPick={(s) => send(s.label)} />}
-          <div ref={endRef} />
-        </div>
-      </div>
-
-      <div className="composer">
-        <div className="composer-inner">
-          <button className="composer-attach" title="Attach context"><Icon name="upload" size={17} /></button>
-          <textarea
-            className="composer-input"
-            placeholder="Ask about an alert, IOC, CVE, policy, or playbook…"
-            value={input}
-            rows={1}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } }}
-          />
-          <button className="composer-send" disabled={!input.trim()} onClick={() => send()}>
-            <Icon name="send" size={16} />
+      <div className="assistant-body">
+        <aside className="conv-side">
+          <button className="conv-new" onClick={newChat}>
+            <Icon name="spark" size={14} /> New chat
           </button>
-        </div>
-        <div className="composer-foot">
-          <span><Icon name="shield" size={12} /> Answers grounded in your KB — verify before acting on critical actions</span>
+          <div className="conv-label">THREADS</div>
+          <div className="conv-list">
+            {(conversations || []).map((c) => (
+              <div key={c.id} className={'conv-item' + (c.id === conversationId ? ' active' : '')}>
+                <button className="conv-open" onClick={() => openConversation(c.id)} title={c.title}>
+                  <Icon name="chat" size={13} />
+                  <span>{c.title}</span>
+                </button>
+                <button className="conv-del" title="Delete thread" onClick={() => removeConversation(c.id)}>
+                  <Icon name="trash" size={12} />
+                </button>
+              </div>
+            ))}
+            {conversations && conversations.length === 0 && (
+              <div className="conv-empty">No saved threads yet</div>
+            )}
+          </div>
+        </aside>
+
+        <div className="chat-col">
+          <div className="chat-stream" ref={scrollRef}>
+            <div className="chat-stream-inner">
+              {messages.map((m, i) =>
+                m.role === 'user' ? (
+                  <UserBubble key={i} text={m.text} />
+                ) : (
+                  <AssistantTurn key={i} msg={m} onOpenArticle={onOpenArticle} index={index} fresh={false} />
+                )
+              )}
+              {thinking && <Thinking />}
+              {showSuggestions && <Suggestions items={suggestions} onPick={(s) => send(s.label)} />}
+              <div ref={endRef} />
+            </div>
+          </div>
+
+          <div className="composer">
+            <div className="composer-inner">
+              <button className="composer-attach" title="Attach context"><Icon name="upload" size={17} /></button>
+              <textarea
+                className="composer-input"
+                placeholder="Ask about an alert, IOC, CVE, policy, or playbook…"
+                value={input}
+                rows={1}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } }}
+              />
+              <button className="composer-send" disabled={!input.trim()} onClick={() => send()}>
+                <Icon name="send" size={16} />
+              </button>
+            </div>
+            <div className="composer-foot">
+              <span><Icon name="shield" size={12} /> Answers grounded in your KB — verify before acting on critical actions</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -159,6 +244,7 @@ function AssistantTurn({ msg, onOpenArticle, index, fresh }) {
   const cites = Array.isArray(msg.citations) ? msg.citations : [];
   const hasCites = cites.length > 0;
   const [revealing, setRevealing] = useState(fresh);
+  const [rating, setRating] = useState(msg.rating == null ? null : msg.rating);
   useEffect(() => {
     if (!fresh) return;
     const n = blocks.length + (hasCites ? 1 : 0);
@@ -166,10 +252,18 @@ function AssistantTurn({ msg, onOpenArticle, index, fresh }) {
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  async function rate(value) {
+    const next = rating === value ? 0 : value; // toggle off
+    setRating(next === 0 ? null : next);
+    try { await sendFeedback(msg.id, next); } catch { /* rating is best-effort */ }
+  }
+
   return (
     <div className={'turn turn-assistant' + (revealing ? ' fresh' : '')}>
       <div className="avatar avatar-bot"><Icon name="shield" size={15} /></div>
       <div className="turn-body">
+        {msg.loading && <div className="thinking"><span /><span /><span /> <em>loading thread…</em></div>}
         {blocks.map((b, i) => (
           <div className="block-anim" key={i} style={{ animationDelay: (i * 0.13 + 0.05) + 's' }}>
             <Block b={b} onOpen={onOpenArticle} index={index} />
@@ -185,69 +279,29 @@ function AssistantTurn({ msg, onOpenArticle, index, fresh }) {
             </div>
           </div>
         )}
+        {msg.id && !msg.streaming && !msg.intro && (
+          <div className="msg-feedback">
+            <button
+              className={'fb-btn' + (rating === 1 ? ' on' : '')}
+              title="Helpful"
+              disabled={!msg.id}
+              onClick={() => rate(1)}
+            >
+              <Icon name="check" size={13} /> Helpful
+            </button>
+            <button
+              className={'fb-btn' + (rating === -1 ? ' on' : '')}
+              title="Not helpful"
+              disabled={!msg.id}
+              onClick={() => rate(-1)}
+            >
+              <Icon name="x" size={13} /> Not helpful
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
-}
-
-// supports **bold** and [ARTICLE-ID] inline citation chips (always clickable)
-function renderInline(text, onOpen) {
-  const s = text == null ? '' : String(text);
-  const parts = s.split(/(\*\*[^*]+\*\*|\[[A-Z0-9]+(?:-[A-Z0-9]+)*\])/g);
-  return parts.map((p, i) => {
-    if (p.startsWith('**') && p.endsWith('**')) return <strong key={i}>{p.slice(2, -2)}</strong>;
-    if (p.startsWith('[') && p.endsWith(']')) {
-      const id = p.slice(1, -1);
-      return (
-        <button key={i} className="inline-cite" onClick={() => onOpen && onOpen(id)} title={id}>
-          {id}
-        </button>
-      );
-    }
-    return <span key={i}>{p}</span>;
-  });
-}
-
-// Renders answer text as scannable Markdown-lite: numbered / bulleted lines become
-// styled step lists, other non-empty lines become paragraphs, and **bold** + [ID]
-// citation chips are honored inline.
-function renderRichText(text, onOpen) {
-  const lines = String(text == null ? '' : text).split('\n');
-  const out = [];
-  let list = null; // { ordered: boolean, items: string[] }
-  let k = 0;
-  const flush = () => {
-    if (!list) return;
-    const ordered = list.ordered;
-    out.push(
-      <ol className="msg-steps" key={'l' + k++}>
-        {list.items.map((it, idx) => (
-          <li key={idx}>
-            <span className="step-n">{ordered ? String(idx + 1).padStart(2, '0') : '•'}</span>
-            <span>{renderInline(it, onOpen)}</span>
-          </li>
-        ))}
-      </ol>
-    );
-    list = null;
-  };
-  for (const raw of lines) {
-    const line = raw.replace(/\s+$/, '');
-    const numM = line.match(/^\s*\d+[.)]\s+(.*)$/);
-    const bulM = line.match(/^\s*[-*]\s+(.*)$/);
-    if (numM) {
-      if (!list || !list.ordered) { flush(); list = { ordered: true, items: [] }; }
-      list.items.push(numM[1]);
-    } else if (bulM) {
-      if (!list || list.ordered) { flush(); list = { ordered: false, items: [] }; }
-      list.items.push(bulM[1]);
-    } else {
-      flush();
-      if (line.trim()) out.push(<p className="msg-text" key={'p' + k++}>{renderInline(line, onOpen)}</p>);
-    }
-  }
-  flush();
-  return out;
 }
 
 function Block({ b, onOpen }) {

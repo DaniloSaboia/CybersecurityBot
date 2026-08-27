@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sentinel.kms.kb.Article;
 import com.sentinel.kms.kb.ArticleRepository;
+import com.sentinel.kms.kb.IocLookupService;
 import com.sentinel.kms.vectorstore.EmbeddingIndexService;
 import com.sentinel.kms.vectorstore.RetrievedChunk;
 import org.slf4j.Logger;
@@ -18,19 +19,27 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
- * Orchestrates retrieval-augmented generation for the Assistant view: retrieve
- * relevant chunks from the vector store, ground a strict-JSON answer in them via
- * the chat model, and parse the result into renderable blocks + citations.
+ * Orchestrates retrieval-augmented generation for the Assistant view. Per turn it:
+ * <ol>
+ *   <li>opens (or reuses) the user's persisted conversation,</li>
+ *   <li>runs <b>hybrid retrieval</b> (pgvector similarity fused with Postgres
+ *       full-text via RRF) so exact tokens like CVE ids match reliably,</li>
+ *   <li>extracts IOCs (IP/domain/hash/email) from the question and injects any
+ *       KB indicator-index matches as extra grounding,</li>
+ *   <li>grounds a strict-JSON (chat) or Markdown (stream) answer in the context,
+ *       replaying recent turns for multi-turn memory,</li>
+ *   <li>persists the user + assistant messages and emits the citations.</li>
+ * </ol>
  *
  * <p>The chat model call is wrapped so an LLM failure degrades to a graceful
  * "assistant unavailable" message rather than a 500.
@@ -44,12 +53,17 @@ public class RagService {
     private static final Pattern CITE_TOKEN =
             Pattern.compile("\\[[A-Z0-9]+(?:-[A-Z0-9]+)*\\]");
 
+    /** Max KB indicator-index hits injected as grounding per question. */
+    private static final int MAX_IOC_HITS = 5;
+
     /** System prompt for the streaming variant: natural-language SecOps answer, not JSON. */
     private static final String STREAM_SYSTEM_PROMPT = """
             You are Sentinel, a SecOps analyst assistant for a SOC knowledge console.
             Answer the user's security question using ONLY the information in the provided
-            context sources. Do not use outside knowledge and never invent facts, article
-            ids, CVEs, or indicators that are not present in the context.
+            context sources — including any IOC INDEX MATCH sources, which list the
+            indicators found in the KB's article index. Do not use outside knowledge and
+            never invent facts, article ids, CVEs, or indicators that are not present in
+            the context.
 
             Format the answer as clean, scannable Markdown (NOT JSON, no code fences):
             - Open with a single short summary sentence.
@@ -60,6 +74,9 @@ public class RagService {
               "1. **Revoke active sessions** — terminate the attacker's access."
             - Keep the list flat (no nested sub-bullets) and each step to one sentence.
             - Separate distinct paragraphs with a blank line.
+            - When the question contains an indicator (IP, domain, hash, email) and IOC
+              INDEX MATCH sources exist, lead with what the KB knows about it (article
+              ids, severity, CVSS).
 
             Whenever you rely on a fact from a source, cite it inline by appending that
             source's id in brackets at the END of the sentence or step it supports, e.g.
@@ -76,115 +93,91 @@ public class RagService {
     private final ChatModel chatModel;
     private final PromptBuilder promptBuilder;
     private final BlockParser blockParser;
+    private final ConversationService conversations;
+    private final IocExtractor iocExtractor;
+    private final IocLookupService iocLookup;
 
     private final int topK;
     private final double minScore;
+    private final int historyTurns;
 
     public RagService(EmbeddingIndexService embeddingIndexService,
                       ArticleRepository articleRepository,
                       ChatModel chatModel,
                       PromptBuilder promptBuilder,
                       BlockParser blockParser,
+                      ConversationService conversations,
+                      IocExtractor iocExtractor,
+                      IocLookupService iocLookup,
                       @Value("${app.rag.top-k:6}") int topK,
-                      @Value("${app.rag.min-score:0.30}") double minScore) {
+                      @Value("${app.rag.min-score:0.30}") double minScore,
+                      @Value("${app.rag.history-turns:4}") int historyTurns) {
         this.embeddingIndexService = embeddingIndexService;
         this.articleRepository = articleRepository;
         this.chatModel = chatModel;
         this.promptBuilder = promptBuilder;
         this.blockParser = blockParser;
+        this.conversations = conversations;
+        this.iocExtractor = iocExtractor;
+        this.iocLookup = iocLookup;
         this.topK = topK;
         this.minScore = minScore;
+        this.historyTurns = historyTurns;
     }
 
     /**
-     * Answers a chat request: retrieve, prompt, generate, parse.
+     * Answers a chat request: retrieve, prompt, generate, parse, persist.
      *
      * @return a grounded {@link ChatResponse}; never throws on LLM errors
      */
-    public ChatResponse chat(ChatRequest req) {
-        String conversationId = req.conversationId() != null && !req.conversationId().isBlank()
-                ? req.conversationId()
-                : UUID.randomUUID().toString();
+    public ChatResponse chat(ChatRequest req, String userSub) {
+        Conversation conversation = conversations.openForTurn(userSub, req.conversationId(), req.message());
+        conversations.appendUser(conversation, req.message());
+        List<PromptBuilder.Turn> history = historyOf(conversation);
 
-        List<RetrievedChunk> chunks =
-                embeddingIndexService.search(req.message(), topK, minScore);
-
-        // Candidate article ids from retrieval (de-duped, order preserved).
-        Set<String> validIds = new LinkedHashSet<>();
-        for (RetrievedChunk chunk : chunks) {
-            String id = chunk.articleId();
-            if (id != null && !id.isBlank()) {
-                validIds.add(id);
-            }
-        }
-
-        // Resolve titles for the context labelling.
-        Map<String, String> titles = validIds.isEmpty()
-                ? Map.of()
-                : articleRepository.findAllById(validIds).stream()
-                .collect(Collectors.toMap(Article::getId, a -> a.getTitle() == null ? "" : a.getTitle(),
-                        (a, b) -> a));
-
-        String system = promptBuilder.systemPrompt();
-        String user = promptBuilder.userMessage(req.message(), chunks, titles);
+        Grounding grounding = grounding(req.message());
 
         String raw;
         try {
             raw = ChatClient.create(chatModel)
                     .prompt()
-                    .system(system)
-                    .user(user)
+                    .system(promptBuilder.systemPrompt())
+                    .user(promptBuilder.userMessage(req.message(), grounding.chunks(), grounding.titles(), history))
                     .call()
                     .content();
         } catch (Exception e) {
-            log.warn("Chat model call failed for conversation {}: {}", conversationId, e.toString());
+            log.warn("Chat model call failed for conversation {}: {}", conversation.getId(), e.toString());
             return new ChatResponse(
-                    conversationId,
+                    conversation.getId(),
                     List.of(Block.text(
                             "The assistant is temporarily unavailable. Please try again in a moment.")),
                     List.of());
         }
 
-        BlockParser.Parsed parsed = blockParser.parse(raw, validIds);
-        return new ChatResponse(conversationId, parsed.blocks(), new ArrayList<>(parsed.citations()));
+        BlockParser.Parsed parsed = blockParser.parse(raw, grounding.validIds());
+        conversations.appendAssistant(conversation, raw, parsed.citations());
+        return new ChatResponse(conversation.getId(), parsed.blocks(), new ArrayList<>(parsed.citations()));
     }
 
     /**
-     * Streaming variant of {@link #chat(ChatRequest)}: retrieves the same way, but
-     * asks for a concise natural-language (non-JSON) answer and streams it as
-     * Server-Sent Events.
+     * Streaming variant of {@link #chat(ChatRequest, String)}: retrieves the same
+     * way, but asks for a concise natural-language (non-JSON) answer and streams
+     * it as Server-Sent Events.
      *
      * <p>Each text delta is emitted as a {@code {"type":"delta","text":...}} event;
-     * a final {@code {"type":"done","conversationId":...,"citations":[...]}} event
-     * carries the conversation id and the grounded citation ids scraped from the
-     * accumulated answer. The stream never errors out to the client: on failure it
-     * emits an apologetic delta followed by a done event with no citations.
+     * a final {@code {"type":"done","conversationId":...,"messageId":...,"citations":[...]}}
+     * event carries the conversation id, the persisted assistant-message id (for
+     * feedback), and the grounded citation ids scraped from the accumulated
+     * answer. The stream never errors out to the client: on failure it emits an
+     * apologetic delta followed by a done event with no citations.
      */
-    public Flux<ServerSentEvent<String>> stream(ChatRequest req) {
-        String conversationId = req.conversationId() != null && !req.conversationId().isBlank()
-                ? req.conversationId()
-                : UUID.randomUUID().toString();
+    public Flux<ServerSentEvent<String>> stream(ChatRequest req, String userSub) {
+        Conversation conversation = conversations.openForTurn(userSub, req.conversationId(), req.message());
+        conversations.appendUser(conversation, req.message());
+        List<PromptBuilder.Turn> history = historyOf(conversation);
 
-        List<RetrievedChunk> chunks =
-                embeddingIndexService.search(req.message(), topK, minScore);
-
-        // Candidate article ids from retrieval (de-duped, order preserved).
-        Set<String> validIds = new LinkedHashSet<>();
-        for (RetrievedChunk chunk : chunks) {
-            String id = chunk.articleId();
-            if (id != null && !id.isBlank()) {
-                validIds.add(id);
-            }
-        }
-
-        // Resolve titles for the context labelling.
-        Map<String, String> titles = validIds.isEmpty()
-                ? Map.of()
-                : articleRepository.findAllById(validIds).stream()
-                .collect(Collectors.toMap(Article::getId, a -> a.getTitle() == null ? "" : a.getTitle(),
-                        (a, b) -> a));
-
-        String user = promptBuilder.userMessage(req.message(), chunks, titles);
+        Grounding grounding = grounding(req.message());
+        String user = promptBuilder.userMessage(req.message(), grounding.chunks(), grounding.titles(), history);
 
         StringBuilder accumulated = new StringBuilder();
 
@@ -198,15 +191,77 @@ public class RagService {
                 .map(this::deltaEvent);
 
         Flux<ServerSentEvent<String>> withDone = deltas.concatWith(Mono.fromSupplier(() ->
-                doneEvent(conversationId, scrapeCitations(accumulated.toString(), validIds))));
+                persistAndEmitDone(conversation, accumulated.toString(), grounding.validIds())));
 
         return withDone.onErrorResume(e -> {
-            log.warn("Streaming chat model call failed for conversation {}: {}", conversationId, e.toString());
-            return Flux.just(
-                    deltaEvent("The assistant is temporarily unavailable. Please try again in a moment."),
-                    doneEvent(conversationId, List.of()));
+            log.warn("Streaming chat model call failed for conversation {}: {}",
+                    conversation.getId(), e.toString());
+            String fallback = "The assistant is temporarily unavailable. Please try again in a moment.";
+            ServerSentEvent<String> done = persistAndEmitDone(conversation, fallback, Set.of());
+            return Flux.just(deltaEvent(fallback), done);
         });
     }
+
+    // ---- retrieval + IOC grounding shared by both variants ----
+
+    /** Everything the prompt needs: chunks (IOC matches first), titles, valid ids. */
+    private record Grounding(List<RetrievedChunk> chunks, Map<String, String> titles, Set<String> validIds) {
+    }
+
+    private Grounding grounding(String question) {
+        List<RetrievedChunk> chunks = new ArrayList<>(iocChunks(question));
+        chunks.addAll(embeddingIndexService.hybridSearch(question, topK, minScore));
+
+        Set<String> validIds = new LinkedHashSet<>();
+        for (RetrievedChunk chunk : chunks) {
+            String id = chunk.articleId();
+            if (id != null && !id.isBlank()) {
+                validIds.add(id);
+            }
+        }
+
+        Map<String, String> titles = validIds.isEmpty()
+                ? Map.of()
+                : articleRepository.findAllById(validIds).stream()
+                        .collect(Collectors.toMap(Article::getId,
+                                a -> a.getTitle() == null ? "" : a.getTitle(), (a, b) -> a));
+
+        return new Grounding(chunks, titles, validIds);
+    }
+
+    /** KB indicator-index matches for IOCs in the question, as synthetic citable chunks. */
+    private List<RetrievedChunk> iocChunks(String question) {
+        List<IocExtractor.Ioc> iocs = iocExtractor.extract(question);
+        if (iocs.isEmpty()) {
+            return List.of();
+        }
+        List<IocLookupService.IocHit> hits = iocLookup.lookup(iocs);
+        List<RetrievedChunk> out = new ArrayList<>();
+        for (IocLookupService.IocHit hit : hits) {
+            if (out.size() >= MAX_IOC_HITS) {
+                break;
+            }
+            String content = "IOC INDEX MATCH — indicator " + hit.iocValue() + " (" + hit.iocType()
+                    + ") is listed in article " + hit.articleId() + " \"" + hit.title() + "\""
+                    + ", severity " + hit.severity()
+                    + (hit.cvss() == null || hit.cvss().isBlank() ? "" : ", CVSS " + hit.cvss())
+                    + ". Use this article when answering questions about this indicator.";
+            Map<String, Object> metadata = new LinkedHashMap<>();
+            metadata.put("article_id", hit.articleId());
+            metadata.put("source", "IOC index");
+            metadata.put("heading", "Indicator match: " + hit.iocValue());
+            out.add(new RetrievedChunk(content, 1.0, metadata));
+        }
+        return out;
+    }
+
+    private List<PromptBuilder.Turn> historyOf(Conversation conversation) {
+        return conversations.recentHistory(conversation.getId(), historyTurns).stream()
+                .map(m -> new PromptBuilder.Turn(m.getRole(), m.getContent()))
+                .toList();
+    }
+
+    // ---- SSE event builders ----
 
     /** Builds a {@code {"type":"delta","text":...}} SSE with the text safely JSON-escaped. */
     private ServerSentEvent<String> deltaEvent(String text) {
@@ -216,11 +271,21 @@ public class RagService {
         return ServerSentEvent.builder(node.toString()).build();
     }
 
-    /** Builds the final {@code {"type":"done","conversationId":...,"citations":[...]}} SSE. */
-    private ServerSentEvent<String> doneEvent(String conversationId, List<String> citations) {
+    /** Persists the assistant turn, then builds the final done SSE for it. */
+    private ServerSentEvent<String> persistAndEmitDone(
+            Conversation conversation, String answer, Set<String> validIds) {
+        String text = answer == null ? "" : answer;
+        List<String> citations = scrapeCitations(text, validIds);
+        ChatMessage saved = conversations.appendAssistant(conversation, text, citations);
+        return doneEvent(conversation.getId(), saved.getId(), citations);
+    }
+
+    /** Builds the final {@code {"type":"done",...}} SSE. */
+    private ServerSentEvent<String> doneEvent(String conversationId, String messageId, List<String> citations) {
         ObjectNode node = mapper.createObjectNode();
         node.put("type", "done");
         node.put("conversationId", conversationId);
+        node.put("messageId", messageId);
         ArrayNode arr = node.putArray("citations");
         for (String id : citations) {
             arr.add(id);
@@ -234,7 +299,7 @@ public class RagService {
      */
     private List<String> scrapeCitations(String text, Set<String> validIds) {
         List<String> out = new ArrayList<>();
-        if (text == null || text.isBlank() || validIds.isEmpty()) {
+        if (text == null || text.isBlank()) {
             return out;
         }
         Set<String> seen = new LinkedHashSet<>();
@@ -242,7 +307,7 @@ public class RagService {
         while (m.find()) {
             String token = m.group();
             String id = token.substring(1, token.length() - 1); // strip [ ]
-            if (validIds.contains(id) && seen.add(id)) {
+            if ((validIds == null || validIds.isEmpty() || validIds.contains(id)) && seen.add(id)) {
                 out.add(id);
             }
         }

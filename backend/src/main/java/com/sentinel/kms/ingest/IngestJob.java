@@ -43,6 +43,14 @@ public class IngestJob {
 
     private String error; // present when stage == failed
 
+    /** Owning user (JWT sub); null = seeded demo job visible to everyone. */
+    @Column(name = "owner_sub")
+    private String ownerSub;
+
+    /** The fetched URL for URL-import jobs, so retry can re-fetch. */
+    @Column(name = "source_url")
+    private String sourceUrl;
+
     @Column(name = "created_at", insertable = false, updatable = false)
     private OffsetDateTime createdAt;
 

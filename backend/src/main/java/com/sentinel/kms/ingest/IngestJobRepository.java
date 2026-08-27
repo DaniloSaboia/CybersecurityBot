@@ -6,7 +6,8 @@ import java.util.List;
 
 public interface IngestJobRepository extends JpaRepository<IngestJob, String> {
 
-    List<IngestJob> findAllByOrderByCreatedAtDesc();
+    /** Own jobs plus the shared seeded demo jobs (owner_sub null), newest first. */
+    List<IngestJob> findByOwnerSubOrOwnerSubIsNullOrderByCreatedAtDesc(String ownerSub);
 
     List<IngestJob> findByStageNotIn(List<String> stages);
 }

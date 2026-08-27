@@ -12,10 +12,15 @@ import java.util.Map;
  * assistant. The system prompt pins the model to a strict JSON answer shape
  * (blocks + citations) grounded ONLY in the supplied context; the user message
  * numbers each retrieved source with its ARTICLE-ID so the model can cite it
- * inline with the {@code [ARTICLE-ID]} token.
+ * inline with the {@code [ARTICLE-ID]} token. Recent conversation turns are
+ * replayed before the context so follow-up questions keep their referents.
  */
 @Component
 public class PromptBuilder {
+
+    /** One prior turn of the conversation (role: user|assistant). */
+    public record Turn(String role, String content) {
+    }
 
     private final int maxContextChars;
 
@@ -73,8 +78,32 @@ public class PromptBuilder {
      * @param titles   article-id -> title lookup for labelling sources
      */
     public String userMessage(String question, List<RetrievedChunk> chunks, Map<String, String> titles) {
+        return userMessage(question, chunks, titles, List.of());
+    }
+
+    /**
+     * Full variant with conversation replay: the recent transcript appears
+     * between the question and the context so pronouns ("that CVE", "the
+     * second step") resolve to earlier turns.
+     */
+    public String userMessage(String question, List<RetrievedChunk> chunks, Map<String, String> titles,
+                              List<Turn> history) {
         StringBuilder sb = new StringBuilder();
         sb.append("QUESTION:\n").append(question == null ? "" : question.trim()).append("\n\n");
+
+        if (history != null && !history.isEmpty()) {
+            sb.append("CONVERSATION SO FAR (most recent last, for context only — the "
+                    + "question above is the one to answer):\n");
+            int from = Math.max(0, history.size() - 8);
+            for (int i = from; i < history.size(); i++) {
+                Turn turn = history.get(i);
+                String role = "assistant".equals(turn.role()) ? "ASSISTANT" : "USER";
+                sb.append(role).append(": ")
+                        .append(abbreviate(turn.content(), 500))
+                        .append('\n');
+            }
+            sb.append('\n');
+        }
 
         if (chunks == null || chunks.isEmpty()) {
             sb.append("CONTEXT SOURCES:\n(none — no relevant documents were retrieved)\n");
@@ -117,5 +146,13 @@ public class PromptBuilder {
         }
         sb.append(ctx);
         return sb.toString();
+    }
+
+    private static String abbreviate(String text, int max) {
+        if (text == null) {
+            return "";
+        }
+        String t = text.strip();
+        return t.length() <= max ? t : t.substring(0, max - 1) + "…";
     }
 }

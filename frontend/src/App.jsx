@@ -23,10 +23,24 @@ export default function App() {
   const [openId, setOpenId] = useState(null);
   const [pendingAsk, setPendingAsk] = useState(null);
   const [navOpen, setNavOpen] = useState(false);
+  const [railCollapsed, setRailCollapsed] = useState(
+    () => localStorage.getItem('rail-collapsed') === '1'
+  );
   const { data: me } = useMe();
 
   // Refetch everything with the new token whenever the signed-in user changes.
   useEffect(() => { queryClient.invalidateQueries(); }, [user?.id]);
+
+  // Hamburger: opens the drawer on narrow screens, collapses the rail on desktop.
+  function handleMenuToggle() {
+    if (window.matchMedia('(max-width: 860px)').matches) {
+      setNavOpen(true);
+      return;
+    }
+    const next = !railCollapsed;
+    setRailCollapsed(next);
+    localStorage.setItem('rail-collapsed', next ? '1' : '0');
+  }
 
   // cross-view bridge: chat citation -> open the article in the KB
   function openArticle(id) {
@@ -62,7 +76,7 @@ export default function App() {
   const userRole = (me && me.role) || 'Tier-3 Analyst';
 
   return (
-    <div className="app">
+    <div className={'app' + (railCollapsed ? ' rail-collapsed' : '')}>
       <aside className={'rail' + (navOpen ? ' open' : '')}>
         <Logo />
         <nav className="rail-nav">
@@ -96,10 +110,9 @@ export default function App() {
 
       <main className="main">
         <div className="topbar">
-          <button className="topbar-menu" onClick={() => setNavOpen(true)}><Icon name="menu" size={18} /></button>
+          <button className="topbar-menu" title="Toggle sidebar" onClick={handleMenuToggle}><Icon name="menu" size={18} /></button>
           <div className="topbar-crumb"><span className="crumb-root">Sentinel</span><Icon name="chevron" size={13} /><span>{NAV.find((n) => n.id === view).label}</span></div>
           <div className="topbar-right">
-            <div className="topbar-search"><Icon name="search" size={14} /><input placeholder="Quick find…" /><kbd>⌘K</kbd></div>
             <button className="topbar-icon" title="Refresh" onClick={() => queryClient.invalidateQueries()}><Icon name="refresh" size={16} /></button>
           </div>
         </div>

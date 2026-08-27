@@ -30,6 +30,7 @@ public class JobProcessor {
     private final TextExtractor extractor;
     private final Chunker chunker;
     private final EmbeddingIndexService index;
+    private final UrlFetcher urlFetcher;
 
     private final int chunkSize;
     private final int chunkOverlap;
@@ -43,6 +44,7 @@ public class JobProcessor {
             TextExtractor extractor,
             Chunker chunker,
             EmbeddingIndexService index,
+            UrlFetcher urlFetcher,
             @Value("${app.ingest.chunk-size:1200}") int chunkSize,
             @Value("${app.ingest.chunk-overlap:150}") int chunkOverlap,
             @Value("${app.ingest.simulate-latency-ms:1200}") long simulateLatencyMs
@@ -51,6 +53,7 @@ public class JobProcessor {
         this.extractor = extractor;
         this.chunker = chunker;
         this.index = index;
+        this.urlFetcher = urlFetcher;
         this.chunkSize = chunkSize;
         this.chunkOverlap = chunkOverlap;
         this.simulateLatencyMs = simulateLatencyMs;
@@ -62,12 +65,12 @@ public class JobProcessor {
     }
 
     /**
-     * Process a job end-to-end. {@code rawBytes} is the uploaded file content for
-     * upload jobs; for URL jobs it is {@code null} and {@code fallbackText} carries
-     * synthesized text to index instead.
+     * Process a job end-to-end. Exactly one of the sources is set:
+     * {@code rawBytes} for uploads, {@code url} for URL imports (fetched + re-
+     * SSRF-validated here), {@code fallbackText} as a last-resort placeholder.
      */
     @Async
-    public void process(String jobId, byte[] rawBytes, String fallbackText) {
+    public void process(String jobId, byte[] rawBytes, String fallbackText, String url) {
         active.add(jobId);
         try {
             IngestJob job = jobs.findById(jobId).orElse(null);
@@ -81,6 +84,14 @@ public class JobProcessor {
             String text;
             if (rawBytes != null) {
                 text = extractor.extract(rawBytes, job.getName());
+            } else if (url != null) {
+                try {
+                    byte[] fetched = urlFetcher.fetch(url);
+                    text = extractor.extract(fetched, job.getName());
+                } catch (IllegalArgumentException e) {
+                    fail(job, "URL fetch failed: " + e.getMessage());
+                    return;
+                }
             } else {
                 text = fallbackText != null ? fallbackText : "";
             }

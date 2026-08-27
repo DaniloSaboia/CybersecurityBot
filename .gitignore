@@ -11,6 +11,7 @@ backend/target/
 .mvn/
 mvnw
 mvnw.cmd
+hs_err_pid*
 
 # ---- Node / Vite ----
 frontend/node_modules/
@@ -18,6 +19,7 @@ frontend/dist/
 frontend/.vite/
 npm-debug.log*
 yarn-error.log*
+*.log
 
 # ---- Supabase ----
 supabase/.branches/
@@ -33,6 +35,12 @@ supabase/.env
 .vscode/
 .DS_Store
 Thumbs.db
+
+# ---- Local agent / tool config ----
+.claude/
+
+# ---- Thesis repo (separate nested git repository) ----
+CyberChatbotTese/
 
 # ---- Ollama / models (if mounted locally) ----
 ollama-data/

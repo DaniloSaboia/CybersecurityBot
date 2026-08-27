@@ -59,6 +59,11 @@ export function useChat() {
   return useMutation({ mutationFn: api.chat });
 }
 
+// ── Conversations (memory) ───────────────────────────────────────
+export function useConversations() {
+  return useQuery({ queryKey: ['conversations'], queryFn: api.getConversations });
+}
+
 // ── Ingestion ────────────────────────────────────────────────────
 // poll every 1.5s for live stage/pct/chunks progress
 export function useJobs() {

@@ -9,6 +9,12 @@ spring:
     # default provider stack; override with SPRING_PROFILES_ACTIVE=local
     active: ${SPRING_PROFILES_ACTIVE:mistral}
 
+  servlet:
+    multipart:
+      # uploads above this are rejected before hitting the ingest pipeline
+      max-file-size: ${UPLOAD_MAX_FILE_SIZE:20MB}
+      max-request-size: 25MB
+
   datasource:
     url: ${DB_URL:jdbc:postgresql://host.docker.internal:54322/postgres}
     username: ${DB_USERNAME:postgres}
@@ -49,15 +55,36 @@ spring:
 app:
   cors:
     allowed-origins: "http://localhost:5173,http://localhost:3000"
+  security:
+    jwks-uri: ${SUPABASE_JWKS_URI:http://host.docker.internal:54321/auth/v1/.well-known/jwks.json}
+    # Supabase access tokens carry aud:"authenticated"; validating it also
+    # rejects anon/service keys used as bearer tokens. Empty disables the check.
+    jwt-audience: ${SUPABASE_JWT_AUDIENCE:authenticated}
+    # Optional stricter check; blank by default because the local issuer varies
+    # (127.0.0.1 vs localhost vs host.docker.internal).
+    jwt-issuer: ${SUPABASE_JWT_ISSUER:}
   rag:
     top-k: ${RAG_TOP_K:6}
     min-score: ${RAG_MIN_SCORE:0.30}
     max-context-chars: 9000
+    # recent turns replayed into the prompt for multi-turn memory
+    history-turns: ${RAG_HISTORY_TURNS:4}
   ingest:
     chunk-size: 1200
     chunk-overlap: 150
     # simulate stage latency so the UI shows progress on seeded/demo jobs
     simulate-latency-ms: 1200
+    # upload extension allowlist (Tika handles all of these)
+    allowed-extensions: pdf,txt,md,html,htm,doc,docx,json,csv,eml,log,xml,rtf,ppt,pptx,xls,xlsx
+    # URL imports: response body cap (bytes)
+    url-max-bytes: 2097152
+  nvd:
+    # NVD throttles anonymous requests hard; an API key lifts the limit
+    api-key: ${NVD_API_KEY:}
+    sync-enabled: ${NVD_SYNC_ENABLED:false}
+    sync-cron: "0 0 3 * * *"
+    sync-days: 2
+    sync-max: 50
   seed:
     enabled: true
 

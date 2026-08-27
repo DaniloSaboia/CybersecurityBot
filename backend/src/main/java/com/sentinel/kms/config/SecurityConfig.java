@@ -1,6 +1,8 @@
 package com.sentinel.kms.config;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -13,7 +15,12 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.oauth2.jose.jws.SignatureAlgorithm;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.jwt.JwtValidators;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
+import org.springframework.security.oauth2.core.OAuth2TokenValidator;
+import org.springframework.security.oauth2.core.OAuth2TokenValidatorResult;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.jwt.JwtIssuerValidator;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -73,18 +80,48 @@ public class SecurityConfig {
     /**
      * Supabase (gotrue) signs access tokens with asymmetric keys (ES256) exposed via a
      * JWKS endpoint, so we validate signatures against those public keys. The backend
-     * reaches local Supabase via host.docker.internal:54321. Signature + expiry only —
-     * audience/issuer are intentionally not enforced (the issuer differs between the
-     * browser's 127.0.0.1 view and the backend's host.docker.internal fetch).
+     * reaches local Supabase via host.docker.internal:54321.
+     *
+     * <p>Beyond signature + expiry, the audience claim is enforced (Supabase access
+     * tokens carry {@code aud: "authenticated"}), which also rejects anon/service
+     * keys used as bearer tokens. The issuer is validated only when configured —
+     * the local issuer varies between 127.0.0.1 / localhost / host.docker.internal,
+     * so it is opt-in via {@code app.security.jwt-issuer}.
      */
     @Bean
     public JwtDecoder jwtDecoder(
-            @Value("${app.security.jwks-uri:http://host.docker.internal:54321/auth/v1/.well-known/jwks.json}") String jwksUri) {
-        return NimbusJwtDecoder.withJwkSetUri(jwksUri)
+            @Value("${app.security.jwks-uri:http://host.docker.internal:54321/auth/v1/.well-known/jwks.json}") String jwksUri,
+            @Value("${app.security.jwt-audience:authenticated}") String audience,
+            @Value("${app.security.jwt-issuer:}") String issuer) {
+        NimbusJwtDecoder decoder = NimbusJwtDecoder.withJwkSetUri(jwksUri)
                 .jwsAlgorithms(algs -> {
                     algs.add(SignatureAlgorithm.ES256);
                     algs.add(SignatureAlgorithm.RS256);
                 })
                 .build();
+
+        List<OAuth2TokenValidator<Jwt>> validators = new ArrayList<>();
+        validators.add(JwtValidators.createDefault()); // exp / nbf timestamps
+        if (issuer != null && !issuer.isBlank()) {
+            validators.add(new JwtIssuerValidator(issuer));
+        }
+        if (audience != null && !audience.isBlank()) {
+            validators.add(audienceValidator(audience));
+        }
+        decoder.setJwtValidator(new org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator<>(validators));
+        return decoder;
+    }
+
+    /** Accepts the aud claim as a bare string or as a collection (per RFC 7519). */
+    private static OAuth2TokenValidator<Jwt> audienceValidator(String expected) {
+        return token -> {
+            Object aud = token.getClaim("aud");
+            boolean valid = aud instanceof String s && s.equals(expected)
+                    || aud instanceof Collection<?> c && c.contains(expected);
+            return valid
+                    ? OAuth2TokenValidatorResult.success()
+                    : OAuth2TokenValidatorResult.failure(new org.springframework.security.oauth2.core.OAuth2Error(
+                            "invalid_token", "Audience claim does not contain " + expected, ""));
+        };
     }
 }

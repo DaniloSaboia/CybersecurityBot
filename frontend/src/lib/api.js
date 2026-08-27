@@ -72,9 +72,19 @@ export function chat({ message, conversationId } = {}) {
   return request('/assistant/chat', { method: 'POST', body: { message, conversationId } });
 }
 
+// Parse one SSE frame ("data: {...}\n\n" chunk without the trailing blank line)
+// into its event object, or null for keep-alives / malformed frames.
+export function parseSseFrame(frame) {
+  const dataLine = frame.split('\n').find((l) => l.startsWith('data:'));
+  if (!dataLine) return null;
+  const json = dataLine.slice(5).trim();
+  if (!json) return null;
+  try { return JSON.parse(json); } catch { return null; }
+}
+
 // Streaming answer over SSE. Calls onDelta(textChunk) as tokens arrive and
-// onDone({ conversationId, citations }) at the end. Reads the response body as
-// a stream and parses `data: <json>` SSE frames.
+// onDone({ conversationId, messageId, citations }) at the end. Reads the
+// response body as a stream and parses `data: <json>` SSE frames.
 export async function chatStream({ message, conversationId }, { onDelta, onDone, onError } = {}) {
   try {
     const res = await fetch(BASE + '/assistant/chat/stream', {
@@ -98,12 +108,8 @@ export async function chatStream({ message, conversationId }, { onDelta, onDone,
       while ((sep = buf.indexOf('\n\n')) !== -1) {
         const frame = buf.slice(0, sep);
         buf = buf.slice(sep + 2);
-        const dataLine = frame.split('\n').find((l) => l.startsWith('data:'));
-        if (!dataLine) continue;
-        const json = dataLine.slice(5).trim();
-        if (!json) continue;
-        let evt;
-        try { evt = JSON.parse(json); } catch { continue; }
+        const evt = parseSseFrame(frame);
+        if (!evt) continue;
         if (evt.type === 'delta') onDelta && onDelta(evt.text || '');
         else if (evt.type === 'done') { sawDone = true; onDone && onDone(evt); }
       }
@@ -112,6 +118,27 @@ export async function chatStream({ message, conversationId }, { onDelta, onDone,
   } catch (err) {
     onError && onError(err);
   }
+}
+
+// ── Conversations (memory) ───────────────────────────────────────
+export function getConversations() {
+  return request('/assistant/conversations');
+}
+
+export function getConversationMessages(id) {
+  return request('/assistant/conversations/' + encodeURIComponent(id) + '/messages');
+}
+
+export function deleteConversation(id) {
+  return request('/assistant/conversations/' + encodeURIComponent(id), { method: 'DELETE' });
+}
+
+// Rate an assistant answer: 1 helpful, -1 not helpful, 0 clear.
+export function sendFeedback(messageId, rating) {
+  return request('/assistant/messages/' + encodeURIComponent(messageId) + '/feedback', {
+    method: 'POST',
+    body: { rating },
+  });
 }
 
 // ── Ingestion ────────────────────────────────────────────────────
