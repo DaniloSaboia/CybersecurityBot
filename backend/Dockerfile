@@ -22,5 +22,6 @@ RUN apt-get update \
 COPY --from=build /workspace/target/kms-backend-*.jar app.jar
 
 EXPOSE 8080
-ENV JAVA_OPTS=""
+ENV JAVA_OPTS="" \
+    LOG_JSON="true"
 ENTRYPOINT ["sh","-c","java $JAVA_OPTS -jar app.jar"]

@@ -2,11 +2,12 @@
 
 A cybersecurity knowledge console with three surfaces:
 
-1. **Assistant** — a RAG chatbot that answers security questions grounded in the knowledge base, with inline citations, multi-turn conversation memory, IOC-aware lookups, and answer feedback.
+1. **Assistant** — a RAG chatbot that answers security questions grounded in the knowledge base, with inline citations, multi-turn conversation memory (standalone-question rewriting), IOC-aware lookups, optional LLM re-ranking, and answer feedback.
 2. **Knowledge Base** — a searchable library of security documents (threat intel, policies, postmortems, playbooks, CVE advisories, compliance frameworks).
-3. **Ingestion** — a document pipeline (Ingest → Extract → Chunk → Embed → Index) with source connectors and live job status into a vector store.
+3. **Ingestion** — a document pipeline (Ingest → Extract → Chunk → Embed → Index) with source connectors (NVD, CISA KEV, MITRE ATT&CK) and live job status into a vector store.
+4. **Watchlists** — CVE/product/actor subscriptions that fire alerts when connector syncs land matching articles.
 
-**Stack:** Spring Boot 3.4 (Java 21) · React 18 + Vite · Supabase Postgres + **pgvector** · [Spring AI](https://docs.spring.io/spring-ai/reference/) with **pluggable Mistral _or_ local Ollama** providers. Everything runs in Docker — no local JDK/Node required.
+**Stack:** Spring Boot 3.4 (Java 17) · React 18 + Vite · hosted Supabase Postgres + **pgvector** · [Spring AI](https://docs.spring.io/spring-ai/reference/) with **OpenRouter chat**, Mistral embeddings, or local Ollama.
 
 ---
 
@@ -24,43 +25,35 @@ A cybersecurity knowledge console with three surfaces:
                  │   ├─ ingest     upload→extract(Tika)→chunk→embed    │
                  │   ├─ assistant  RAG: retrieve → ground → cite       │
                  │   └─ vectorstore  Spring AI VectorStore (pgvector)  │
-                 │        provider = Mistral │ Ollama  (by profile)    │
+                 │        provider = OpenRouter │ Mistral │ Ollama     │
                  └───────────────┬───────────────────┬────────────────┘
                                  │ JDBC              │ embeddings/chat
                  ┌───────────────▼─────────┐   ┌─────▼──────────────┐
-                 │ Supabase Postgres        │   │ Mistral API   OR   │
-                 │  + pgvector (:54322)     │   │ Ollama (:11434)    │
-                 │  (run via Supabase CLI)  │   └────────────────────┘
+                 │ hosted Supabase Postgres │   │ OpenRouter/Mistral │
+                 │  + pgvector              │   │ or Ollama (:11434) │
+                 │  + Supabase Auth         │   └────────────────────┘
                  └──────────────────────────┘
 ```
 
-Embeddings are **1024-dim** so the same `vector(1024)` schema works for both `mistral-embed` (Mistral) and `mxbai-embed-large` (Ollama). Switching providers with a different dimension means editing the migration and re-embedding..
+Embeddings are **1024-dim** so the same `vector(1024)` schema works for both `mistral-embed` (Mistral) and `mxbai-embed-large` (Ollama). Switching providers with a different dimension means editing the migration and re-embedding.
 
 ---
 
 ## Prerequisites
 
-- **Docker Desktop** (you have it) — runs the backend, frontend, and optional Ollama.
-- **Supabase CLI** — runs local Postgres + pgvector + Studio. Install:
-  `scoop install supabase` · `npm i -g supabase` · or see https://supabase.com/docs/guides/cli
-- (Optional) A **Mistral API key** from https://console.mistral.ai if you want cloud inference instead of local.
-
-> No local JDK, Maven, or Node needed — they run inside the build containers.
+- **Java 17** and **Maven 3.9+** for the backend.
+- **Node.js 20+** and npm for the frontend.
+- A hosted **Supabase** project with the schema migration applied.
+- An **OpenRouter API key** for free-router chat and a **Mistral API key** for 1024-dimension embeddings.
+- (Optional) Ollama for an entirely local AI profile.
 
 ---
 
 ## Quick start
 
-### 1. Start the database (Supabase CLI)
+### 1. Configure hosted Supabase
 
-```bash
-cd CybersecurityBot
-supabase start
-```
-
-This boots Postgres on **:54322** (user/pass `postgres`/`postgres`), the API on :54321, and Studio on :54323, and applies the migration in `supabase/migrations/` (extensions, tables, the `vector_store` table + HNSW index).
-
-> If `supabase start` warns about a config version mismatch, run `supabase init` once to regenerate `supabase/config.toml` for your CLI version — it leaves the migrations untouched — then `supabase start` again.
+Create a Supabase project, apply `supabase/migrations/20260829000000_init_schema.sql`, and fill in the database, project URL, anon key, JWKS URL, and JWT issuer values. Use the session-pooler connection details for environments where direct Postgres connections are unavailable. See [`docs/supabase-hosted-setup.md`](docs/supabase-hosted-setup.md) for the complete setup.
 
 ### 2. Configure environment
 
@@ -68,32 +61,43 @@ This boots Postgres on **:54322** (user/pass `postgres`/`postgres`), the API on 
 cp .env.example .env
 ```
 
-Then pick your provider in `.env`:
+The default `.env.example` uses the `openrouter` profile. Add:
 
-- **Mistral (cloud):** set `SPRING_PROFILES_ACTIVE=mistral` and `MISTRAL_API_KEY=...`
-- **Local (Ollama):** set `SPRING_PROFILES_ACTIVE=local`
+- `OPENROUTER_API_KEY` for chat through the current free-model router.
+- `MISTRAL_API_KEY` for ingestion and query embeddings.
+
+The backend and Vite automatically load the repository-root `.env`; only `VITE_`-prefixed variables are exposed to browser code.
 
 ### 3. Run the app
 
-**Mistral mode:**
+Locally:
+
 ```bash
-docker compose up --build
+# terminal 1
+cd backend
+mvn spring-boot:run
+
+# terminal 2
+cd frontend
+npm ci
+npm run dev
 ```
 
-**Local mode (Ollama):**
+Or as a one-command Docker stack (pgvector DB + backend + frontend, optional
+Ollama profile for fully local AI):
+
 ```bash
-SPRING_PROFILES_ACTIVE=local docker compose --profile local up --build
-# one-time: pull the models
-docker compose exec ollama ollama pull llama3.1
-docker compose exec ollama ollama pull mxbai-embed-large
+docker compose up                      # db + backend + frontend
+docker compose --profile local-ai up   # + Ollama
 ```
-(On Windows PowerShell, set the var first: `$env:SPRING_PROFILES_ACTIVE="local"` then run the compose command.)
+
+For local Ollama without Docker, set `SPRING_PROFILES_ACTIVE=local`, pull `llama3.1` and `mxbai-embed-large`, then start both applications with Ollama listening on `localhost:11434`.
 
 ### 4. Open it
 
 - App: **http://localhost:5173**
 - API docs (Swagger): **http://localhost:8080/swagger-ui.html**
-- Supabase Studio: **http://localhost:54323**
+- Supabase Studio: open it from your hosted project dashboard
 
 On first boot the backend seeds the knowledge base from `backend/src/main/resources/seed/seed.json` (8 security articles, categories, connectors, demo jobs) and embeds the articles into pgvector — so the KB is populated and the Assistant is genuinely grounded out of the box.
 
@@ -121,6 +125,16 @@ On first boot the backend seeds the knowledge base from `backend/src/main/resour
 | DELETE | `/api/ingest/jobs/{id}` | delete an own job + its embeddings |
 | GET | `/api/connectors` | source connectors |
 | POST | `/api/connectors/nvd/sync?days=&max=` | pull recent CVEs from NVD into the KB |
+| POST | `/api/connectors/kev/sync?max=` | pull CISA known-exploited vulnerabilities |
+| POST | `/api/connectors/attack/sync?max=` | pull MITRE ATT&CK Enterprise techniques |
+| GET | `/api/watchlists` | own watchlists (with unread alert counts) |
+| POST | `/api/watchlists` | create a watchlist (`{label, terms[], minSeverity}`) |
+| DELETE | `/api/watchlists/{id}` | delete a watchlist (cascades its alerts) |
+| GET | `/api/alerts?unread=` | own alert feed (newest first) |
+| POST | `/api/alerts/{id}/read` | mark one alert read |
+| POST | `/api/alerts/read-all` | mark every alert read |
+| GET | `/api/eval/cases` | retrieval-eval golden set |
+| POST | `/api/eval/retrieval` | run the golden set, report recall@k / MRR / nDCG |
 | GET | `/api/vectorstore/status` | engine, model, chunk count, dim, health |
 
 The chat response is an ordered array of typed **blocks** (`text`, `steps`, `callout`, `report`) plus `citations` (article ids). Inline `[ARTICLE-ID]` tokens render as clickable citation chips. The full wire contract — blocks, the SSE event stream, and conversations — is specified in [`docs/api-contract.md`](docs/api-contract.md).
@@ -131,11 +145,10 @@ The chat response is an ordered array of typed **blocks** (`text`, `steps`, `cal
 
 ```
 CybersecurityBot/
-├─ docker-compose.yml         backend + frontend (+ optional ollama)
-├─ .env.example               provider + DB + RAG config
+├─ .env.example               provider + hosted DB + RAG config
+├─ docs/                      hosted setup + API contract
 ├─ supabase/
-│  ├─ config.toml             local Supabase CLI config
-│  └─ migrations/             schema (tables, pgvector, indexes)
+│  └─ migrations/             schema, RLS, pgvector, indexes
 ├─ backend/                   Spring Boot
 │  ├─ Dockerfile              multi-stage Maven build
 │  └─ src/main/java/com/sentinel/kms/
@@ -157,6 +170,7 @@ CybersecurityBot/
 
 Provider selection is pure config (Spring AI's `spring.ai.model.{chat,embedding}` switch):
 
+- `application-openrouter.yml` → OpenRouter chat + Mistral embeddings
 - `application-mistral.yml` → Mistral chat + embeddings
 - `application-local.yml` → Ollama chat + embeddings
 
@@ -168,37 +182,67 @@ To add another OpenAI-compatible provider, add the matching `spring-ai-starter-m
 
 ```bash
 # backend (JUnit 5; pure unit tests, no DB or API key needed)
-docker run --rm -v "$PWD/backend:/app" -w /app maven:3.9-eclipse-temurin-21 mvn -B -ntp verify
+cd backend
+mvn spring-boot:run &   # not required for tests — see below
+mvn -B -ntp verify
+# HybridSearchIntegrationTest self-skips when Docker is unavailable and runs
+# the real hybrid-SQL against a pgvector container when it is.
 
 # frontend (vitest)
-cd frontend && npm install && npm test
+cd ../frontend
+npm ci
+npm test -- --run
+
+# end-to-end smoke (Playwright; builds the app and serves it via vite preview)
+npm run test:e2e
 ```
 
-CI runs both plus a production frontend build on every push / PR
-(`.github/workflows/ci.yml`).
+CI runs backend + frontend tests plus a production frontend build on every
+push / PR, a Playwright E2E job, and CodeQL security scanning
+(`.github/workflows/`). Dependabot keeps dependencies current; CD builds and
+publishes the Docker images to GHCR on merges to `main` (`cd.yml`). A nightly
+workflow runs the RAG retrieval eval (`eval.yml`).
 
 ### Database migrations
 
 `supabase/migrations/` is the source of truth (Hibernate `ddl-auto: none`).
-After pulling changes with new migrations, run `supabase db reset` (or
-`supabase migration up`) to apply them.
+Apply new migrations through the Supabase SQL editor or your linked Supabase CLI project.
 
 ## Notes & next steps
 
 - **Auth** — Supabase (gotrue) sessions end-to-end: the frontend signs in with
   Supabase, the backend validates the ES256 access tokens against Supabase's
-  JWKS endpoint and enforces the `authenticated` audience claim (rejecting
-  anon/service keys). Set `SUPABASE_JWT_ISSUER` to also pin the issuer.
+  JWKS endpoint, pins `SUPABASE_JWT_ISSUER`, and enforces the `authenticated`
+  audience claim (rejecting anon/service keys).
 - **Chat** — streaming (SSE) with per-user conversation memory: threads are
   persisted, the recent transcript is replayed into each prompt, and answers
-  can be rated (👍/👎) via the feedback endpoint.
+  can be rated (👍/👎) via the feedback endpoint. Multi-turn follow-ups are
+  rewritten into standalone retrieval questions first (`RAG_QUERY_REWRITE`),
+  and an optional LLM re-ranker re-orders the fused candidate window
+  (`RAG_RERANK=true`, off by default — it adds one model call per turn).
+  Retrieval can be scoped per-request via `category` / `minSeverity`.
 - **Retrieval** — hybrid: pgvector similarity fused with Postgres full-text
   (reciprocal-rank fusion), so exact tokens like `CVE-2024-21413` match
   reliably. Questions containing IOCs (IP/domain/hash/email) are additionally
   grounded via the KB's indicator index (`articles.iocs`).
-- **Connectors** — NVD is live: manual sync from the UI plus an optional
-  nightly schedule (`NVD_SYNC_ENABLED=true`). Set `NVD_API_KEY` to lift NVD's
-  aggressive anonymous rate limits.
+- **Eval harness** — a golden set (`backend/src/main/resources/eval/`) runs
+  through the live retrieval path and reports recall@k, MRR and nDCG via
+  `POST /api/eval/retrieval`; a nightly CI workflow re-runs it.
+- **Connectors** — NVD, CISA KEV and MITRE ATT&CK are live: manual sync from
+  the UI plus an optional nightly schedule for NVD (`NVD_SYNC_ENABLED=true`).
+  Set `NVD_API_KEY` to lift NVD's aggressive anonymous rate limits.
+- **Watchlists** — users subscribe to CVE ids, products or threat-actor names
+  (with an optional minimum severity); every connector sync pushes new
+  articles past the matcher and files alerts into the per-user feed.
+- **Hardening** — per-user rate limits on the chat + ingest surfaces
+  (Bucket4j, `RATELIMIT_*`), an SSRF-guarded URL fetcher, extension-allowlisted
+  uploads, and prompt-injection defenses: ingested documents are sanitized
+  (`ContentSanitizer`) and every prompt frames retrieved sources as untrusted
+  data, never instructions.
+- **Observability** — Prometheus metrics at `/actuator/prometheus`
+  (authenticated by default; `METRICS_OPEN=true` opens it on trusted
+  networks), chat latency / citation / model-failure / connector metrics,
+  and structured JSON logs (`LOG_JSON=true`, on in the Docker image).
 - **Ingestion** — uploads are extension-allowlisted and size-capped; URL
   imports are fetched for real behind an SSRF guard (only public http(s)
   hosts, redirects re-validated, body capped at 2 MB). Jobs are per-user:

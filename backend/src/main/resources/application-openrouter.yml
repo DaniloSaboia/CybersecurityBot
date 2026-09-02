@@ -1,0 +1,20 @@
+# OpenRouter AI provider stack. Active when SPRING_PROFILES_ACTIVE=openrouter.
+spring:
+  ai:
+    model:
+      chat: openai
+      embedding: mistral
+    openai:
+      base-url: ${OPENROUTER_BASE_URL:https://openrouter.ai/api/v1}
+      api-key: ${OPENROUTER_API_KEY:}
+      chat:
+        options:
+          model: ${OPENROUTER_CHAT_MODEL:openrouter/free}
+          temperature: 0.2
+    # OpenRouter provides chat here; Mistral remains the default 1024-dim
+    # embedding provider used by the existing pgvector schema.
+    mistralai:
+      api-key: ${MISTRAL_API_KEY:}
+      embedding:
+        options:
+          model: ${MISTRAL_EMBED_MODEL:mistral-embed}

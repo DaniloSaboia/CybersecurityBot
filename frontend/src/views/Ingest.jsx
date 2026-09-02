@@ -1,56 +1,95 @@
-// views/Ingest.jsx — ingestion pipeline, source connectors, upload + processing.
+// views/Ingest.jsx — Red Noir ingestion pipeline & vector indexing.
 
-import { useRef, useState } from 'react';
+import { useRef, useState, Fragment } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { Icon } from '../icons.jsx';
-import { StatusDot, ConnectorIcon } from '../ui.jsx';
+import { StatusDot, ConnectorIcon, BlueprintCorners, DimensionDivider, RedlineNote, StampButton } from '../ui.jsx';
 import { useJobs, useConnectors, useVectorStoreStatus, queryClient } from '../lib/queries.js';
 import { uploadFile, addUrl, retryJob, deleteJob, syncConnector } from '../lib/api.js';
 
 const STAGE_LABEL = {
-  extracting: 'Extracting', chunking: 'Chunking', embedding: 'Embedding',
-  indexed: 'Indexed', failed: 'Failed', queued: 'Queued',
+  extracting: 'EXTRACTING', chunking: 'CHUNKING', embedding: 'EMBEDDING',
+  indexed: 'INDEXED', failed: 'FAILED', queued: 'QUEUED',
 };
 
 // fixed 5-stage pipeline model: ingest -> extract -> chunk -> embed -> index
 const PIPELINE_STAGES = [
-  { id: 'ingest', label: 'Ingest', desc: 'Pull from connectors or accept an upload' },
-  { id: 'extract', label: 'Extract', desc: 'Parse text, tables and metadata from the source' },
-  { id: 'chunk', label: 'Chunk', desc: 'Split into overlapping, retrieval-sized passages' },
-  { id: 'embed', label: 'Embed', desc: 'Encode each chunk into a dense vector' },
-  { id: 'index', label: 'Index', desc: 'Upsert vectors into the searchable store' },
+  { id: 'ingest', label: '01 // INGEST', desc: 'Pull from connectors or accept an upload stream' },
+  { id: 'extract', label: '02 // EXTRACT', desc: 'Parse text, tables, IOCs, and metadata schemas' },
+  { id: 'chunk', label: '03 // CHUNK', desc: 'Split into overlapping, retrieval-sized tokens' },
+  { id: 'embed', label: '04 // EMBED', desc: 'Encode chunks to 1024-dim vectors via mistral-embed' },
+  { id: 'index', label: '05 // INDEX', desc: 'Upsert vectors into pgvector cosine space' },
 ];
 
 export default function Ingest() {
   const [dragOver, setDragOver] = useState(false);
+  const [operationNotice, setOperationNotice] = useState(null);
   const fileInputRef = useRef(null);
 
-  const { data: jobs = [] } = useJobs();
-  const { data: connectors = [] } = useConnectors();
-  const { data: vector } = useVectorStoreStatus();
+  const jobsQuery = useJobs();
+  const connectorsQuery = useConnectors();
+  const vectorQuery = useVectorStoreStatus();
+  const jobs = jobsQuery.data || [];
+  const connectors = connectorsQuery.data || [];
+  const vector = vectorQuery.data;
 
   function refreshJobs() { queryClient.invalidateQueries({ queryKey: ['jobs'] }); }
+  function operationError(label, err) {
+    setOperationNotice({ tone: 'error', text: `${label}: ${String((err && err.message) || err || 'unknown error')}` });
+  }
 
-  const uploadMut = useMutation({ mutationFn: uploadFile, onSuccess: refreshJobs });
-  const urlMut = useMutation({ mutationFn: addUrl, onSuccess: refreshJobs });
-  const retryMut = useMutation({ mutationFn: retryJob, onSuccess: refreshJobs });
+  const uploadMut = useMutation({
+    mutationFn: uploadFile,
+    onMutate: () => setOperationNotice({ tone: 'info', text: 'Uploading specification document…' }),
+    onSuccess: () => {
+      refreshJobs();
+      setOperationNotice({ tone: 'success', text: 'Upload accepted and queued for ingestion.' });
+    },
+    onError: (err) => operationError('Upload failed', err),
+  });
+  const urlMut = useMutation({
+    mutationFn: addUrl,
+    onMutate: () => setOperationNotice({ tone: 'info', text: 'Submitting document URL…' }),
+    onSuccess: () => {
+      refreshJobs();
+      setOperationNotice({ tone: 'success', text: 'URL accepted and queued for ingestion.' });
+    },
+    onError: (err) => operationError('URL ingestion failed', err),
+  });
+  const retryMut = useMutation({
+    mutationFn: retryJob,
+    onMutate: () => setOperationNotice({ tone: 'info', text: 'Retrying failed ingestion job…' }),
+    onSuccess: () => {
+      refreshJobs();
+      setOperationNotice({ tone: 'success', text: 'Ingestion job returned to the execution queue.' });
+    },
+    onError: (err) => operationError('Job retry failed', err),
+  });
   const deleteMut = useMutation({
     mutationFn: deleteJob,
+    onMutate: () => setOperationNotice({ tone: 'info', text: 'Removing ingested document and embeddings…' }),
     onSuccess: () => {
       refreshJobs();
       queryClient.invalidateQueries({ queryKey: ['vectorstore'] });
+      setOperationNotice({ tone: 'success', text: 'Document and embeddings removed.' });
     },
+    onError: (err) => operationError('Delete failed', err),
   });
 
-  const [syncMsg, setSyncMsg] = useState('');
   const syncMut = useMutation({
     mutationFn: (id) => syncConnector(id),
+    onMutate: () => setOperationNotice({ tone: 'info', text: 'Synchronizing source conduit…' }),
     onSuccess: (res) => {
       ['connectors', 'vectorstore', 'articles', 'article-index'].forEach((k) =>
         queryClient.invalidateQueries({ queryKey: [k] }));
-      if (res) setSyncMsg(`+${res.created} CVEs · ${res.embedded} embedded (of ${res.fetched} fetched)`);
+      setOperationNotice({
+        tone: 'success',
+        text: res
+          ? `+${res.created} CVEs · ${res.embedded} embedded (${res.fetched} fetched)`
+          : 'Source conduit synchronized.',
+      });
     },
-    onError: (err) => setSyncMsg('sync failed: ' + String(err.message || err)),
+    onError: (err) => operationError('Connector sync failed', err),
   });
 
   function onPickFiles() { fileInputRef.current && fileInputRef.current.click(); }
@@ -60,70 +99,139 @@ export default function Ingest() {
     e.target.value = '';
   }
   function onAddUrl() {
-    const url = window.prompt('Document URL to ingest');
+    const url = window.prompt('Document URL to ingest:');
     if (url) urlMut.mutate(url);
   }
 
   // stats derive from the job list + vector store
-  const active = jobs.filter((j) => !['indexed', 'failed'].includes(j.stage)).length;
-  const indexedToday = jobs.filter((j) => j.stage === 'indexed').length;
-  const totalDocs = vector && vector.chunks != null ? vector.chunks.toLocaleString() : '764';
+  const active = jobsQuery.isSuccess
+    ? jobs.filter((j) => !['indexed', 'failed'].includes(j.stage)).length
+    : '—';
+  const indexedJobs = jobsQuery.isSuccess
+    ? jobs.filter((j) => j.stage === 'indexed').length
+    : '—';
+  const indexedChunks = vectorQuery.isSuccess && vector && vector.chunks != null
+    ? vector.chunks.toLocaleString()
+    : '—';
 
   return (
     <div className="ingest">
       <div className="view-head">
         <div>
           <h1 className="view-title">Ingestion Pipeline</h1>
-          <p className="view-sub">Connectors, uploads, and the path every document takes into the vector store</p>
+          <p className="view-sub">Connectors, uploads, and data flow into the vector index</p>
         </div>
-        <div className="ingest-stats">
-          <div className="ingest-stat"><span className="ingest-stat-n">{active}</span><span className="ingest-stat-l">in flight</span></div>
-          <div className="ingest-stat"><span className="ingest-stat-n">{indexedToday}</span><span className="ingest-stat-l">indexed today</span></div>
-          <div className="ingest-stat"><span className="ingest-stat-n accent">{totalDocs}</span><span className="ingest-stat-l">total docs</span></div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <RedlineNote>// OCR &amp; parser telemetry below</RedlineNote>
+          <div className="ingest-stats" aria-label="Ingestion statistics" aria-live="polite">
+            <div className="ingest-stat"><span className="ingest-stat-n">{active}</span><span className="ingest-stat-l">IN FLIGHT</span></div>
+            <div className="ingest-stat"><span className="ingest-stat-n">{indexedJobs}</span><span className="ingest-stat-l">INDEXED JOBS</span></div>
+            <div className="ingest-stat"><span className="ingest-stat-n accent">{indexedChunks}</span><span className="ingest-stat-l">INDEXED CHUNKS</span></div>
+          </div>
         </div>
       </div>
 
-      <div className="ingest-pipeline">
+      <div className="ingest-pipeline" role="list" aria-label="Five-stage ingestion pipeline">
         {PIPELINE_STAGES.map((s, i) => (
           <Fragment key={s.id}>
-            <div className="pipe-stage">
-              <div className="pipe-stage-top"><span className="pipe-idx">{String(i + 1).padStart(2, '0')}</span><span className="pipe-name">{s.label}</span></div>
+            <div className="pipe-stage" role="listitem">
+              <div className="pipe-stage-top">
+                <span className="pipe-idx">0{i + 1}</span>
+                <span className="pipe-name">{s.label}</span>
+              </div>
               <p className="pipe-desc">{s.desc}</p>
             </div>
-            {i < PIPELINE_STAGES.length - 1 && <div className="pipe-arrow"><Icon name="chevron" size={16} /></div>}
+            {i < PIPELINE_STAGES.length - 1 && <div className="pipe-arrow"><Icon name="chevron" size={15} /></div>}
           </Fragment>
         ))}
       </div>
 
+      <DimensionDivider label="INGESTION FEED" dim={`CHUNKS ${indexedChunks}`} />
+
+      {operationNotice && (
+        <div
+          className={`ingest-notice tone-${operationNotice.tone}`}
+          role={operationNotice.tone === 'error' ? 'alert' : 'status'}
+          aria-live="polite"
+          style={{
+            margin: '0 var(--pad) 12px',
+            padding: '8px 10px',
+            fontFamily: 'var(--mono)',
+            fontSize: 10.5,
+            color: operationNotice.tone === 'error' ? 'var(--redline-bright)' : 'var(--accent)',
+            border: `1px solid ${operationNotice.tone === 'error' ? 'var(--redline-bright)' : 'var(--accent)'}`,
+            background: operationNotice.tone === 'error' ? 'var(--redline-bg)' : 'var(--accent-soft)',
+          }}
+          >
+            [ {operationNotice.tone === 'error' ? 'FAULT' : 'STATUS'} ] {operationNotice.text}
+          </div>
+        )}
+
       <div className="ingest-cols">
         <div className="ingest-col-main">
-          <input ref={fileInputRef} type="file" style={{ display: 'none' }} onChange={onFilesSelected} />
+          <input
+            ref={fileInputRef}
+            type="file"
+            aria-label="Select one specification document"
+            style={{ display: 'none' }}
+            onChange={onFilesSelected}
+          />
           <div
             className={'drop-zone' + (dragOver ? ' over' : '')}
+            aria-busy={uploadMut.isPending || urlMut.isPending}
             onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
             onDragLeave={() => setDragOver(false)}
             onDrop={(e) => { e.preventDefault(); setDragOver(false); const f = e.dataTransfer.files[0]; if (f) uploadMut.mutate(f); }}
           >
-            <div className="drop-icon"><Icon name="upload" size={26} /></div>
-            <div className="drop-title">Drop files to ingest</div>
-            <div className="drop-sub">PDF · DOCX · JSON · CSV · HTML · EML — or pull from a connector</div>
+            <BlueprintCorners coords="INTAKE // 01" />
+            <div className="drop-icon"><Icon name="upload" size={24} /></div>
+            <div className="drop-title">Drop a security document</div>
+            <div className="drop-sub">PDF · DOCX · JSON · CSV · HTML · EML — or sync via automated connector</div>
             <div className="drop-actions">
-              <button className="btn-primary" onClick={onPickFiles}><Icon name="upload" size={14} /> Select files</button>
-              <button className="btn-ghost" onClick={onAddUrl}><Icon name="link" size={14} /> Add from URL</button>
+              <StampButton
+                className="btn-primary"
+                action="SELECT"
+                context="LOCAL FILE"
+                disabled={uploadMut.isPending}
+                onClick={onPickFiles}
+              >
+                <Icon name="upload" size={13} /> {uploadMut.isPending ? 'UPLOADING…' : 'SELECT FILE'}
+              </StampButton>
+              <StampButton
+                className="btn-ghost"
+                action="PULL"
+                context="URL"
+                disabled={urlMut.isPending}
+                onClick={onAddUrl}
+              >
+                <Icon name="link" size={13} /> {urlMut.isPending ? 'SUBMITTING…' : 'PULL FROM URL'}
+              </StampButton>
             </div>
           </div>
 
           <div className="jobs-head">
-            <span><Icon name="cpu" size={14} /> Processing queue</span>
-            <span className="jobs-count">{jobs.length} jobs</span>
+            <span><Icon name="cpu" size={14} /> JOB QUEUE</span>
+            <span className="jobs-count">
+              {jobsQuery.isPending ? 'LOADING…' : jobsQuery.isError ? 'UNAVAILABLE' : `${active} ACTIVE · ${jobs.length} TOTAL`}
+            </span>
           </div>
-          <div className="jobs-list">
-            {jobs.map((j) => (
+          <div className="jobs-list" aria-live="polite" aria-busy={jobsQuery.isPending}>
+            {jobsQuery.isPending && <div className="ingest-state" role="status">Loading job queue…</div>}
+            {jobsQuery.isError && (
+              <div className="ingest-state" role="alert">
+                Job queue unavailable — {String(jobsQuery.error?.message || jobsQuery.error)}
+                <StampButton tone="redline" text="RETRY" onClick={() => jobsQuery.refetch()} />
+              </div>
+            )}
+            {jobsQuery.isSuccess && jobs.length === 0 && <div className="ingest-state">No ingestion jobs</div>}
+            {jobsQuery.isSuccess && jobs.map((j, index) => (
               <JobRow
                 key={j.id}
                 j={j}
+                index={index}
                 onRetry={() => retryMut.mutate(j.id)}
                 onDelete={() => { if (window.confirm(`Delete "${j.name}" and remove its embeddings?`)) deleteMut.mutate(j.id); }}
+                retrying={retryMut.isPending && retryMut.variables === j.id}
                 deleting={deleteMut.isPending && deleteMut.variables === j.id}
               />
             ))}
@@ -132,89 +240,121 @@ export default function Ingest() {
 
         <div className="ingest-col-side">
           <div className="connectors-head">
-            <span><Icon name="link" size={14} /> Source connectors</span>
-            <button className="connectors-add"><Icon name="bolt" size={13} /> Add</button>
+            <span><Icon name="link" size={14} /> SOURCE CONNECTORS</span>
           </div>
-          {syncMsg && <div style={{ fontFamily: 'var(--mono)', fontSize: 10.5, color: 'var(--accent-dim)', margin: '-4px 0 8px' }}>{syncMsg}</div>}
-          <div className="connectors-list">
-            {connectors.map((c) => (
+          <div className="connectors-list" aria-live="polite" aria-busy={connectorsQuery.isPending}>
+            {connectorsQuery.isPending && <div className="ingest-state" role="status">Loading connectors…</div>}
+            {connectorsQuery.isError && (
+              <div className="ingest-state" role="alert">
+                Connectors unavailable — {String(connectorsQuery.error?.message || connectorsQuery.error)}
+                <StampButton tone="redline" text="RETRY" onClick={() => connectorsQuery.refetch()} />
+              </div>
+            )}
+            {connectorsQuery.isSuccess && connectors.length === 0 && <div className="ingest-state">No connectors configured</div>}
+            {connectorsQuery.isSuccess && connectors.map((c, index) => (
               <ConnectorRow
                 key={c.id}
                 c={c}
+                index={index}
                 onSync={c.id === 'nvd' ? () => syncMut.mutate(c.id) : null}
                 syncing={syncMut.isPending && syncMut.variables === c.id}
               />
             ))}
           </div>
-          <VectorCard vector={vector} />
+          <VectorCard
+            vector={vector}
+            loading={vectorQuery.isPending}
+            error={vectorQuery.error}
+            onRetry={() => vectorQuery.refetch()}
+          />
         </div>
       </div>
     </div>
   );
 }
 
-// lightweight Fragment alias to keep markup 1:1 with the prototype
-function Fragment({ children }) { return <>{children}</>; }
-
-function VectorCard({ vector }) {
+function VectorCard({ vector, loading, error, onRetry }) {
   const v = vector || {};
-  const engine = v.engine || 'pgvector · cosine';
-  const model = v.embeddingModel || 'text-embed-3-lg';
-  const chunks = v.chunks != null ? v.chunks.toLocaleString() : '41,208';
-  const dim = v.dim != null ? v.dim : 3072;
-  const healthy = v.healthy !== false;
-  const p95 = v.p95Ms != null ? v.p95Ms : 38;
+  const engine = v.engine || '—';
+  const model = v.embeddingModel || '—';
+  const chunks = v.chunks != null ? v.chunks.toLocaleString() : '—';
+  const dim = v.dim != null ? v.dim : '—';
+  const p95 = v.p95Ms != null ? `${v.p95Ms}ms` : '—';
+  const healthStatus = v.healthy === true ? 'NOMINAL' : v.healthy === false ? 'DEGRADED' : 'UNKNOWN';
   return (
-    <div className="vector-card">
-      <div className="vector-card-head"><Icon name="database" size={14} /> Vector store</div>
+    <div className="vector-card" aria-busy={loading}>
+      <div className="vector-card-head"><Icon name="database" size={14} /> Vector Store</div>
+      {loading && <div className="ingest-state" role="status">Loading vector telemetry…</div>}
+      {error && (
+        <div className="ingest-state" role="alert">
+          Vector telemetry unavailable — {String(error.message || error)}
+          <StampButton tone="redline" text="RETRY" onClick={onRetry} />
+        </div>
+      )}
+      {!loading && !error && (
+        <>
       <div className="vector-rows">
         <div className="vector-row"><span>Engine</span><code>{engine}</code></div>
         <div className="vector-row"><span>Embedding</span><code>{model}</code></div>
-        <div className="vector-row"><span>Chunks</span><code>{chunks}</code></div>
-        <div className="vector-row"><span>Dim</span><code>{dim}</code></div>
+        <div className="vector-row"><span>Indexed Chunks</span><code>{chunks}</code></div>
+        <div className="vector-row"><span>Dimension</span><code>{dim}</code></div>
       </div>
       <div className="vector-health">
-        <span className="status-dot" style={{ background: healthy ? 'var(--accent)' : 'var(--sev-critical)' }} />
-        {healthy ? 'Healthy' : 'Degraded'} · p95 query {p95}ms
+        <StatusDot status={healthStatus === 'NOMINAL' ? 'connected' : healthStatus === 'DEGRADED' ? 'error' : 'queued'} />
+        STATUS {healthStatus} · P95 {p95}
       </div>
+        </>
+      )}
     </div>
   );
 }
 
-function JobRow({ j, onRetry, onDelete, deleting }) {
+function JobRow({ j, index, onRetry, onDelete, retrying, deleting }) {
   const done = j.stage === 'indexed';
   const failed = j.stage === 'failed';
   const barColor = failed ? 'var(--sev-critical)' : done ? 'var(--accent)' : 'var(--sev-medium)';
-  return (
-    <div className={'job-row' + (failed ? ' failed' : '')}>
-      <div className="job-icon"><Icon name={failed ? 'x' : done ? 'check' : 'cpu'} size={15} /></div>
-      <div className="job-main">
-        <div className="job-line1">
-          <span className="job-name">{j.name}</span>
-          <span className="job-size">{j.size}</span>
-        </div>
-        <div className="job-line2">
-          <StatusDot status={j.stage} />
-          <span className="job-stage">{STAGE_LABEL[j.stage] || j.stage}</span>
-          <span className="job-src">· {j.source}</span>
-          {j.chunks > 0 && <span className="job-chunks">· {j.chunks} chunks</span>}
-          {failed && <span className="job-error">· {j.error}</span>}
-        </div>
+  const rawPct = Number(j.pct);
+  const pct = Number.isFinite(rawPct) ? Math.min(100, Math.max(0, rawPct)) : 0;
+    return (
+      <div className={'job-row' + (failed ? ' failed' : '')} aria-label={`${j.name}: ${STAGE_LABEL[j.stage] || j.stage || 'unknown'}`}>
+        <div className="job-icon"><Icon name={failed ? 'x' : done ? 'check' : 'cpu'} size={14} /></div>
+        <div className="job-main">
+          <div className="job-line1">
+            <span className="job-name">{j.name}</span>
+            <span className="job-size">{j.size}</span>
+          </div>
+          <div className="job-line2">
+            <StatusDot status={j.stage} />
+            <span className="job-stage">{STAGE_LABEL[j.stage] || j.stage}</span>
+            <span className="job-src">· {j.source}</span>
+            {j.chunks > 0 && <span className="job-chunks">· {j.chunks} CHUNKS</span>}
+            {failed && <span className="job-error">· {j.error}</span>}
+          </div>
         {!done && !failed && (
-          <div className="job-bar"><div className="job-bar-fill" style={{ width: j.pct + '%', background: barColor }} /></div>
+          <div className="job-bar" role="progressbar" aria-label={`Ingestion progress for ${j.name}`} aria-valuemin={0} aria-valuemax={100} aria-valuenow={pct}>
+            <div className="job-bar-fill" style={{ width: pct + '%', background: barColor }} />
+          </div>
         )}
       </div>
-      <div className="job-when">{done ? <span className="job-ok">indexed</span> : failed ? <button className="job-retry" onClick={onRetry}><Icon name="refresh" size={12} /> retry</button> : Math.round(j.pct) + '%'}</div>
+      <div className="job-when">
+        {done ? (
+          <span className="job-ok">OK</span>
+        ) : failed ? (
+          <StampButton className="job-retry" tone="redline" text={retrying ? 'RETRYING…' : 'RETRY'} disabled={retrying} onClick={onRetry} />
+        ) : (
+          Math.round(pct) + '%'
+        )}
+      </div>
       {onDelete && (
-        <button className="job-delete" title="Delete ingested file & its embeddings" disabled={deleting} onClick={onDelete}>
-          <Icon name={deleting ? 'refresh' : 'trash'} size={14} />
+        <button type="button" className="job-delete" aria-label={`Delete ${j.name} and its embeddings`} title="Delete ingested file & its embeddings" disabled={deleting} onClick={onDelete}>
+          <Icon name={deleting ? 'refresh' : 'trash'} size={13} />
         </button>
       )}
     </div>
   );
 }
 
-function ConnectorRow({ c, onSync, syncing }) {
+function ConnectorRow({ c, index, onSync, syncing }) {
   return (
     <div className="connector-row">
       <div className="connector-icon"><ConnectorIcon kind={c.kind} /></div>
@@ -222,14 +362,16 @@ function ConnectorRow({ c, onSync, syncing }) {
         <div className="connector-name">{c.name}</div>
         <div className="connector-meta">
           <StatusDot status={syncing ? 'syncing' : c.status} />
-          <span className={'connector-status s-' + (syncing ? 'syncing' : c.status)}>{syncing ? 'syncing' : c.status}</span>
-          <span className="connector-docs">· {(c.docs || 0).toLocaleString()} docs · {c.last}</span>
+          <span className={'connector-status s-' + (syncing ? 'syncing' : c.status)}>
+            {syncing ? 'SYNCING' : c.status?.toUpperCase() || 'UNKNOWN'}
+          </span>
+          <span className="connector-docs">· {(c.docs || 0).toLocaleString()} DOCS · {c.last}</span>
         </div>
       </div>
       {onSync && (
-        <button className="connectors-add" style={{ margin: 0 }} title="Pull recent CVEs from NVD" disabled={syncing} onClick={onSync}>
-          <Icon name="refresh" size={12} /> {syncing ? 'Syncing…' : 'Sync'}
-        </button>
+        <StampButton className="connectors-add" action="SYNC" context="NVD" style={{ margin: 0 }} title="Pull recent CVEs from NVD" disabled={syncing} onClick={onSync}>
+          <Icon name="refresh" size={11} /> {syncing ? 'SYNCING…' : 'SYNC NVD'}
+        </StampButton>
       )}
       <span className="connector-kind">{c.kind}</span>
     </div>

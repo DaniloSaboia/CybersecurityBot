@@ -10,9 +10,17 @@ export const queryClient = new QueryClient({
   },
 });
 
-// ── Session / shell ──────────────────────────────────────────────
+// ── Session / shell & Settings ──────────────────────────────────
 export function useMe() {
   return useQuery({ queryKey: ['me'], queryFn: api.getMe });
+}
+
+export function useSettings() {
+  return useQuery({
+    queryKey: ['settings'],
+    queryFn: api.getSettings,
+    staleTime: 60_000,
+  });
 }
 
 // ── Knowledge Base ───────────────────────────────────────────────
@@ -80,4 +88,48 @@ export function useConnectors() {
 
 export function useVectorStoreStatus() {
   return useQuery({ queryKey: ['vectorstore'], queryFn: api.getVectorStoreStatus });
+}
+
+// ── Watchlists & Alerts ──────────────────────────────────────────
+export function useWatchlists() {
+  return useQuery({ queryKey: ['watchlists'], queryFn: api.getWatchlists });
+}
+
+export function useAlerts({ unread = false } = {}) {
+  return useQuery({
+    queryKey: ['alerts', unread],
+    queryFn: () => api.getAlerts({ unread }),
+    refetchInterval: 60_000,
+  });
+}
+
+export function useCreateWatchlist() {
+  return useMutation({
+    mutationFn: api.createWatchlist,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['watchlists'] }),
+  });
+}
+
+export function useDeleteWatchlist() {
+  return useMutation({
+    mutationFn: api.deleteWatchlist,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['watchlists'] });
+      queryClient.invalidateQueries({ queryKey: ['alerts'] });
+    },
+  });
+}
+
+export function useMarkAlertRead() {
+  return useMutation({
+    mutationFn: api.markAlertRead,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['alerts'] }),
+  });
+}
+
+export function useMarkAllAlertsRead() {
+  return useMutation({
+    mutationFn: api.markAllAlertsRead,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['alerts'] }),
+  });
 }

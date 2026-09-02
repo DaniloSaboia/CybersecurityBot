@@ -1,0 +1,64 @@
+name: RAG eval (nightly)
+
+# Runs the retrieval-quality golden set against a real environment when the
+# required secrets are configured (SUPABASE_*, MISTRAL_API_KEY). Without them
+# the job still runs the pure-metrics unit tests so the harness itself is
+# continuously verified. Trigger manually anytime with workflow_dispatch.
+
+on:
+  schedule:
+    - cron: "0 2 * * *" # nightly 02:00 UTC
+  workflow_dispatch:
+
+jobs:
+  metrics-unit:
+    name: Retrieval metrics (unit)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: maven
+      - name: Run eval + retrieval unit tests
+        working-directory: backend
+        run: mvn -B -ntp "-Dtest=RetrievalMetricsTest,RerankerTest,HybridRankerTest,QueryRewriterTest" test
+
+  golden-set:
+    name: Golden set (live retrieval)
+    runs-on: ubuntu-latest
+    if: ${{ secrets.SUPABASE_JWKS_URI != '' && secrets.MISTRAL_API_KEY != '' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: maven
+      - name: Run the golden set against the configured environment
+        working-directory: backend
+        env:
+          SPRING_PROFILES_ACTIVE: mistral
+          DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          DB_USERNAME: ${{ secrets.SUPABASE_DB_USERNAME }}
+          DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+          SUPABASE_JWKS_URI: ${{ secrets.SUPABASE_JWKS_URI }}
+          SUPABASE_JWT_AUDIENCE: ${{ secrets.SUPABASE_JWT_AUDIENCE }}
+          SUPABASE_JWT_ISSUER: ${{ secrets.SUPABASE_JWT_ISSUER }}
+          MISTRAL_API_KEY: ${{ secrets.MISTRAL_API_KEY }}
+        run: |
+          mvn -B -ntp -q -DskipTests package
+          java -jar target/kms-backend-*.jar &
+          for i in $(seq 1 60); do
+            curl -fsS http://localhost:8080/actuator/health | grep -q UP && break
+            sleep 2
+          done
+          # The eval endpoint requires an authenticated Supabase token.
+          if [ -n "${{ secrets.EVAL_AUTH_TOKEN }}" ]; then
+            curl -fsS -X POST http://localhost:8080/api/eval/retrieval \
+              -H "Authorization: Bearer ${{ secrets.EVAL_AUTH_TOKEN }}" \
+              | tee eval-report.json
+          else
+            echo "EVAL_AUTH_TOKEN not configured - skipping live report (app booted + seeded OK)."
+          fi

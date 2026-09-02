@@ -3,7 +3,6 @@ package com.sentinel.kms.vectorstore;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.embedding.EmbeddingModel;
-import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
@@ -64,41 +63,81 @@ public class SpringAiEmbeddingIndexService implements EmbeddingIndexService {
     }
 
     @Override
-    public List<RetrievedChunk> search(String query, int topK, double minScore) {
-        SearchRequest request = SearchRequest.builder()
-                .query(query)
-                .topK(topK)
-                .similarityThreshold(minScore)
-                .build();
-        List<Document> results = vectorStore.similaritySearch(request);
-        if (results == null) {
-            return List.of();
-        }
-        List<RetrievedChunk> chunks = new ArrayList<>(results.size());
-        for (Document d : results) {
-            double score = d.getScore() == null ? 0.0 : d.getScore();
-            chunks.add(new RetrievedChunk(d.getText(), score, d.getMetadata()));
-        }
-        return chunks;
+    public List<RetrievedChunk> search(
+            String query, int topK, double minScore, String userSub) {
+        return hybridSearch(query, topK, minScore, userSub);
     }
 
     @Override
-    public List<RetrievedChunk> hybridSearch(String query, int topK, double minScore) {
+    public List<RetrievedChunk> hybridSearch(
+            String query, int topK, double minScore, String userSub) {
+        return hybridSearch(query, topK, minScore, userSub, null);
+    }
+
+    @Override
+    public List<RetrievedChunk> hybridSearch(
+            String query, int topK, double minScore, String userSub, RetrievalFilters filters) {
+        boolean filtered = filters != null && !filters.isEmpty();
+        String category = filtered ? filters.category() : null;
+        Integer minSeverityRank = filtered
+                && filters.minSeverity() != null && !filters.minSeverity().isBlank()
+                ? RetrievalFilters.severityRank(filters.minSeverity()) : null;
+
         List<HybridRanker.LegRow> vectorLeg;
         try {
             float[] vector = embeddingModel.embed(query);
             String literal = toVectorLiteral(vector);
-            vectorLeg = jdbcTemplate.query("""
-                            select id::text, content, metadata::text as metadata,
-                                   1 - (embedding <=> ?::vector) as score
-                            from vector_store
-                            where 1 - (embedding <=> ?::vector) >= ?
-                            order by embedding <=> ?::vector
+            vectorLeg = jdbcTemplate.query(filtered ? """
+                            select vs.id::text, vs.content, vs.metadata::text as metadata,
+                                   1 - (vs.embedding OPERATOR(extensions.<=>)
+                                        ?::extensions.vector) as score
+                            from vector_store vs
+                            left join articles a on a.id = vs.metadata->>'article_id'
+                            where 1 - (vs.embedding OPERATOR(extensions.<=>)
+                                       ?::extensions.vector) >= ?
+                              and (
+                                  vs.metadata ? 'article_id'
+                                  or exists (
+                                      select 1
+                                      from ingest_jobs ij
+                                      where ij.id = vs.metadata->>'job_id'
+                                        and (ij.owner_sub = ? or ij.owner_sub is null)
+                                  )
+                              )
+                              and (cast(? as text) is null or a.category_id = cast(? as text))
+                              and (cast(? as int) is null
+                                   or (case a.severity when 'critical' then 4 when 'high' then 3
+                                        when 'medium' then 2 when 'low' then 1 else 0 end)
+                                       >= cast(? as int))
+                            order by vs.embedding OPERATOR(extensions.<=>)
+                                     ?::extensions.vector
+                            limit ?"""
+                            : """
+                            select vs.id::text, vs.content, vs.metadata::text as metadata,
+                                   1 - (vs.embedding OPERATOR(extensions.<=>)
+                                        ?::extensions.vector) as score
+                            from vector_store vs
+                            where 1 - (vs.embedding OPERATOR(extensions.<=>)
+                                       ?::extensions.vector) >= ?
+                              and (
+                                  vs.metadata ? 'article_id'
+                                  or exists (
+                                      select 1
+                                      from ingest_jobs ij
+                                      where ij.id = vs.metadata->>'job_id'
+                                        and (ij.owner_sub = ? or ij.owner_sub is null)
+                                  )
+                              )
+                            order by vs.embedding OPERATOR(extensions.<=>)
+                                     ?::extensions.vector
                             limit ?""",
                     (rs, n) -> new HybridRanker.LegRow(
                             rs.getString("id"), rs.getString("content"),
                             rs.getString("metadata"), rs.getDouble("score"), false),
-                    literal, literal, minScore, topK * 2);
+                    filtered
+                            ? new Object[]{literal, literal, minScore, userSub,
+                                category, category, minSeverityRank, minSeverityRank, literal, topK * 2}
+                            : new Object[]{literal, literal, minScore, userSub, literal, topK * 2});
         } catch (Exception e) {
             // Embedding or DB hiccup: degrade to the lexical leg only.
             vectorLeg = List.of();
@@ -106,17 +145,51 @@ public class SpringAiEmbeddingIndexService implements EmbeddingIndexService {
 
         List<HybridRanker.LegRow> ftsLeg = List.of();
         try {
-            ftsLeg = jdbcTemplate.query("""
-                            select id::text, content, metadata::text as metadata,
-                                   ts_rank(content_tsv, q) as score
-                            from vector_store, websearch_to_tsquery('simple', ?) q
-                            where content_tsv @@ q
-                            order by ts_rank(content_tsv, q) desc
+            ftsLeg = jdbcTemplate.query(filtered ? """
+                            select vs.id::text, vs.content, vs.metadata::text as metadata,
+                                   ts_rank(vs.content_tsv, q) as score
+                            from vector_store vs, websearch_to_tsquery('simple', ?) q
+                            left join articles a on a.id = vs.metadata->>'article_id'
+                            where vs.content_tsv @@ q
+                              and (
+                                  vs.metadata ? 'article_id'
+                                  or exists (
+                                      select 1
+                                      from ingest_jobs ij
+                                      where ij.id = vs.metadata->>'job_id'
+                                        and (ij.owner_sub = ? or ij.owner_sub is null)
+                                  )
+                              )
+                              and (cast(? as text) is null or a.category_id = cast(? as text))
+                              and (cast(? as int) is null
+                                   or (case a.severity when 'critical' then 4 when 'high' then 3
+                                        when 'medium' then 2 when 'low' then 1 else 0 end)
+                                       >= cast(? as int))
+                            order by ts_rank(vs.content_tsv, q) desc
+                            limit ?"""
+                            : """
+                            select vs.id::text, vs.content, vs.metadata::text as metadata,
+                                   ts_rank(vs.content_tsv, q) as score
+                            from vector_store vs, websearch_to_tsquery('simple', ?) q
+                            where vs.content_tsv @@ q
+                              and (
+                                  vs.metadata ? 'article_id'
+                                  or exists (
+                                      select 1
+                                      from ingest_jobs ij
+                                      where ij.id = vs.metadata->>'job_id'
+                                        and (ij.owner_sub = ? or ij.owner_sub is null)
+                                  )
+                              )
+                            order by ts_rank(vs.content_tsv, q) desc
                             limit ?""",
                     (rs, n) -> new HybridRanker.LegRow(
                             rs.getString("id"), rs.getString("content"),
                             rs.getString("metadata"), rs.getDouble("score"), true),
-                    query, topK * 2);
+                    filtered
+                            ? new Object[]{query, userSub, category, category,
+                                minSeverityRank, minSeverityRank, topK * 2}
+                            : new Object[]{query, userSub, topK * 2});
         } catch (Exception ignored) {
             // No FTS index / empty table — vector leg still answers.
         }

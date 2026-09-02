@@ -1,0 +1,72 @@
+[
+  {
+    "id": "kev-outlook-rce",
+    "question": "What is the Microsoft Outlook Moniker Link vulnerability and how is it exploited?",
+    "expectedArticleIds": ["CVE-2024-21413"],
+    "category": null,
+    "minSeverity": null
+  },
+  {
+    "id": "apt29-device-code",
+    "question": "How does APT29 conduct credential phishing with the device-code flow?",
+    "expectedArticleIds": ["TI-2291"],
+    "category": null,
+    "minSeverity": null
+  },
+  {
+    "id": "ransomware-build-server",
+    "question": "What happened in the ransomware staging incident on the EDR-exempt build server?",
+    "expectedArticleIds": ["IR-0907"],
+    "category": null,
+    "minSeverity": null
+  },
+  {
+    "id": "bec-response",
+    "question": "What are the response steps for a business email compromise incident?",
+    "expectedArticleIds": ["PB-118"],
+    "category": null,
+    "minSeverity": null
+  },
+  {
+    "id": "emergency-patching",
+    "question": "How do we run an emergency out-of-band patch deployment?",
+    "expectedArticleIds": ["PB-051"],
+    "category": null,
+    "minSeverity": null
+  },
+  {
+    "id": "privileged-accounts",
+    "question": "What does the IAM policy require for privileged accounts?",
+    "expectedArticleIds": ["POL-204"],
+    "category": null,
+    "minSeverity": null
+  },
+  {
+    "id": "nist-csf-mapping",
+    "question": "Where can I find the NIST CSF 2.0 control mapping and evidence index?",
+    "expectedArticleIds": ["COMP-NIST"],
+    "category": null,
+    "minSeverity": null
+  },
+  {
+    "id": "akira-sonicwall",
+    "question": "How does Akira ransomware exploit SonicWall SSL-VPN devices?",
+    "expectedArticleIds": ["TI-2310"],
+    "category": null,
+    "minSeverity": null
+  },
+  {
+    "id": "scoped-advisories-only",
+    "question": "Which recent critical advisories should I patch first?",
+    "expectedArticleIds": ["CVE-2024-21413", "TI-2291", "TI-2310"],
+    "category": null,
+    "minSeverity": "critical"
+  },
+  {
+    "id": "scoped-playbooks-only",
+    "question": "What playbooks do we have for responding to incidents?",
+    "expectedArticleIds": ["PB-118", "PB-051"],
+    "category": "playbooks",
+    "minSeverity": null
+  }
+]

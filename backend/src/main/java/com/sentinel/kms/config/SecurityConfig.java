@@ -38,27 +38,39 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 public class SecurityConfig {
 
     private final String[] allowedOrigins;
+    private final boolean prometheusOpen;
 
-    public SecurityConfig(@Value("${app.cors.allowed-origins}") String allowedOrigins) {
+    public SecurityConfig(@Value("${app.cors.allowed-origins}") String allowedOrigins,
+                          @Value("${app.metrics.open:false}") boolean prometheusOpen) {
         this.allowedOrigins = allowedOrigins.split("\\s*,\\s*");
+        this.prometheusOpen = prometheusOpen;
     }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        // /actuator/prometheus stays behind auth by default (the backend is
+        // publicly reachable); open it only when scraped from a trusted network.
+        String[] prometheusMatchers = prometheusOpen
+                ? new String[]{"/actuator/prometheus"}
+                : new String[0];
         http
                 .cors(Customizer.withDefaults())
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                .authorizeHttpRequests(auth -> {
+                    auth.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers(
                                 "/actuator/health",
                                 "/actuator/health/**",
                                 "/swagger-ui.html",
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
-                                "/v3/api-docs").permitAll()
-                        .anyRequest().authenticated())
+                                "/v3/api-docs").permitAll();
+                    if (prometheusMatchers.length > 0) {
+                        auth.requestMatchers(prometheusMatchers).permitAll();
+                    }
+                    auth.anyRequest().authenticated();
+                })
                 .oauth2ResourceServer(oauth -> oauth.jwt(Customizer.withDefaults()));
 
         return http.build();

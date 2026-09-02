@@ -21,6 +21,10 @@ npm-debug.log*
 yarn-error.log*
 *.log
 
+# ---- Playwright ----
+frontend/test-results/
+frontend/playwright-report/
+
 # ---- Supabase ----
 supabase/.branches/
 supabase/.temp/
@@ -38,6 +42,7 @@ Thumbs.db
 
 # ---- Local agent / tool config ----
 .claude/
+.maestri/
 
 # ---- Thesis repo (separate nested git repository) ----
 CyberChatbotTese/

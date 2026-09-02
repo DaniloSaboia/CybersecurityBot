@@ -18,9 +18,11 @@
   <description>Sentinel KMS — SecOps knowledge management backend (RAG + ingestion)</description>
 
   <properties>
-    <java.version>21</java.version>
+    <java.version>17</java.version>
     <spring-ai.version>1.0.0</spring-ai.version>
     <tika.version>2.9.2</tika.version>
+    <bucket4j.version>8.10.1</bucket4j.version>
+    <logstash-encoder.version>8.0</logstash-encoder.version>
   </properties>
 
   <dependencyManagement>
@@ -75,6 +77,26 @@
       <artifactId>spring-boot-starter-actuator</artifactId>
     </dependency>
 
+    <!-- Prometheus scrape endpoint (/actuator/prometheus) -->
+    <dependency>
+      <groupId>io.micrometer</groupId>
+      <artifactId>micrometer-registry-prometheus</artifactId>
+    </dependency>
+
+    <!-- Structured JSON logs (enabled with LOG_JSON=true) -->
+    <dependency>
+      <groupId>net.logstash.logback</groupId>
+      <artifactId>logstash-logback-encoder</artifactId>
+      <version>${logstash-encoder.version}</version>
+    </dependency>
+
+    <!-- Rate limiting for the chat + ingest endpoints (in-memory buckets) -->
+    <dependency>
+      <groupId>com.bucket4j</groupId>
+      <artifactId>bucket4j-core</artifactId>
+      <version>${bucket4j.version}</version>
+    </dependency>
+
     <!-- Spring AI: pluggable chat + embedding providers and pgvector store -->
     <dependency>
       <groupId>org.springframework.ai</groupId>
@@ -83,6 +105,10 @@
     <dependency>
       <groupId>org.springframework.ai</groupId>
       <artifactId>spring-ai-starter-model-ollama</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.ai</groupId>
+      <artifactId>spring-ai-starter-model-openai</artifactId>
     </dependency>
     <dependency>
       <groupId>org.springframework.ai</groupId>
@@ -119,6 +145,22 @@
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-test</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <!-- Integration tests against a real pgvector schema (skipped without Docker) -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-testcontainers</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.testcontainers</groupId>
+      <artifactId>postgresql</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.testcontainers</groupId>
+      <artifactId>junit-jupiter</artifactId>
       <scope>test</scope>
     </dependency>
   </dependencies>

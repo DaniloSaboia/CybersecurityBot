@@ -8,6 +8,9 @@ const target = process.env.VITE_API_PROXY_TARGET || 'http://localhost:8080';
 
 export default defineConfig({
   plugins: [react()],
+  // Share the repository-level .env with the backend. Vite exposes only
+  // VITE_-prefixed values to browser code.
+  envDir: '..',
   server: {
     host: true,
     port: 5173,

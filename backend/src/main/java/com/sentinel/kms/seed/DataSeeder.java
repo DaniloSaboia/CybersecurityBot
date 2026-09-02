@@ -82,8 +82,11 @@ public class DataSeeder implements CommandLineRunner {
                 return;
             }
             if (vectors > 0) {
-                log.info("Seed skipped — {} articles already present, {} chunks indexed.",
-                        existingArticles, vectors);
+                // Still backfill any connector rows added to seed.json after
+                // the initial seed (e.g. new sync-capable feeds).
+                int added = upsertConnectors(root());
+                log.info("Seed skipped — {} articles already present, {} chunks indexed ({} new connectors).",
+                        existingArticles, vectors, added);
                 return;
             }
             log.info("Articles present but vector store empty — re-embedding {} articles.", existingArticles);
@@ -106,6 +109,35 @@ public class DataSeeder implements CommandLineRunner {
 
         log.info("Seed complete — {} categories, {} connectors, {} jobs, {} articles ({} embedded).",
                 categories, connectors, jobs, articles.size(), embedded);
+    }
+
+    /** Re-reads seed.json (used for connector backfill on already-seeded DBs). */
+    private JsonNode root() throws Exception {
+        try (InputStream in = new ClassPathResource("seed/seed.json").getInputStream()) {
+            return objectMapper.readTree(in);
+        }
+    }
+
+    /** Inserts connectors from seed.json that are not yet in the table. */
+    private int upsertConnectors(JsonNode root) {
+        int added = 0;
+        for (JsonNode n : root.path("connectors")) {
+            String id = n.path("id").asText();
+            if (id.isBlank() || connectorRepository.existsById(id)) {
+                continue;
+            }
+            Connector c = new Connector();
+            c.setId(id);
+            c.setName(n.path("name").asText());
+            c.setKind(n.path("kind").asText());
+            c.setStatus(n.path("status").asText());
+            c.setDocs(n.path("docs").asInt());
+            c.setLastLabel(n.path("lastLabel").asText());
+            c.setAuto(n.path("auto").asBoolean());
+            connectorRepository.save(c);
+            added++;
+        }
+        return added;
     }
 
     private int seedCategories(JsonNode arr) {

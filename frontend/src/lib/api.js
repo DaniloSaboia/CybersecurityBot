@@ -62,14 +62,22 @@ export function getArticle(id) {
   return request('/kb/articles/' + encodeURIComponent(id));
 }
 
+// ── Settings & Models ───────────────────────────────────────────
+export function getSettings() {
+  return request('/settings/models');
+}
+
 // ── Assistant ────────────────────────────────────────────────────
 export function getSuggestions() {
   return request('/assistant/suggestions');
 }
 
 // Non-streaming structured answer (kept for fallback/testing).
-export function chat({ message, conversationId } = {}) {
-  return request('/assistant/chat', { method: 'POST', body: { message, conversationId } });
+export function chat({ message, conversationId, model, topK, minScore, historyTurns, category, minSeverity } = {}) {
+  return request('/assistant/chat', {
+    method: 'POST',
+    body: { message, conversationId, model, topK, minScore, historyTurns, category, minSeverity },
+  });
 }
 
 // Parse one SSE frame ("data: {...}\n\n" chunk without the trailing blank line)
@@ -85,12 +93,15 @@ export function parseSseFrame(frame) {
 // Streaming answer over SSE. Calls onDelta(textChunk) as tokens arrive and
 // onDone({ conversationId, messageId, citations }) at the end. Reads the
 // response body as a stream and parses `data: <json>` SSE frames.
-export async function chatStream({ message, conversationId }, { onDelta, onDone, onError } = {}) {
+export async function chatStream(
+  { message, conversationId, model, topK, minScore, historyTurns, category, minSeverity },
+  { onDelta, onDone, onError } = {}
+) {
   try {
     const res = await fetch(BASE + '/assistant/chat/stream', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', ...(await authHeader()) },
-      body: JSON.stringify({ message, conversationId }),
+      body: JSON.stringify({ message, conversationId, model, topK, minScore, historyTurns, category, minSeverity }),
     });
     if (!res.ok || !res.body) {
       const text = await res.text().catch(() => '');
@@ -177,4 +188,36 @@ export function syncConnector(id, { days = 7, max = 15 } = {}) {
 // { engine, embeddingModel, chunks, dim, p95Ms, healthy }
 export function getVectorStoreStatus() {
   return request('/vectorstore/status');
+}
+
+// ── Watchlists & Alerts ──────────────────────────────────────────
+export function getWatchlists() {
+  return request('/watchlists');
+}
+
+export function createWatchlist({ label, terms, minSeverity } = {}) {
+  return request('/watchlists', { method: 'POST', body: { label, terms, minSeverity } });
+}
+
+export function deleteWatchlist(id) {
+  return request('/watchlists/' + encodeURIComponent(id), { method: 'DELETE' });
+}
+
+// Alert feed (newest first); pass unread=true for the unread-only view.
+export function getAlerts({ unread = false } = {}) {
+  return request('/alerts' + qs({ unread }));
+}
+
+export function markAlertRead(id) {
+  return request('/alerts/' + encodeURIComponent(id) + '/read', { method: 'POST' });
+}
+
+export function markAllAlertsRead() {
+  return request('/alerts/read-all', { method: 'POST' });
+}
+
+// ── Retrieval eval ───────────────────────────────────────────────
+// POST /eval/retrieval runs the golden set through live retrieval.
+export function runRetrievalEval() {
+  return request('/eval/retrieval', { method: 'POST' });
 }

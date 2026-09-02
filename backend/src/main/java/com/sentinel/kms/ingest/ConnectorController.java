@@ -11,6 +11,8 @@ import java.util.List;
 
 /**
  * REST surface for source connectors feeding the ingestion pipeline.
+ * Sync-capable connectors: {@code nvd} (recent CVEs), {@code kev} (CISA known
+ * exploited vulnerabilities), {@code attack} (MITRE ATT&CK techniques).
  */
 @RestController
 @RequestMapping("/api/connectors")
@@ -18,10 +20,17 @@ public class ConnectorController {
 
     private final IngestService service;
     private final NvdConnectorService nvdConnectorService;
+    private final KevConnectorService kevConnectorService;
+    private final AttackConnectorService attackConnectorService;
 
-    public ConnectorController(IngestService service, NvdConnectorService nvdConnectorService) {
+    public ConnectorController(IngestService service,
+                               NvdConnectorService nvdConnectorService,
+                               KevConnectorService kevConnectorService,
+                               AttackConnectorService attackConnectorService) {
         this.service = service;
         this.nvdConnectorService = nvdConnectorService;
+        this.kevConnectorService = kevConnectorService;
+        this.attackConnectorService = attackConnectorService;
     }
 
     @GetMapping
@@ -30,12 +39,14 @@ public class ConnectorController {
     }
 
     @PostMapping("/{id}/sync")
-    public NvdConnectorService.SyncResult sync(@PathVariable String id,
-                                               @RequestParam(defaultValue = "7") int days,
-                                               @RequestParam(defaultValue = "15") int max) {
-        if ("nvd".equals(id)) {
-            return nvdConnectorService.sync(days, max);
-        }
-        throw new IllegalArgumentException("Sync not supported for connector: " + id);
+    public Object sync(@PathVariable String id,
+                       @RequestParam(defaultValue = "7") int days,
+                       @RequestParam(defaultValue = "15") int max) {
+        return switch (id) {
+            case "nvd" -> nvdConnectorService.sync(days, max);
+            case "kev" -> kevConnectorService.sync(max);
+            case "attack" -> attackConnectorService.sync(max);
+            default -> throw new IllegalArgumentException("Sync not supported for connector: " + id);
+        };
     }
 }

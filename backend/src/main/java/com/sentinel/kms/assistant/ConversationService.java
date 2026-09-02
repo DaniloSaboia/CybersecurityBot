@@ -2,6 +2,8 @@ package com.sentinel.kms.assistant;
 
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -108,8 +110,9 @@ public class ConversationService {
             return List.of();
         }
         // latest[0] is the just-appended current user message — drop it.
-        List<ChatMessage> history = latest.subList(1, Math.min(latest.size(), turns * 2 + 1));
-        return history.reversed();
+        List<ChatMessage> history = new ArrayList<>(latest.subList(1, Math.min(latest.size(), turns * 2 + 1)));
+        Collections.reverse(history);
+        return history;
     }
 
     /** Rate an assistant answer (1 helpful / -1 not helpful); only the owner may rate. */

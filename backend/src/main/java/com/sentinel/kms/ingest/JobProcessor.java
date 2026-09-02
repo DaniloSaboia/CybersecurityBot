@@ -1,6 +1,7 @@
 package com.sentinel.kms.ingest;
 
 import com.sentinel.kms.vectorstore.EmbeddingIndexService;
+import io.micrometer.core.instrument.MeterRegistry;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
@@ -10,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Runs the real ingestion pipeline for a single job off the request thread:
@@ -31,6 +33,7 @@ public class JobProcessor {
     private final Chunker chunker;
     private final EmbeddingIndexService index;
     private final UrlFetcher urlFetcher;
+    private final MeterRegistry meters;
 
     private final int chunkSize;
     private final int chunkOverlap;
@@ -45,6 +48,7 @@ public class JobProcessor {
             Chunker chunker,
             EmbeddingIndexService index,
             UrlFetcher urlFetcher,
+            MeterRegistry meters,
             @Value("${app.ingest.chunk-size:1200}") int chunkSize,
             @Value("${app.ingest.chunk-overlap:150}") int chunkOverlap,
             @Value("${app.ingest.simulate-latency-ms:1200}") long simulateLatencyMs
@@ -54,6 +58,7 @@ public class JobProcessor {
         this.chunker = chunker;
         this.index = index;
         this.urlFetcher = urlFetcher;
+        this.meters = meters;
         this.chunkSize = chunkSize;
         this.chunkOverlap = chunkOverlap;
         this.simulateLatencyMs = simulateLatencyMs;
@@ -72,6 +77,8 @@ public class JobProcessor {
     @Async
     public void process(String jobId, byte[] rawBytes, String fallbackText, String url) {
         active.add(jobId);
+        long startedAt = System.nanoTime();
+        boolean succeeded = false;
         try {
             IngestJob job = jobs.findById(jobId).orElse(null);
             if (job == null) {
@@ -99,6 +106,10 @@ public class JobProcessor {
                 fail(job, "No extractable text in source");
                 return;
             }
+            // Uploaded/imported documents are attacker-controllable: neutralize
+            // obvious prompt-injection payloads before chunking + embedding so
+            // they never reach a RAG prompt from the stored copy.
+            text = com.sentinel.kms.common.ContentSanitizer.sanitize(text);
             advance(job, JobStage.EXTRACTING, 100, "now");
 
             // ---- CHUNKING ----
@@ -119,6 +130,9 @@ public class JobProcessor {
             metadata.put("source", job.getSource());
             metadata.put("job_id", job.getId());
             metadata.put("name", job.getName());
+            if (job.getOwnerSub() != null && !job.getOwnerSub().isBlank()) {
+                metadata.put("owner_sub", job.getOwnerSub());
+            }
             try {
                 index.index(chunks, metadata);
             } catch (Exception e) {
@@ -129,10 +143,15 @@ public class JobProcessor {
 
             // ---- INDEXED ----
             advance(job, JobStage.INDEXED, 100, "now");
+            succeeded = true;
         } catch (Exception e) {
             // Last-resort guard: never let an exception escape @Async.
             jobs.findById(jobId).ifPresent(j -> fail(j, "Processing failed: " + safeMessage(e)));
         } finally {
+            meters.counter("sentinel.ingest.jobs", "outcome", succeeded ? "indexed" : "failed")
+                    .increment();
+            meters.timer("sentinel.ingest.job.latency").record(
+                    System.nanoTime() - startedAt, TimeUnit.NANOSECONDS);
             active.remove(jobId);
         }
     }

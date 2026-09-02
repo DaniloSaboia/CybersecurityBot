@@ -1,0 +1,86 @@
+# docker-compose.yml — one-command local stack for Sentinel KMS.
+#
+#   docker compose up db backend frontend        # core stack (hosted AI keys in .env)
+#   docker compose --profile local-ai up          # + Ollama for a fully local AI profile
+#
+# Requirements:
+#   * .env at the repo root (see .env.example) with provider keys + Supabase auth
+#     (either hosted project vars, or `supabase start` for local gotrue on :54321).
+#   * Apply supabase/migrations via the mounted init scripts automatically.
+
+name: sentinel-kms
+
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "54322:5432"
+    volumes:
+      - ./docker/db-init:/docker-entrypoint-initdb.d:ro
+      - ./supabase/migrations:/supabase-migrations:ro
+      - sentinel-db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+
+  backend:
+    build: ./backend
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-local}
+      DB_URL: jdbc:postgresql://db:5432/postgres
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      # Supabase Auth: point at your hosted project, or keep the default for a
+      # locally running `supabase start` (gotrue on host.docker.internal:54321).
+      SUPABASE_JWKS_URI: ${SUPABASE_JWKS_URI:-http://host.docker.internal:54321/auth/v1/.well-known/jwks.json}
+      SUPABASE_JWT_AUDIENCE: ${SUPABASE_JWT_AUDIENCE:-authenticated}
+      SUPABASE_JWT_ISSUER: ${SUPABASE_JWT_ISSUER:-}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:5173}
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
+      MISTRAL_API_KEY: ${MISTRAL_API_KEY:-}
+      OLLAMA_BASE_URL: http://ollama:11434
+      LOG_JSON: "true"
+    ports:
+      - "8080:8080"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O - http://localhost:8080/actuator/health | grep -q UP"]
+      interval: 15s
+      timeout: 5s
+      retries: 20
+      start_period: 60s
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    depends_on:
+      - backend
+    environment:
+      VITE_API_PROXY_TARGET: http://backend:8080
+      VITE_SUPABASE_URL: ${VITE_SUPABASE_URL:-http://localhost:54321}
+      VITE_SUPABASE_ANON_KEY: ${VITE_SUPABASE_ANON_KEY:-}
+    ports:
+      - "5173:5173"
+
+  ollama:
+    image: ollama/ollama:latest
+    profiles: ["local-ai"]
+    ports:
+      - "11434:11434"
+    volumes:
+      - sentinel-ollama:/root/.ollama
+
+volumes:
+  sentinel-db:
+  sentinel-ollama:
