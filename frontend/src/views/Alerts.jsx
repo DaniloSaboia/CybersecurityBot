@@ -2,8 +2,7 @@
 
 import { useState } from 'react';
 import { Icon } from '../icons.jsx';
-import './workflows.css';
-import { SeverityTag, StampButton } from '../ui.jsx';
+import { DimensionDivider, RedlineNote, SeverityTag, StampButton } from '../ui.jsx';
 import {
   useWatchlists, useAlerts, useCreateWatchlist, useDeleteWatchlist,
   useMarkAlertRead, useMarkAllAlertsRead,
@@ -45,49 +44,46 @@ export default function Alerts({ onOpenArticle }) {
   }
 
   return (
-    <div className="alerts workflow-view">
+    <div className="alerts">
       <div className="view-head">
         <div>
           <h1 className="view-title">Watchlists &amp; Alerts</h1>
-          <p className="view-sub">Follow CVEs, products, and threat actors. Review matches after source refreshes.</p>
+          <p className="view-sub">Subscribe to CVEs, products and threat actors · alerts fire on connector syncs</p>
         </div>
-        <div className="workflow-head-summary">
-          <div className="workflow-summary" role="status" aria-live="polite">
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <RedlineNote>// KEV · NVD · ATT&amp;CK feeds watched</RedlineNote>
+          <div className="assistant-scope" role="status" aria-live="polite">
             <Icon name="bell" size={14} />
-            <span>{unreadQuery.isPending || watchlistsQuery.isPending ? 'Loading watchlist summary…' : unreadQuery.isError || watchlistsQuery.isError ? 'Watchlist summary unavailable' : `${unread.length} UNREAD · ${watchlists.length} WATCHLISTS`}</span>
+            <span>{unread.length} UNREAD · {watchlists.length} WATCHLISTS</span>
           </div>
         </div>
       </div>
 
       <div className="alerts-body">
         <div className="alerts-col">
-
+          <DimensionDivider label="ALERT FEED" dim="AUTO" />
           <div className="alerts-toolbar">
-            <div><h2 className="workflow-section-title">Alert feed</h2><span className="alerts-count">{alertsQuery.isSuccess ? `${alerts.length} matched ${alerts.length === 1 ? 'article' : 'articles'}` : 'Matches from your watchlists'}</span></div>
+            <span className="alerts-count">{alerts.length} matched articles</span>
             <StampButton
-              aria-label="MARK ALL READ"
               action="MARK ALL"
               context="READ"
               disabled={unread.length === 0 || markAllRead.isPending}
               onClick={() => markAllRead.mutate()}
             >
-              <Icon name="check" size={12} /> Mark all read
+              <Icon name="check" size={12} /> MARK ALL READ
             </StampButton>
           </div>
-          {(markRead.isError || markAllRead.isError) && <p className="watch-error" role="alert">Could not mark alerts as read. Try again.</p>}
-          <div className="alerts-feed" aria-busy={alertsQuery.isPending} role="feed" aria-label="Watchlist alerts">
+          <div className="alerts-feed" role="feed" aria-label="Watchlist alerts">
             {alertsQuery.isPending && <div className="alerts-empty" role="status">Loading alerts…</div>}
             {alertsQuery.isError && (
               <div className="alerts-empty" role="alert">
                 Alerts unavailable — {String(alertsQuery.error?.message || alertsQuery.error)}
-                <button type="button" className="workflow-button" onClick={() => alertsQuery.refetch()}>Retry</button>
               </div>
             )}
             {alertsQuery.isSuccess && alerts.length === 0 && (
               <div className="alerts-empty">
-                <Icon name="bell" size={24} />
-                <strong>No matching alerts yet</strong>
-                <p>Create a watchlist to follow the CVEs, products, or actors that matter to you. Matching articles appear here after a source refresh.</p>
+                No alerts yet. Create a watchlist — when a connector sync lands a matching
+                article (CVE id, product, actor name), it appears here.
               </div>
             )}
             {alerts.map((a) => (
@@ -107,7 +103,7 @@ export default function Alerts({ onOpenArticle }) {
                     </span>
                   </span>
                   <SeverityTag level={a.severity || 'info'} small />
-                  {!a.read && <span className="alert-badge">New</span>}
+                  {!a.read && <span className="alert-badge">NEW</span>}
                 </button>
               </article>
             ))}
@@ -115,10 +111,9 @@ export default function Alerts({ onOpenArticle }) {
         </div>
 
         <aside className="watch-side" aria-label="Watchlists">
-          <h2 className="watch-label">Your watchlists</h2>
+          <div className="watch-label">YOUR WATCHLISTS</div>
           <div className="watch-list">
             {watchlistsQuery.isPending && <div className="alerts-empty" role="status">Loading…</div>}
-            {watchlistsQuery.isError && <div className="alerts-empty" role="alert">Could not load watchlists.<button type="button" className="workflow-button" onClick={() => watchlistsQuery.refetch()}>Retry</button></div>}
             {watchlistsQuery.isSuccess && watchlists.length === 0 && (
               <div className="alerts-empty">No watchlists yet — add one below.</div>
             )}
@@ -150,13 +145,9 @@ export default function Alerts({ onOpenArticle }) {
             ))}
           </div>
 
-          {deleteWatchlist.isError && <p className="watch-error" role="alert">Could not delete the watchlist. Try again.</p>}
           <form className="watch-form" onSubmit={handleCreate}>
-            <h2 className="watch-label">New watchlist</h2>
-            <p className="workflow-help">Choose a clear name and the terms to match in new articles.</p>
-            <label htmlFor="watchlist-label">Label</label>
+            <div className="watch-label">NEW WATCHLIST</div>
             <input
-              id="watchlist-label"
               className="watch-input"
               placeholder="Label — e.g. Edge device CVEs"
               value={label}
@@ -164,21 +155,15 @@ export default function Alerts({ onOpenArticle }) {
               onChange={(e) => setLabel(e.target.value)}
               aria-label="Watchlist label"
             />
-            <label htmlFor="watchlist-terms">Watch terms</label>
             <input
-              id="watchlist-terms"
-              aria-describedby="watchlist-terms-help"
               className="watch-input"
-              placeholder="e.g. sonicwall, akira, CVE-2024-21413"
+              placeholder="Terms, comma-separated — CVE-2024-21413, sonicwall, akira"
               value={terms}
               maxLength={300}
               onChange={(e) => setTerms(e.target.value)}
               aria-label="Watch terms"
             />
-            <p id="watchlist-terms-help" className="workflow-help">Separate each term with a comma.</p>
-            <label htmlFor="watchlist-severity">Minimum severity</label>
             <select
-              id="watchlist-severity"
               className="watch-select"
               value={minSeverity}
               onChange={(e) => setMinSeverity(e.target.value)}
@@ -190,13 +175,12 @@ export default function Alerts({ onOpenArticle }) {
             {formError && <div className="watch-error" role="alert">{formError}</div>}
             <StampButton
               type="submit"
-              aria-label={createWatchlist.isPending ? 'CREATING…' : 'CREATE WATCHLIST'}
               action="CREATE"
               context="WATCH"
               disabled={createWatchlist.isPending}
             >
               <Icon name={createWatchlist.isPending ? 'refresh' : 'radar'} size={13} />
-              {createWatchlist.isPending ? 'Creating…' : 'Create watchlist'}
+              {createWatchlist.isPending ? 'CREATING…' : 'CREATE WATCHLIST'}
             </StampButton>
           </form>
         </aside>

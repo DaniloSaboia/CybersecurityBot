@@ -22,20 +22,8 @@ class ApplicationYamlTest {
         assertThat(openRouter.getProperty("spring.ai.model.chat")).isEqualTo("openai");
         assertThat(openRouter.getProperty("spring.ai.openai.base-url"))
                 .contains("openrouter.ai/api/v1");
-        assertThat(openRouter.getProperty("spring.ai.model.embedding")).contains("openai");
-        assertThat(openRouter.getProperty("spring.ai.openai.embedding.options.model"))
-                .contains("nvidia/llama-nemotron-embed-vl-1b-v2:free");
-        assertThat(openRouter.getProperty("spring.ai.openai.embedding.options.dimensions")).isEqualTo("1024");
-        assertThat(openRouter.getProperty("spring.ai.openai.chat.completions-path")).isEqualTo("/chat/completions");
-        assertThat(openRouter.getProperty("spring.ai.openai.embedding.embeddings-path")).isEqualTo("/embeddings");
-    }
-
-    @Test
-    void unusedProviderModalitiesDoNotRequireUnrelatedApiKeysAtStartup() {
-        Properties base = load("application.yml");
-        for (String modality : java.util.List.of("moderation", "image", "audio.speech", "audio.transcription")) {
-            assertThat(base.getProperty("spring.ai.model." + modality)).isEqualTo("none");
-        }
+        assertThat(openRouter.getProperty("spring.ai.mistralai.embedding.options.model"))
+                .contains("mistral-embed");
     }
 
     private static Properties load(String resource) {

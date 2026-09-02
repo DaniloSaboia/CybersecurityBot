@@ -4,6 +4,8 @@ import com.sentinel.kms.kb.Article;
 import com.sentinel.kms.kb.ArticleRepository;
 import com.sentinel.kms.kb.ArticleSection;
 import com.sentinel.kms.vectorstore.EmbeddingIndexService;
+import com.sentinel.kms.watch.WatchlistService;
+import io.micrometer.core.instrument.MeterRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -16,7 +18,8 @@ import java.util.Optional;
 
 /**
  * Pulls recent CVEs from the NVD API, materializes them as KB articles, and
- * embeds them so they're searchable + citable by the RAG assistant.
+ * embeds them so they're searchable + citable by the RAG assistant. New
+ * articles are also pushed past the watchlist matcher to fire user alerts.
  */
 @Service
 public class NvdConnectorService {
@@ -27,15 +30,21 @@ public class NvdConnectorService {
     private final ConnectorRepository connectorRepository;
     private final EmbeddingIndexService embeddingIndexService;
     private final NvdClient nvdClient;
+    private final WatchlistService watchlistService;
+    private final MeterRegistry meters;
 
     public NvdConnectorService(ArticleRepository articleRepository,
                                ConnectorRepository connectorRepository,
                                EmbeddingIndexService embeddingIndexService,
-                               NvdClient nvdClient) {
+                               NvdClient nvdClient,
+                               WatchlistService watchlistService,
+                               MeterRegistry meters) {
         this.articleRepository = articleRepository;
         this.connectorRepository = connectorRepository;
         this.embeddingIndexService = embeddingIndexService;
         this.nvdClient = nvdClient;
+        this.watchlistService = watchlistService;
+        this.meters = meters;
     }
 
     /**
@@ -78,6 +87,8 @@ public class NvdConnectorService {
         }
 
         updateConnector(created);
+        watchlistService.matchAndAlert(toSave);
+        meters.counter("sentinel.connector.syncs", "connector", "nvd").increment();
 
         return new SyncResult(cves.size(), created, embedded);
     }

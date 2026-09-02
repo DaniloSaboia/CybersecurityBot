@@ -83,3 +83,47 @@ question are looked up in the KB's IOC index (`articles.iocs` jsonb); any
 article that lists them enters the context as an explicit
 `IOC INDEX MATCH` source, so "have we seen 1.2.3.4?" answers from the
 indicator index even when embedding similarity is low.
+
+Chat requests may scope retrieval with optional fields:
+
+- `category` — restrict grounding chunks to one KB category id.
+- `minSeverity` — `critical|high|medium|low|info`; only articles at or above
+  the threshold ground the answer.
+
+Multi-turn requests have their follow-up rewritten into a standalone question
+before retrieval (fail-open to the raw question on any model error). With
+`RAG_RERANK=true` the fused candidate window (`RAG_RERANK_WINDOW`) is scored
+0-10 by the chat model and re-ordered before the final top-k.
+
+## 5. Watchlists & alerts
+
+`POST /api/watchlists` with `{"label": "Edge device CVEs", "terms":
+["CVE-2024-21413", "sonicwall"], "minSeverity": "high"}` creates an
+owner-scoped subscription. Whenever a connector sync (NVD / KEV / ATT&CK)
+materializes new articles, each watchlist is matched (case-insensitive term
+in article id / title / snippet / exact tag, gated by the severity floor) and
+one `kb_alerts` row is filed per (watchlist, article) — deduplicated so
+repeated syncs never spam. `GET /api/alerts?unread=true` reads the feed;
+`POST /api/alerts/{id}/read` and `POST /api/alerts/read-all` manage state.
+
+## 6. Retrieval eval
+
+`GET /api/eval/cases` returns the golden set; `POST /api/eval/retrieval` runs
+each case through the live hybrid retrieval path (same call the assistant
+makes, scope filters included) and returns per-case plus aggregate metrics:
+
+```json
+{
+  "ranAt": "2026-09-02T00:00:00Z",
+  "cases": 10,
+  "topK": 6,
+  "meanRecallAtK": 0.92,
+  "meanMrr": 0.87,
+  "meanNdcgAtK": 0.88,
+  "passed": 9,
+  "results": [
+    {"id": "kev-outlook-rce", "retrieved": ["CVE-2024-21413"], "expected":
+     ["CVE-2024-21413"], "recallAtK": 1.0, "mrr": 1.0, "ndcgAtK": 1.0, "pass": true}
+  ]
+}
+```

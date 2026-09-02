@@ -1,6 +1,6 @@
 # Dev-server image: runs Vite with an /api proxy to the backend container.
 # Used by docker-compose for local development (hot reload, .env sharing).
-FROM node:24.20.0-alpine
+FROM node:20-alpine
 WORKDIR /app
 
 COPY package*.json ./

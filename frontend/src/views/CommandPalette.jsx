@@ -3,7 +3,6 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Icon } from '../icons.jsx';
-import './access.css';
 
 export default function CommandPalette({
   open, onClose, onNavigate, onOpenSettings, onAsk, onToggleTheme, theme,
@@ -78,9 +77,9 @@ export default function CommandPalette({
   if (!open) return null;
 
   return (
-    <div className="palette-backdrop access-palette-backdrop" onClick={onClose}>
+    <div className="palette-backdrop" onClick={onClose}>
       <div
-        className="palette access-palette"
+        className="palette"
         role="dialog"
         aria-modal="true"
         aria-label="Command palette"
@@ -119,7 +118,7 @@ export default function CommandPalette({
         <div className="palette-foot">
           <span>↑↓ navigate</span>
           <span>↵ run</span>
-          <span>Commands & questions</span>
+          <span>SENTINEL // CMD</span>
         </div>
       </div>
     </div>
