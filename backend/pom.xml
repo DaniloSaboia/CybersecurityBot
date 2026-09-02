@@ -22,7 +22,7 @@
     <spring-ai.version>1.0.0</spring-ai.version>
     <tika.version>2.9.2</tika.version>
     <bucket4j.version>8.10.1</bucket4j.version>
-    <logstash-encoder.version>8.0</logstash-encoder.version>
+    <logstash-encoder.version>9.0</logstash-encoder.version>
   </properties>
 
   <dependencyManagement>
