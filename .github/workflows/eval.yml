@@ -15,7 +15,7 @@ jobs:
     name: Retrieval metrics (unit)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -30,7 +30,7 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ secrets.SUPABASE_JWKS_URI != '' && secrets.MISTRAL_API_KEY != '' }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
