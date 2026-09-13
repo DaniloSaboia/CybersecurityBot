@@ -13,22 +13,15 @@ import java.util.List;
 public class SettingsController {
 
     private final OpenRouterModelCatalog modelCatalog;
-    private final String activeProvider;
-    private final String defaultChatModel;
-    private final String defaultEmbedModel;
+    private final AiModelConfiguration configuration;
     private final boolean openRouterApiKeyConfigured;
 
     public SettingsController(
             OpenRouterModelCatalog modelCatalog,
-            @Value("${spring.ai.model.chat:openai}") String activeProvider,
-            @Value("${spring.ai.openai.chat.options.model:openrouter/free}") String defaultChatModel,
-            @Value("${spring.ai.mistralai.embedding.options.model:${spring.ai.ollama.embedding.options.model:unknown}}")
-            String defaultEmbedModel,
+            AiModelConfiguration configuration,
             @Value("${spring.ai.openai.api-key:}") String openRouterApiKey) {
         this.modelCatalog = modelCatalog;
-        this.activeProvider = activeProvider;
-        this.defaultChatModel = defaultChatModel;
-        this.defaultEmbedModel = defaultEmbedModel;
+        this.configuration = configuration;
         this.openRouterApiKeyConfigured = openRouterApiKey != null && !openRouterApiKey.isBlank();
     }
 
@@ -48,17 +41,21 @@ public class SettingsController {
             String defaultChatModel,
             String defaultEmbedModel,
             boolean openRouterApiKeyConfigured,
-            List<ModelOption> availableModels
+            List<ModelOption> availableModels,
+            String embeddingProvider,
+            List<ModelOption> availableEmbeddingModels
     ) {
     }
 
     @GetMapping("/models")
     public SettingsInfo getSettings() {
         return new SettingsInfo(
-                activeProvider,
-                defaultChatModel,
-                defaultEmbedModel,
+                configuration.chatProvider(),
+                configuration.chatModel(),
+                configuration.embeddingModel(),
                 openRouterApiKeyConfigured,
-                modelCatalog.availableModels());
+                modelCatalog.availableModels(),
+                configuration.embeddingProvider(),
+                modelCatalog.availableEmbeddingModels());
     }
 }

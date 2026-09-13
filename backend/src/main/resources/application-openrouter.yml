@@ -1,20 +1,33 @@
-# OpenRouter AI provider stack. Active when SPRING_PROFILES_ACTIVE=openrouter.
+# OpenRouter chat and embeddings. Both default to explicitly free endpoints.
 spring:
   ai:
     model:
       chat: openai
-      embedding: mistral
+      embedding: ${AI_EMBEDDING_PROVIDER:openai}
     openai:
       base-url: ${OPENROUTER_BASE_URL:https://openrouter.ai/api/v1}
       api-key: ${OPENROUTER_API_KEY:}
       chat:
+        # The base URL already contains /v1.
+        completions-path: /chat/completions
         options:
           model: ${OPENROUTER_CHAT_MODEL:openrouter/free}
           temperature: 0.2
-    # OpenRouter provides chat here; Mistral remains the default 1024-dim
-    # embedding provider used by the existing pgvector schema.
+      embedding:
+        embeddings-path: /embeddings
+        options:
+          model: ${OPENROUTER_EMBED_MODEL:nvidia/llama-nemotron-embed-vl-1b-v2:free}
+          dimensions: 1024
+          encoding-format: float
+    # Optional paid provider; selected only with AI_EMBEDDING_PROVIDER=mistral.
     mistralai:
       api-key: ${MISTRAL_API_KEY:}
       embedding:
         options:
           model: ${MISTRAL_EMBED_MODEL:mistral-embed}
+
+# Four revision-index jobs per poll, leaving headroom under the free endpoint's
+# observed 20 requests/minute allowance for interactive chat and uploads.
+app:
+  kb:
+    lifecycle-reindex-poll-ms: ${FEED_INDEX_POLL_MS:15000}

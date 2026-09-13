@@ -8,34 +8,25 @@ import org.springframework.stereotype.Component;
 
 /**
  * Nightly NVD pull so the CVE feed stays current without anyone pressing the
- * sync button. Disabled unless {@code app.nvd.sync-enabled=true} (the enabling
- * config lives in {@code SchedulingConfig}, so no scheduling infrastructure is
- * active at all when off).
+ * sync button. Disabled unless {@code app.nvd.sync-enabled=true}; ingestion workers remain independently scheduled.
  */
 @Component
+@org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(name = "app.nvd.sync-enabled", havingValue = "true")
 public class NvdScheduler {
 
     private static final Logger log = LoggerFactory.getLogger(NvdScheduler.class);
 
-    private final NvdConnectorService nvd;
-    private final int syncDays;
-    private final int syncMax;
+    private final FeedSyncService feeds;
 
-    public NvdScheduler(NvdConnectorService nvd,
-                        @Value("${app.nvd.sync-days:2}") int syncDays,
-                        @Value("${app.nvd.sync-max:50}") int syncMax) {
-        this.nvd = nvd;
-        this.syncDays = syncDays;
-        this.syncMax = syncMax;
+    public NvdScheduler(FeedSyncService feeds) {
+        this.feeds = feeds;
     }
 
     /** 03:00 local time, nightly. */
     @Scheduled(cron = "${app.nvd.sync-cron:0 0 3 * * *}")
     public void nightlySync() {
         try {
-            NvdConnectorService.SyncResult result = nvd.sync(syncDays, syncMax);
-            log.info("Scheduled NVD sync: {} fetched, {} new articles, {} embedded",
-                    result.fetched(), result.created(), result.embedded());
+            feeds.enqueue("nvd", "daily");
         } catch (Exception e) {
             log.warn("Scheduled NVD sync failed: {}", e.toString());
         }

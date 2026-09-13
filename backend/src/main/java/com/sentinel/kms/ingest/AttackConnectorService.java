@@ -5,6 +5,8 @@ import com.sentinel.kms.kb.ArticleRepository;
 import com.sentinel.kms.kb.ArticleSection;
 import com.sentinel.kms.kb.Category;
 import com.sentinel.kms.kb.CategoryRepository;
+import com.sentinel.kms.kb.TrustedArticleRegistrationService;
+import com.sentinel.kms.kb.TrustedArticleSource;
 import com.sentinel.kms.vectorstore.EmbeddingIndexService;
 import com.sentinel.kms.watch.WatchlistService;
 import io.micrometer.core.instrument.MeterRegistry;
@@ -14,7 +16,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -32,10 +33,10 @@ public class AttackConnectorService {
     private final ArticleRepository articleRepository;
     private final CategoryRepository categoryRepository;
     private final ConnectorRepository connectorRepository;
-    private final EmbeddingIndexService embeddingIndexService;
     private final AttackClient attackClient;
     private final WatchlistService watchlistService;
     private final MeterRegistry meters;
+    private final TrustedArticleRegistrationService trustedArticleRegistrationService;
 
     public AttackConnectorService(ArticleRepository articleRepository,
                                   CategoryRepository categoryRepository,
@@ -43,14 +44,18 @@ public class AttackConnectorService {
                                   EmbeddingIndexService embeddingIndexService,
                                   AttackClient attackClient,
                                   WatchlistService watchlistService,
-                                  MeterRegistry meters) {
+                                  MeterRegistry meters,
+                                  TrustedArticleRegistrationService trustedArticleRegistrationService) {
         this.articleRepository = articleRepository;
         this.categoryRepository = categoryRepository;
         this.connectorRepository = connectorRepository;
-        this.embeddingIndexService = embeddingIndexService;
+        // Retained only for constructor compatibility.  Canonical article
+        // evidence is queued durably by trusted registration, never indexed
+        // here with unbound legacy metadata.
         this.attackClient = attackClient;
         this.watchlistService = watchlistService;
         this.meters = meters;
+        this.trustedArticleRegistrationService = trustedArticleRegistrationService;
     }
 
     /** Result of a sync run (same shape as the other connectors). */
@@ -70,26 +75,13 @@ public class AttackConnectorService {
         }
 
         if (!toSave.isEmpty()) {
-            articleRepository.saveAll(toSave);
+            trustedArticleRegistrationService.persistAndRegister(
+                    articleRepository, toSave, TrustedArticleSource.ATTACK);
         }
         int created = toSave.size();
 
+        // Registration has atomically enqueued revision-fenced canonical work.
         int embedded = 0;
-        for (Article article : toSave) {
-            try {
-                List<String> chunks = List.of(
-                        article.getTitle() + " — " + article.getSnippet(),
-                        "Technique description\n" + descriptionOf(article));
-                embeddingIndexService.index(chunks, Map.of(
-                        "article_id", article.getId(),
-                        "title", article.getTitle(),
-                        "source", "MITRE ATT&CK",
-                        "category", CATEGORY_ID));
-                embedded++;
-            } catch (Exception e) {
-                log.warn("Embedding failed for {}: {}", article.getId(), e.getMessage());
-            }
-        }
 
         updateConnector(created);
         watchlistService.matchAndAlert(toSave);
@@ -164,19 +156,6 @@ public class AttackConnectorService {
         connector.setLastLabel("just now");
         connector.setStatus("connected");
         connectorRepository.save(connector);
-    }
-
-    private String descriptionOf(Article article) {
-        if (article.getBody() != null && !article.getBody().isEmpty()) {
-            for (ArticleSection section : article.getBody()) {
-                if ("Description".equals(section.h()) && section.p() != null && !section.p().isBlank()) {
-                    return section.p();
-                }
-            }
-            String p = article.getBody().get(0).p();
-            return p == null ? "" : p;
-        }
-        return article.getSnippet() == null ? "" : article.getSnippet();
     }
 
     private String truncate(String text, int max) {

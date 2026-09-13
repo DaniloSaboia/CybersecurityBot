@@ -1,9 +1,10 @@
-// views/SettingsModal.jsx — Red Noir console settings & AI model configuration.
+// views/SettingsModal.jsx — Workspace settings and AI model configuration.
 
 import { useState, useEffect } from 'react';
 import { Icon } from '../icons.jsx';
-import { DimensionDivider, RedlineNote, StampButton } from '../ui.jsx';
+import { StampButton } from '../ui.jsx';
 import { useSettings, useVectorStoreStatus, useCategories } from '../lib/queries.js';
+import './access.css';
 
 export const DEFAULT_MODELS = [
   {
@@ -17,39 +18,46 @@ export const DEFAULT_MODELS = [
   },
 ];
 
-export function getStoredModel() {
-  return localStorage.getItem('sentinel_ai_model') || 'openrouter/free';
+const DEFAULT_RAG_PARAMS = { topK: 6, minScore: 0.3, historyTurns: 4, category: '', minSeverity: '' };
+
+function settingKey(name, userId) {
+  return userId ? `${name}:${encodeURIComponent(userId)}` : name;
 }
 
-export function getStoredRagParams() {
+export function getStoredModel(userId) {
+  return localStorage.getItem(settingKey('sentinel_ai_model', userId)) || 'openrouter/free';
+}
+
+export function getStoredRagParams(userId) {
   try {
-    const raw = localStorage.getItem('sentinel_rag_params');
-    return raw ? JSON.parse(raw) : { topK: 6, minScore: 0.3, historyTurns: 4, category: '', minSeverity: '' };
+    const raw = localStorage.getItem(settingKey('sentinel_rag_params', userId));
+    return raw ? JSON.parse(raw) : DEFAULT_RAG_PARAMS;
   } catch {
-    return { topK: 6, minScore: 0.3, historyTurns: 4, category: '', minSeverity: '' };
+    return DEFAULT_RAG_PARAMS;
   }
 }
 
-export default function SettingsModal({ isOpen, onClose, onSave }) {
+export default function SettingsModal({ isOpen, onClose, onSave, userId }) {
   const settingsQuery = useSettings();
   const vectorQuery = useVectorStoreStatus();
   const categoriesQuery = useCategories();
   const serverModels = (settingsQuery.data && settingsQuery.data.availableModels) || DEFAULT_MODELS;
+  const embeddingModels = settingsQuery.data?.availableEmbeddingModels || [];
   const categories = categoriesQuery.data || [];
 
   const [activeTab, setActiveTab] = useState('models');
-  const [selectedModel, setSelectedModel] = useState(getStoredModel);
-  const [ragParams, setRagParams] = useState(getStoredRagParams);
+  const [selectedModel, setSelectedModel] = useState(() => getStoredModel(userId));
+  const [ragParams, setRagParams] = useState(() => getStoredRagParams(userId));
   const [savedNotice, setSavedNotice] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
-      const stored = getStoredModel();
+      const stored = getStoredModel(userId);
       setSelectedModel(serverModels.some((m) => m.id === stored) ? stored : serverModels[0]?.id || 'openrouter/free');
-      setRagParams(getStoredRagParams());
+      setRagParams(getStoredRagParams(userId));
       setSavedNotice(false);
     }
-  }, [isOpen, serverModels]);
+  }, [isOpen, serverModels, userId]);
 
   useEffect(() => {
     if (!isOpen) return undefined;
@@ -64,8 +72,8 @@ export default function SettingsModal({ isOpen, onClose, onSave }) {
 
   function handleSave() {
     const modelToSave = selectedModel;
-    localStorage.setItem('sentinel_ai_model', modelToSave);
-    localStorage.setItem('sentinel_rag_params', JSON.stringify(ragParams));
+    localStorage.setItem(settingKey('sentinel_ai_model', userId), modelToSave);
+    localStorage.setItem(settingKey('sentinel_rag_params', userId), JSON.stringify(ragParams));
 
     setSavedNotice(true);
     if (onSave) {
@@ -86,9 +94,9 @@ export default function SettingsModal({ isOpen, onClose, onSave }) {
   const isHostedSupabase = supabaseUrl.includes('.supabase.co');
 
   return (
-    <div className="settings-backdrop" onClick={onClose}>
+    <div className="settings-backdrop access-settings-backdrop" onClick={onClose}>
       <div
-        className="settings-modal"
+        className="settings-modal access-settings"
         role="dialog"
         aria-modal="true"
         aria-labelledby="settings-title"
@@ -97,12 +105,9 @@ export default function SettingsModal({ isOpen, onClose, onSave }) {
         {/* Modal Header */}
         <div className="settings-head">
           <div className="settings-title-wrap">
-            <div className="settings-icon-badge">
-              <Icon name="settings" size={18} />
-            </div>
             <div>
               <h2 id="settings-title" className="settings-title">System Settings</h2>
-              <p className="settings-sub">SecOps Engine Configuration · OpenRouter Free Models · Supabase Cloud</p>
+              <p className="settings-sub">Models, retrieval preferences, and connection details.</p>
             </div>
           </div>
           <button type="button" className="settings-close-btn" onClick={onClose} aria-label="Close settings">
@@ -116,24 +121,21 @@ export default function SettingsModal({ isOpen, onClose, onSave }) {
             className={'settings-tab' + (activeTab === 'models' ? ' active' : '')}
             onClick={() => setActiveTab('models')}
           >
-            <Icon name="spark" size={14} />
-            <span>AI Models &amp; OpenRouter</span>
+            <span>Models</span>
             {activeTab === 'models' && <span className="tab-indicator" />}
           </button>
           <button
             className={'settings-tab' + (activeTab === 'rag' ? ' active' : '')}
             onClick={() => setActiveTab('rag')}
           >
-            <Icon name="sliders" size={14} />
-            <span>RAG Tuning</span>
+            <span>Retrieval</span>
             {activeTab === 'rag' && <span className="tab-indicator" />}
           </button>
           <button
             className={'settings-tab' + (activeTab === 'supabase' ? ' active' : '')}
             onClick={() => setActiveTab('supabase')}
           >
-            <Icon name="database" size={14} />
-            <span>Supabase Env</span>
+            <span>Connection</span>
             {activeTab === 'supabase' && <span className="tab-indicator" />}
           </button>
         </div>
@@ -141,10 +143,7 @@ export default function SettingsModal({ isOpen, onClose, onSave }) {
         {/* Tab 1: AI Models */}
         {activeTab === 'models' && (
           <div className="settings-body">
-            <div className="settings-section-title">
-              <span>SELECT ACTIVE MODEL (OPENROUTER FREE MODELS)</span>
-              <RedlineNote>// zero cost · top-tier inference</RedlineNote>
-            </div>
+            <h3 className="settings-section-title">Answer model</h3>
 
             <div className="models-grid">
               {serverModels.map((m) => {
@@ -154,16 +153,17 @@ export default function SettingsModal({ isOpen, onClose, onSave }) {
                     type="button"
                     key={m.id}
                     className={'model-card' + (isSelected ? ' selected' : '')}
+                    aria-pressed={isSelected}
                     onClick={() => {
                       setSelectedModel(m.id);
                     }}
                   >
                     <div className="model-card-top">
                       <div className="model-name-wrap">
-                        <span className="model-radio">{isSelected ? '◉' : '○'}</span>
+                        <span className="model-radio" aria-hidden="true"><Icon name={isSelected ? 'check' : 'chat'} size={16} /></span>
                         <span className="model-name">{m.name}</span>
                       </div>
-                      {m.tag && <span className={'model-tag ' + m.tag.toLowerCase().replace(/[^a-z]/g, '-')}>{m.tag}</span>}
+
                     </div>
                     <p className="model-desc">{m.description}</p>
                     <div className="model-meta">
@@ -175,13 +175,40 @@ export default function SettingsModal({ isOpen, onClose, onSave }) {
               })}
             </div>
 
-            <DimensionDivider label="OPENROUTER CREDENTIAL STATUS" dim="SERVER ENV" />
+            <h3 className="settings-section-title">Embedding index</h3>
+            <p className="form-hint">
+              Active embedding model: <strong>{settingsQuery.data?.defaultEmbedModel || (settingsQuery.isPending ? 'Loading…' : 'Not reported')}</strong>.
+              {' '}Ingestion and search use the same model. Switching requires reindexing existing content.
+            </p>
+            <div className="models-grid" aria-label="Free embedding models">
+              {embeddingModels.map((m) => (
+                <div key={m.id} className={'model-card' + (m.id === settingsQuery.data?.defaultEmbedModel ? ' selected' : '')}>
+                  <div className="model-card-top">
+                    <span className="model-name">{m.name}</span>
+                    <span className="model-tag">{m.id === settingsQuery.data?.defaultEmbedModel ? 'ACTIVE' : 'FREE'}</span>
+                  </div>
+                  <p className="model-desc">{m.description}</p>
+                  <div className="model-meta">
+                    <span className="model-provider">{m.provider}</span>
+                    <span className="model-context">{m.contextWindow.toLocaleString()} token context</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+            {!embeddingModels.length && (
+              <p className="form-hint">{settingsQuery.isLoading ? 'Loading embedding catalog…' : 'No free embedding models are available in the current catalog.'}</p>
+            )}
+            <p className="form-hint">
+              Listed models may have different vector dimensions and input limits. The active model is configured for this index on the server.
+            </p>
+
+            <h3 className="settings-section-title">API connection</h3>
 
             <div className="custom-model-form">
               <div className="form-group">
-                <label className="form-label">OPENROUTER API KEY</label>
+                <span className="form-label">OpenRouter API key</span>
                 <div className="status-v code">
-                  {settingsQuery.data?.openRouterApiKeyConfigured ? '● CONFIGURED ON SERVER' : '○ NOT CONFIGURED'}
+                  {settingsQuery.isPending ? 'Checking…' : settingsQuery.isError ? 'Status unavailable' : settingsQuery.data?.openRouterApiKeyConfigured ? 'Configured on server' : 'Not configured'}
                 </div>
                 <span className="form-hint">
                   Set <code>OPENROUTER_API_KEY</code> in the backend environment. Secrets are never stored in browser storage.
@@ -194,18 +221,16 @@ export default function SettingsModal({ isOpen, onClose, onSave }) {
         {/* Tab 2: RAG Tuning */}
         {activeTab === 'rag' && (
           <div className="settings-body">
-            <div className="settings-section-title">
-              <span>RETRIEVAL AUGMENTED GENERATION TUNING</span>
-              <RedlineNote>// pgvector + hybrid ranker knobs</RedlineNote>
-            </div>
+            <h3 className="settings-section-title">Evidence used in answers</h3>
 
             <div className="rag-tuning-grid">
               <div className="tuning-card">
                 <div className="tuning-head">
-                  <span className="tuning-label">TOP-K RETRIEVAL CANDIDATES</span>
+                  <label htmlFor="retrieval-count" className="tuning-label">Retrieved passages</label>
                   <span className="tuning-value accent">{ragParams.topK} chunks</span>
                 </div>
                 <input
+                  id="retrieval-count"
                   type="range"
                   min="2"
                   max="15"
@@ -214,15 +239,16 @@ export default function SettingsModal({ isOpen, onClose, onSave }) {
                   value={ragParams.topK}
                   onChange={(e) => setRagParams({ ...ragParams, topK: Number(e.target.value) })}
                 />
-                <p className="tuning-help">Number of closest chunks retrieved from pgvector to ground assistant responses.</p>
+                <p className="tuning-help">How many relevant passages the assistant can use as evidence for an answer.</p>
               </div>
 
               <div className="tuning-card">
                 <div className="tuning-head">
-                  <span className="tuning-label">MINIMUM SIMILARITY SCORE</span>
+                  <label htmlFor="retrieval-score" className="tuning-label">Minimum similarity</label>
                   <span className="tuning-value accent">{(ragParams.minScore * 100).toFixed(0)}%</span>
                 </div>
                 <input
+                  id="retrieval-score"
                   type="range"
                   min="0.10"
                   max="0.80"
@@ -231,15 +257,16 @@ export default function SettingsModal({ isOpen, onClose, onSave }) {
                   value={ragParams.minScore}
                   onChange={(e) => setRagParams({ ...ragParams, minScore: Number(e.target.value) })}
                 />
-                <p className="tuning-help">Cosine similarity threshold below which candidate chunks are pruned.</p>
+                <p className="tuning-help">Exclude passages below this relevance threshold. A higher value narrows the evidence available.</p>
               </div>
 
               <div className="tuning-card">
                 <div className="tuning-head">
-                  <span className="tuning-label">CONVERSATION HISTORY TURNS</span>
+                  <label htmlFor="retrieval-history" className="tuning-label">Conversation history</label>
                   <span className="tuning-value accent">{ragParams.historyTurns} turns</span>
                 </div>
                 <input
+                  id="retrieval-history"
                   type="range"
                   min="1"
                   max="8"
@@ -248,12 +275,12 @@ export default function SettingsModal({ isOpen, onClose, onSave }) {
                   value={ragParams.historyTurns}
                   onChange={(e) => setRagParams({ ...ragParams, historyTurns: Number(e.target.value) })}
                 />
-                <p className="tuning-help">Recent dialog turns replayed into model prompt for multi-turn context memory.</p>
+                <p className="tuning-help">How many recent conversation turns the assistant uses to follow your investigation.</p>
               </div>
 
               <div className="tuning-card">
                 <div className="tuning-head">
-                  <span className="tuning-label">RETRIEVAL SCOPE — CATEGORY</span>
+                  <span className="tuning-label">Category</span>
                   <span className="tuning-value accent">{ragParams.category || 'ALL'}</span>
                 </div>
                 <select
@@ -267,12 +294,12 @@ export default function SettingsModal({ isOpen, onClose, onSave }) {
                     <option key={c.id} value={c.id}>{c.label}</option>
                   ))}
                 </select>
-                <p className="tuning-help">Restrict grounding chunks to one KB category (e.g. advisories only).</p>
+                <p className="tuning-help">Use evidence from one knowledge base category, or include all categories.</p>
               </div>
 
               <div className="tuning-card">
                 <div className="tuning-head">
-                  <span className="tuning-label">RETRIEVAL SCOPE — MIN SEVERITY</span>
+                  <span className="tuning-label">Minimum severity</span>
                   <span className="tuning-value accent">{ragParams.minSeverity || 'ANY'}</span>
                 </div>
                 <select
@@ -296,16 +323,13 @@ export default function SettingsModal({ isOpen, onClose, onSave }) {
         {/* Tab 3: Supabase Environment */}
         {activeTab === 'supabase' && (
           <div className="settings-body">
-            <div className="settings-section-title">
-              <span>SUPABASE INFRASTRUCTURE STATUS</span>
-              <RedlineNote>// Auth &amp; pgvector backend</RedlineNote>
-            </div>
+            <h3 className="settings-section-title">Supabase connection</h3>
 
             <div className="supabase-status-card">
               <div className="status-row">
                 <span className="status-k">ENVIRONMENT:</span>
                 <span className={'status-v ' + (isHostedSupabase ? 'hosted' : 'local')}>
-                  {isHostedSupabase ? '● HOSTED CLOUD' : '○ LOCAL INSTANCE'}
+                  <Icon name="dot" size={9} className="status-dot" /> {isHostedSupabase ? 'HOSTED CLOUD' : 'LOCAL INSTANCE'}
                 </span>
               </div>
               <div className="status-row">
@@ -325,7 +349,7 @@ export default function SettingsModal({ isOpen, onClose, onSave }) {
               <div className="status-row">
                 <span className="status-k">DATABASE CHECK:</span>
                 <span className={'status-v ' + (vectorQuery.data?.healthy ? 'hosted' : '')}>
-                  {vectorQuery.isLoading ? 'CHECKING…' : vectorQuery.data?.healthy ? '● CONNECTED' : '○ UNAVAILABLE'}
+                  {vectorQuery.isLoading ? 'CHECKING…' : <><Icon name="dot" size={9} className="status-dot" /> {vectorQuery.data?.healthy ? 'CONNECTED' : 'UNAVAILABLE'}</>}
                 </span>
               </div>
             </div>
@@ -346,7 +370,7 @@ export default function SettingsModal({ isOpen, onClose, onSave }) {
                   rel="noreferrer"
                   className="guide-link"
                 >
-                  OPEN HOSTED SUPABASE SETUP GUIDE &rarr;
+                  OPEN HOSTED SUPABASE SETUP GUIDE <Icon name="chevron" size={11} />
                 </a>
               </div>
             </div>
@@ -357,22 +381,21 @@ export default function SettingsModal({ isOpen, onClose, onSave }) {
         <div className="settings-foot">
           <div className="settings-foot-left">
             <button className="settings-reset-btn" onClick={handleReset}>
-              RESET DEFAULTS
+              Reset defaults
             </button>
-            {savedNotice && <span className="settings-saved-badge">✓ SETTINGS SAVED</span>}
+            {savedNotice && <span className="settings-saved-badge"><Icon name="check" size={12} /> SETTINGS SAVED</span>}
           </div>
           <div className="settings-foot-right">
             <button className="settings-cancel-btn" onClick={onClose}>
-              CANCEL
+              Cancel
             </button>
             <StampButton
               className="btn-primary"
               action="APPLY"
               context="SETTINGS"
-              style={{ padding: '9px 20px', fontSize: 11.5, margin: 0 }}
               onClick={handleSave}
             >
-              SAVE SETTINGS
+              Save changes
             </StampButton>
           </div>
         </div>

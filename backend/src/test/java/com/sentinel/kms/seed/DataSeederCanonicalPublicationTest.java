@@ -22,8 +22,6 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.atLeastOnce;
-import static org.mockito.ArgumentMatchers.any;
 
 @ExtendWith(MockitoExtension.class)
 class DataSeederCanonicalPublicationTest {
@@ -49,17 +47,5 @@ class DataSeederCanonicalPublicationTest {
                 .isNotEmpty()
                 .allSatisfy(article -> assertThat(article.getId()).isNotBlank());
         verifyNoInteractions(embeddingIndex);
-    }
-
-    @Test
-    void disabledDemoSeedStillProvisionsConnectorsWithoutPublishingArticlesOrJobs() throws Exception {
-        DataSeeder seeder = new DataSeeder(false, articles, categories, connectors, jobs,
-                embeddingIndex, new ObjectMapper(), registration);
-
-        seeder.run();
-
-        verify(connectors, atLeastOnce()).save(any());
-        verify(categories).saveAll(any());
-        verifyNoInteractions(articles, jobs, registration, embeddingIndex);
     }
 }

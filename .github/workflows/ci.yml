@@ -22,8 +22,34 @@ jobs:
           java-version: '17'
           cache: maven
 
+      - name: Require Docker and verify fresh database bootstrap
+        run: |
+          docker info
+          python3 ../scripts/ci/smoke_db_bootstrap.py
+
+      - name: Test quality gates
+        run: python3 -m unittest discover -s ../scripts/ci -p 'test_*.py'
+
       - name: Build & test
-        run: mvn -B -ntp verify
+        run: mvn -B -ntp clean verify
+
+      - name: Require executed database integration tests
+        run: |
+          python3 ../scripts/ci/quality_gate.py junit target/surefire-reports/TEST-*IntegrationTest.xml \
+            --require-suite com.sentinel.kms.integration.ApiSecurityIntegrationTest \
+            --require-suite com.sentinel.kms.ingest.DurableIngestPostgresIntegrationTest \
+            --require-suite com.sentinel.kms.vectorstore.HybridSearchIntegrationTest \
+            --require-suite com.sentinel.kms.assistant.ChatEvidencePersistenceIntegrationTest \
+            --require-suite com.sentinel.kms.kb.KnowledgeGovernanceBindingMigrationIntegrationTest \
+            --require-suite com.sentinel.kms.ingest.TrustedConnectorRegistrationBoundaryIntegrationTest
+
+      - name: Preserve backend test evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-test-reports
+          path: backend/target/surefire-reports/
+          retention-days: 14
 
   frontend:
     name: Frontend (Vite)
@@ -37,7 +63,7 @@ jobs:
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version-file: '.nvmrc'
           cache: npm
           cache-dependency-path: frontend/package-lock.json
 
@@ -47,8 +73,8 @@ jobs:
       - name: Test
         run: npm test
 
-      - name: Audit dependencies (critical)
-        run: npm audit --audit-level=critical
+      - name: Audit dependencies (high and critical)
+        run: npm audit --audit-level=high
 
       - name: Build
         run: npm run build
@@ -65,7 +91,7 @@ jobs:
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version-file: '.nvmrc'
           cache: npm
           cache-dependency-path: frontend/package-lock.json
 
@@ -78,11 +104,11 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Run E2E smoke tests
+      - name: Run browser smoke and mocked HTTP-contract journeys
         run: npm run test:e2e
 
       - name: Upload Playwright report
-        if: failure()
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: playwright-report
