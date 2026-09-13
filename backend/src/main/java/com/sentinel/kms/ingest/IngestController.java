@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
@@ -18,8 +19,9 @@ import java.util.List;
 
 /**
  * REST surface for the ingestion pipeline (drop zone, URL import, retry, queue).
- * All operations are scoped to the authenticated user: listings show own +
- * shared demo jobs; retry/delete only touch the user's own jobs.
+ * All operations are scoped to the authenticated user: listings are decided
+ * from persisted governance scope; retry/delete only touch the user's own
+ * jobs.
  */
 @RestController
 @RequestMapping("/api/ingest")
@@ -37,13 +39,19 @@ public class IngestController {
     }
 
     @PostMapping("/upload")
-    public IngestJobDto upload(@RequestParam("file") MultipartFile file, @AuthenticationPrincipal Jwt jwt) {
-        return service.createUploadJob(file, jwt.getSubject());
+    public IngestJobDto upload(
+            @RequestParam("file") MultipartFile file,
+            @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey,
+            @AuthenticationPrincipal Jwt jwt) {
+        return service.createUploadJob(file, jwt.getSubject(), idempotencyKey);
     }
 
     @PostMapping("/url")
-    public IngestJobDto url(@Valid @RequestBody AddUrlRequest request, @AuthenticationPrincipal Jwt jwt) {
-        return service.createUrlJob(request.url(), jwt.getSubject());
+    public IngestJobDto url(
+            @Valid @RequestBody AddUrlRequest request,
+            @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey,
+            @AuthenticationPrincipal Jwt jwt) {
+        return service.createUrlJob(request.url(), jwt.getSubject(), idempotencyKey);
     }
 
     @PostMapping("/jobs/{id}/retry")

@@ -1,9 +1,10 @@
-// views/Ingest.jsx — Red Noir ingestion pipeline & vector indexing.
+// views/Ingest.jsx — document intake, processing, and source refreshes.
 
-import { useRef, useState, Fragment } from 'react';
+import { useEffect, useRef, useState, Fragment } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { Icon } from '../icons.jsx';
-import { StatusDot, ConnectorIcon, BlueprintCorners, DimensionDivider, RedlineNote, StampButton } from '../ui.jsx';
+import './workflows.css';
+import { StatusDot, ConnectorIcon, StampButton } from '../ui.jsx';
 import { useJobs, useConnectors, useVectorStoreStatus, queryClient } from '../lib/queries.js';
 import { uploadFile, addUrl, retryJob, deleteJob, syncConnector } from '../lib/api.js';
 
@@ -14,11 +15,11 @@ const STAGE_LABEL = {
 
 // fixed 5-stage pipeline model: ingest -> extract -> chunk -> embed -> index
 const PIPELINE_STAGES = [
-  { id: 'ingest', label: '01 // INGEST', desc: 'Pull from connectors or accept an upload stream' },
-  { id: 'extract', label: '02 // EXTRACT', desc: 'Parse text, tables, IOCs, and metadata schemas' },
-  { id: 'chunk', label: '03 // CHUNK', desc: 'Split into overlapping, retrieval-sized tokens' },
-  { id: 'embed', label: '04 // EMBED', desc: 'Encode chunks to 1024-dim vectors via mistral-embed' },
-  { id: 'index', label: '05 // INDEX', desc: 'Upsert vectors into pgvector cosine space' },
+  { id: 'ingest', label: 'Receive', desc: 'Upload a document or refresh a source.' },
+  { id: 'extract', label: 'Extract', desc: 'Read text, tables, and indicators.' },
+  { id: 'chunk', label: 'Organize', desc: 'Prepare passages for retrieval.' },
+  { id: 'embed', label: 'Embed', desc: 'Prepare content for semantic search.' },
+  { id: 'index', label: 'Index', desc: 'Make content available to research.' },
 ];
 
 export default function Ingest() {
@@ -31,6 +32,11 @@ export default function Ingest() {
   const vectorQuery = useVectorStoreStatus();
   const jobs = jobsQuery.data || [];
   const connectors = connectorsQuery.data || [];
+  const connectorVersion = JSON.stringify(connectors.map((c) => [c.id, c.sync?.runId, c.sync?.updated, c.sync?.created, c.sync?.index?.searchable]));
+  useEffect(() => {
+    ['vectorstore', 'articles', 'article-index'].forEach((key) => queryClient.invalidateQueries({ queryKey: [key] }));
+  }, [connectorVersion]);
+
   const vector = vectorQuery.data;
 
   function refreshJobs() { queryClient.invalidateQueries({ queryKey: ['jobs'] }); }
@@ -40,7 +46,7 @@ export default function Ingest() {
 
   const uploadMut = useMutation({
     mutationFn: uploadFile,
-    onMutate: () => setOperationNotice({ tone: 'info', text: 'Uploading specification document…' }),
+    onMutate: () => setOperationNotice({ tone: 'info', text: 'Uploading document…' }),
     onSuccess: () => {
       refreshJobs();
       setOperationNotice({ tone: 'success', text: 'Upload accepted and queued for ingestion.' });
@@ -78,15 +84,16 @@ export default function Ingest() {
 
   const syncMut = useMutation({
     mutationFn: (id) => syncConnector(id),
-    onMutate: () => setOperationNotice({ tone: 'info', text: 'Synchronizing source conduit…' }),
+    onMutate: () => setOperationNotice({ tone: 'info', text: 'Queuing source refresh…' }),
     onSuccess: (res) => {
       ['connectors', 'vectorstore', 'articles', 'article-index'].forEach((k) =>
         queryClient.invalidateQueries({ queryKey: [k] }));
       setOperationNotice({
         tone: 'success',
         text: res
-          ? `+${res.created} CVEs · ${res.embedded} embedded (${res.fetched} fetched)`
-          : 'Source conduit synchronized.',
+          ? (res.runId ? 'Refresh queued. Source results and indexing progress will update below.'
+            : `${res.created} new records queued for indexing (${res.fetched} fetched).`)
+          : 'Refresh queued.',
       });
     },
     onError: (err) => operationError('Connector sync failed', err),
@@ -115,18 +122,17 @@ export default function Ingest() {
     : '—';
 
   return (
-    <div className="ingest">
+    <div className="ingest workflow-view">
       <div className="view-head">
         <div>
           <h1 className="view-title">Ingestion Pipeline</h1>
-          <p className="view-sub">Connectors, uploads, and data flow into the vector index</p>
+          <p className="view-sub">Add source material and follow its progress into your knowledge base</p>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <RedlineNote>// OCR &amp; parser telemetry below</RedlineNote>
+        <div className="workflow-head-summary">
           <div className="ingest-stats" aria-label="Ingestion statistics" aria-live="polite">
-            <div className="ingest-stat"><span className="ingest-stat-n">{active}</span><span className="ingest-stat-l">IN FLIGHT</span></div>
-            <div className="ingest-stat"><span className="ingest-stat-n">{indexedJobs}</span><span className="ingest-stat-l">INDEXED JOBS</span></div>
-            <div className="ingest-stat"><span className="ingest-stat-n accent">{indexedChunks}</span><span className="ingest-stat-l">INDEXED CHUNKS</span></div>
+            <div className="ingest-stat"><span className="ingest-stat-n">{active}</span><span className="ingest-stat-l">In progress</span></div>
+            <div className="ingest-stat"><span className="ingest-stat-n">{indexedJobs}</span><span className="ingest-stat-l">Indexed jobs</span></div>
+            <div className="ingest-stat"><span className="ingest-stat-n accent">{indexedChunks}</span><span className="ingest-stat-l">Indexed chunks</span></div>
           </div>
         </div>
       </div>
@@ -146,26 +152,15 @@ export default function Ingest() {
         ))}
       </div>
 
-      <DimensionDivider label="INGESTION FEED" dim={`CHUNKS ${indexedChunks}`} />
-
       {operationNotice && (
         <div
           className={`ingest-notice tone-${operationNotice.tone}`}
           role={operationNotice.tone === 'error' ? 'alert' : 'status'}
           aria-live="polite"
-          style={{
-            margin: '0 var(--pad) 12px',
-            padding: '8px 10px',
-            fontFamily: 'var(--mono)',
-            fontSize: 10.5,
-            color: operationNotice.tone === 'error' ? 'var(--redline-bright)' : 'var(--accent)',
-            border: `1px solid ${operationNotice.tone === 'error' ? 'var(--redline-bright)' : 'var(--accent)'}`,
-            background: operationNotice.tone === 'error' ? 'var(--redline-bg)' : 'var(--accent-soft)',
-          }}
-          >
-            [ {operationNotice.tone === 'error' ? 'FAULT' : 'STATUS'} ] {operationNotice.text}
-          </div>
-        )}
+        >
+          {operationNotice.text}
+        </div>
+      )}
 
       <div className="ingest-cols">
         <div className="ingest-col-main">
@@ -183,36 +178,38 @@ export default function Ingest() {
             onDragLeave={() => setDragOver(false)}
             onDrop={(e) => { e.preventDefault(); setDragOver(false); const f = e.dataTransfer.files[0]; if (f) uploadMut.mutate(f); }}
           >
-            <BlueprintCorners coords="INTAKE // 01" />
+
             <div className="drop-icon"><Icon name="upload" size={24} /></div>
             <div className="drop-title">Drop a security document</div>
-            <div className="drop-sub">PDF · DOCX · JSON · CSV · HTML · EML — or sync via automated connector</div>
+            <div className="drop-sub">PDF, DOCX, JSON, CSV, HTML or EML. Select one file to begin.</div>
             <div className="drop-actions">
               <StampButton
                 className="btn-primary"
+                aria-label={uploadMut.isPending ? 'UPLOADING…' : 'SELECT FILE'}
                 action="SELECT"
                 context="LOCAL FILE"
                 disabled={uploadMut.isPending}
                 onClick={onPickFiles}
               >
-                <Icon name="upload" size={13} /> {uploadMut.isPending ? 'UPLOADING…' : 'SELECT FILE'}
+                <Icon name="upload" size={13} /> {uploadMut.isPending ? 'Uploading…' : 'Select file'}
               </StampButton>
               <StampButton
                 className="btn-ghost"
+                aria-label={urlMut.isPending ? 'SUBMITTING…' : 'PULL FROM URL'}
                 action="PULL"
                 context="URL"
                 disabled={urlMut.isPending}
                 onClick={onAddUrl}
               >
-                <Icon name="link" size={13} /> {urlMut.isPending ? 'SUBMITTING…' : 'PULL FROM URL'}
+                <Icon name="link" size={13} /> {urlMut.isPending ? 'Submitting…' : 'Pull from URL'}
               </StampButton>
             </div>
           </div>
 
           <div className="jobs-head">
-            <span><Icon name="cpu" size={14} /> JOB QUEUE</span>
+            <span><Icon name="cpu" size={14} /> Job queue</span>
             <span className="jobs-count">
-              {jobsQuery.isPending ? 'LOADING…' : jobsQuery.isError ? 'UNAVAILABLE' : `${active} ACTIVE · ${jobs.length} TOTAL`}
+              {jobsQuery.isPending ? 'Loading…' : jobsQuery.isError ? 'Unavailable' : `${active} active · ${jobs.length} total`}
             </span>
           </div>
           <div className="jobs-list" aria-live="polite" aria-busy={jobsQuery.isPending}>
@@ -223,7 +220,7 @@ export default function Ingest() {
                 <StampButton tone="redline" text="RETRY" onClick={() => jobsQuery.refetch()} />
               </div>
             )}
-            {jobsQuery.isSuccess && jobs.length === 0 && <div className="ingest-state">No ingestion jobs</div>}
+            {jobsQuery.isSuccess && jobs.length === 0 && <div className="ingest-state">No ingestion jobs yet. Add a document above to get started.</div>}
             {jobsQuery.isSuccess && jobs.map((j, index) => (
               <JobRow
                 key={j.id}
@@ -240,7 +237,7 @@ export default function Ingest() {
 
         <div className="ingest-col-side">
           <div className="connectors-head">
-            <span><Icon name="link" size={14} /> SOURCE CONNECTORS</span>
+            <span><Icon name="link" size={14} /> Source connectors</span>
           </div>
           <div className="connectors-list" aria-live="polite" aria-busy={connectorsQuery.isPending}>
             {connectorsQuery.isPending && <div className="ingest-state" role="status">Loading connectors…</div>}
@@ -250,13 +247,13 @@ export default function Ingest() {
                 <StampButton tone="redline" text="RETRY" onClick={() => connectorsQuery.refetch()} />
               </div>
             )}
-            {connectorsQuery.isSuccess && connectors.length === 0 && <div className="ingest-state">No connectors configured</div>}
+            {connectorsQuery.isSuccess && connectors.length === 0 && <div className="ingest-state">No connectors configured. You can still upload documents.</div>}
             {connectorsQuery.isSuccess && connectors.map((c, index) => (
               <ConnectorRow
                 key={c.id}
                 c={c}
                 index={index}
-                onSync={c.id === 'nvd' ? () => syncMut.mutate(c.id) : null}
+                onSync={['nvd', 'kev', 'sans', 'attack'].includes(c.id) ? () => syncMut.mutate(c.id) : null}
                 syncing={syncMut.isPending && syncMut.variables === c.id}
               />
             ))}
@@ -280,14 +277,14 @@ function VectorCard({ vector, loading, error, onRetry }) {
   const chunks = v.chunks != null ? v.chunks.toLocaleString() : '—';
   const dim = v.dim != null ? v.dim : '—';
   const p95 = v.p95Ms != null ? `${v.p95Ms}ms` : '—';
-  const healthStatus = v.healthy === true ? 'NOMINAL' : v.healthy === false ? 'DEGRADED' : 'UNKNOWN';
+  const healthStatus = v.healthy === true ? 'Healthy' : v.healthy === false ? 'Degraded' : 'Unknown';
   return (
     <div className="vector-card" aria-busy={loading}>
-      <div className="vector-card-head"><Icon name="database" size={14} /> Vector Store</div>
-      {loading && <div className="ingest-state" role="status">Loading vector telemetry…</div>}
+      <div className="vector-card-head"><Icon name="database" size={14} /> Search index</div>
+      {loading && <div className="ingest-state" role="status">Loading search index status…</div>}
       {error && (
         <div className="ingest-state" role="alert">
-          Vector telemetry unavailable — {String(error.message || error)}
+          Search index status unavailable — {String(error.message || error)}
           <StampButton tone="redline" text="RETRY" onClick={onRetry} />
         </div>
       )}
@@ -296,12 +293,12 @@ function VectorCard({ vector, loading, error, onRetry }) {
       <div className="vector-rows">
         <div className="vector-row"><span>Engine</span><code>{engine}</code></div>
         <div className="vector-row"><span>Embedding</span><code>{model}</code></div>
-        <div className="vector-row"><span>Indexed Chunks</span><code>{chunks}</code></div>
+        <div className="vector-row"><span>Indexed chunks</span><code>{chunks}</code></div>
         <div className="vector-row"><span>Dimension</span><code>{dim}</code></div>
       </div>
       <div className="vector-health">
-        <StatusDot status={healthStatus === 'NOMINAL' ? 'connected' : healthStatus === 'DEGRADED' ? 'error' : 'queued'} />
-        STATUS {healthStatus} · P95 {p95}
+        <StatusDot status={healthStatus === 'Healthy' ? 'connected' : healthStatus === 'Degraded' ? 'error' : 'queued'} />
+        {healthStatus} · P95 {p95}
       </div>
         </>
       )}
@@ -312,7 +309,7 @@ function VectorCard({ vector, loading, error, onRetry }) {
 function JobRow({ j, index, onRetry, onDelete, retrying, deleting }) {
   const done = j.stage === 'indexed';
   const failed = j.stage === 'failed';
-  const barColor = failed ? 'var(--sev-critical)' : done ? 'var(--accent)' : 'var(--sev-medium)';
+  const barColor = 'var(--accent)';
   const rawPct = Number(j.pct);
   const pct = Number.isFinite(rawPct) ? Math.min(100, Math.max(0, rawPct)) : 0;
     return (
@@ -325,9 +322,9 @@ function JobRow({ j, index, onRetry, onDelete, retrying, deleting }) {
           </div>
           <div className="job-line2">
             <StatusDot status={j.stage} />
-            <span className="job-stage">{STAGE_LABEL[j.stage] || j.stage}</span>
+            <span className="job-stage">{(STAGE_LABEL[j.stage] || j.stage || '').toLowerCase()}</span>
             <span className="job-src">· {j.source}</span>
-            {j.chunks > 0 && <span className="job-chunks">· {j.chunks} CHUNKS</span>}
+            {j.chunks > 0 && <span className="job-chunks">· {j.chunks} chunks</span>}
             {failed && <span className="job-error">· {j.error}</span>}
           </div>
         {!done && !failed && (
@@ -354,23 +351,44 @@ function JobRow({ j, index, onRetry, onDelete, retrying, deleting }) {
   );
 }
 
-function ConnectorRow({ c, index, onSync, syncing }) {
+export function ConnectorRow({ c, index, onSync, syncing }) {
+  const run = c.sync || {};
+  const recordCount = run.index?.total ?? c.docs ?? 0;
+  const busy = syncing || ['queued', 'running'].includes(run.status);
+  const at = (value) => value ? new Date(value).toLocaleString() : 'Never';
   return (
     <div className="connector-row">
       <div className="connector-icon"><ConnectorIcon kind={c.kind} /></div>
       <div className="connector-main">
         <div className="connector-name">{c.name}</div>
         <div className="connector-meta">
-          <StatusDot status={syncing ? 'syncing' : c.status} />
-          <span className={'connector-status s-' + (syncing ? 'syncing' : c.status)}>
-            {syncing ? 'SYNCING' : c.status?.toUpperCase() || 'UNKNOWN'}
+          <StatusDot status={busy ? 'syncing' : c.status} />
+          <span className={'connector-status s-' + (busy ? 'syncing' : c.status)}>
+            {busy ? 'SYNCING' : c.status?.toUpperCase() || 'UNKNOWN'}
           </span>
-          <span className="connector-docs">· {(c.docs || 0).toLocaleString()} DOCS · {c.last}</span>
+          <span className="connector-docs">· {recordCount.toLocaleString()} {recordCount === 1 ? 'record' : 'records'}</span>
         </div>
       </div>
+      {!!Object.keys(run).length && (
+          <div className="connector-sync-details">
+            <p>Last complete check: {at(run.lastSuccessAt)} · {run.dailyEnabled ? 'Daily refresh on' : 'Manual refresh only'}</p>
+            {run.nextRefreshAt && <p>Next daily refresh: {at(run.nextRefreshAt)}</p>}
+            {run.runId && <p>{run.created || 0} new · {run.updated || 0} updated · {run.unchanged || 0} unchanged · {run.checked || 0} checked</p>}
+            {run.remaining > 0 && <p>{run.remaining} source records still to check. Refresh again to continue within the {run.maxChangesPerRun}-change limit.</p>}
+            {run.index && <p>{run.index.searchable} searchable · {run.index.pending} awaiting indexing · {run.index.failed} indexing failures</p>}
+            {run.error && <p role="alert">{run.error}</p>}
+            {run.sourceUrl && <a href={run.sourceUrl} target="_blank" rel="noreferrer">Open source feed</a>}
+            {run.history?.length > 0 && <details>
+              <summary>Recent refreshes</summary>
+              <ul>{run.history.map((entry) => <li key={entry.runId}>
+                {at(entry.startedAt)} — {entry.status}: {entry.created || 0} new, {entry.updated || 0} updated, {entry.unchanged || 0} unchanged
+              </li>)}</ul>
+            </details>}
+          </div>
+        )}
       {onSync && (
-        <StampButton className="connectors-add" action="SYNC" context="NVD" style={{ margin: 0 }} title="Pull recent CVEs from NVD" disabled={syncing} onClick={onSync}>
-          <Icon name="refresh" size={11} /> {syncing ? 'SYNCING…' : 'SYNC NVD'}
+        <StampButton className="connectors-add" action="REFRESH" context={c.id.toUpperCase()} style={{ margin: 0 }} title={'Refresh ' + c.name} disabled={busy} onClick={onSync}>
+          <Icon name="refresh" size={11} /> {busy ? 'Refreshing…' : 'Refresh now'}
         </StampButton>
       )}
       <span className="connector-kind">{c.kind}</span>

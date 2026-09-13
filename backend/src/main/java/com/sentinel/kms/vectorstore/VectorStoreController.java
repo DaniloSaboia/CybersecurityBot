@@ -1,5 +1,6 @@
 package com.sentinel.kms.vectorstore;
 
+import com.sentinel.kms.common.AiModelConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -22,22 +23,11 @@ public class VectorStoreController {
 
     public VectorStoreController(
             EmbeddingIndexService embeddingIndexService,
-            @Value("${spring.ai.mistralai.embedding.options.model:}") String mistralModel,
-            @Value("${spring.ai.ollama.embedding.options.model:}") String ollamaModel,
+            AiModelConfiguration configuration,
             @Value("${spring.ai.vectorstore.pgvector.dimensions:1024}") int dim) {
         this.embeddingIndexService = embeddingIndexService;
-        this.embeddingModel = resolveModel(mistralModel, ollamaModel);
+        this.embeddingModel = configuration.embeddingModel();
         this.dim = dim;
-    }
-
-    private static String resolveModel(String mistralModel, String ollamaModel) {
-        if (mistralModel != null && !mistralModel.isBlank()) {
-            return mistralModel;
-        }
-        if (ollamaModel != null && !ollamaModel.isBlank()) {
-            return ollamaModel;
-        }
-        return "text-embed";
     }
 
     /** Status payload for the vector-store card. */

@@ -7,7 +7,7 @@ A cybersecurity knowledge console with three surfaces:
 3. **Ingestion** — a document pipeline (Ingest → Extract → Chunk → Embed → Index) with source connectors (NVD, CISA KEV, MITRE ATT&CK) and live job status into a vector store.
 4. **Watchlists** — CVE/product/actor subscriptions that fire alerts when connector syncs land matching articles.
 
-**Stack:** Spring Boot 3.4 (Java 17) · React 18 + Vite · hosted Supabase Postgres + **pgvector** · [Spring AI](https://docs.spring.io/spring-ai/reference/) with **OpenRouter chat**, Mistral embeddings, or local Ollama.
+**Stack:** Spring Boot 3.4 (Java 17) · React 18 + Vite · hosted Supabase Postgres + **pgvector** · [Spring AI](https://docs.spring.io/spring-ai/reference/) with **OpenRouter chat and free embeddings**, optional Mistral, or local Ollama.
 
 ---
 
@@ -35,7 +35,7 @@ A cybersecurity knowledge console with three surfaces:
                  └──────────────────────────┘
 ```
 
-Embeddings are **1024-dim** so the same `vector(1024)` schema works for both `mistral-embed` (Mistral) and `mxbai-embed-large` (Ollama). Switching providers with a different dimension means editing the migration and re-embedding.
+Embeddings are **1024-dim**. The OpenRouter profile uses `nvidia/llama-nemotron-embed-vl-1b-v2:free` for both ingestion and retrieval. Optional alternatives include `mistral-embed` (Mistral) and `mxbai-embed-large` (Ollama). Pin one embedding model per index: changing models requires reindexing even when dimensions match. A different dimension also requires a new schema migration; do not edit previously applied migrations.
 
 ---
 
@@ -44,7 +44,7 @@ Embeddings are **1024-dim** so the same `vector(1024)` schema works for both `mi
 - **Java 17** and **Maven 3.9+** for the backend.
 - **Node.js 20+** and npm for the frontend.
 - A hosted **Supabase** project with the schema migration applied.
-- An **OpenRouter API key** for free-router chat and a **Mistral API key** for 1024-dimension embeddings.
+- An **OpenRouter API key** for free-router chat and free 1024-dimension embeddings.
 - (Optional) Ollama for an entirely local AI profile.
 
 ---
@@ -64,7 +64,7 @@ cp .env.example .env
 The default `.env.example` uses the `openrouter` profile. Add:
 
 - `OPENROUTER_API_KEY` for chat through the current free-model router.
-- `MISTRAL_API_KEY` for ingestion and query embeddings.
+- `OPENROUTER_EMBED_MODEL=nvidia/llama-nemotron-embed-vl-1b-v2:free` for ingestion and query embeddings; the same OpenRouter key is used. No Mistral key is required.
 
 The backend and Vite automatically load the repository-root `.env`; only `VITE_`-prefixed variables are exposed to browser code.
 
@@ -170,9 +170,11 @@ CybersecurityBot/
 
 Provider selection is pure config (Spring AI's `spring.ai.model.{chat,embedding}` switch):
 
-- `application-openrouter.yml` → OpenRouter chat + Mistral embeddings
+- `application-openrouter.yml` → OpenRouter free chat + free 1024-dimension embeddings
 - `application-mistral.yml` → Mistral chat + embeddings
 - `application-local.yml` → Ollama chat + embeddings
+
+Settings refreshes the live free chat and embedding catalogs every ten minutes and shows all free text-chat endpoints, without the previous eight-model cap. Embedding choices are informational: the active index model is configured server-side. See [free model configuration](docs/openrouter-free-models.md) for compatibility and verification.
 
 To add another OpenAI-compatible provider, add the matching `spring-ai-starter-model-*` dependency and a profile. If its embedding dimension ≠ 1024, update `vector(1024)` in the migration, `spring.ai.vectorstore.pgvector.dimensions`, and re-embed.
 
@@ -249,3 +251,7 @@ Apply new migrations through the Supabase SQL editor or your linked Supabase CLI
   everyone sees the seeded demo jobs, but only your own jobs can be
   retried/deleted.
 - Hibernate `ddl-auto` is `none` (the migrations are the source of truth).
+
+### Daily intelligence refresh
+
+The Ingestion view supports **Refresh now** and scheduled refreshes for NVD, CISA KEV and SANS ISC. Changed records create new source revisions; unchanged content is not embedded again. Run results distinguish new/updated/unchanged records, source backlog, and indexing progress. See [daily feed configuration and limits](docs/daily-feed-refresh.md).

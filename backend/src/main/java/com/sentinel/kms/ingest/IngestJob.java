@@ -22,7 +22,7 @@ import java.time.OffsetDateTime;
 public class IngestJob {
 
     @Id
-    private String id; // "job-7741"
+    private String id; // UUID string for new jobs; legacy demo IDs remain supported
 
     private String name; // filename
 
@@ -43,13 +43,54 @@ public class IngestJob {
 
     private String error; // present when stage == failed
 
-    /** Owning user (JWT sub); null = seeded demo job visible to everyone. */
+    /** Owning user (JWT sub); a null owner never grants visibility by itself. */
     @Column(name = "owner_sub")
     private String ownerSub;
 
     /** The fetched URL for URL-import jobs, so retry can re-fetch. */
     @Column(name = "source_url")
     private String sourceUrl;
+
+    /** Server-generated durable source identity; never taken from client metadata. */
+    @Column(name = "source_id")
+    private String sourceId;
+
+    /** Immutable server-generated content revision used to construct sourceKey. */
+    @Column(name = "source_revision_id")
+    private String sourceRevisionId;
+
+    @Column(name = "source_key")
+    private String sourceKey;
+
+    /** Fencing generation checked by the vectorstore before replacement. */
+    @Column(name = "index_generation")
+    private long indexGeneration;
+
+    /** Number of durable worker claims, including a recovered expired lease. */
+    private int attempt;
+
+    @Column(name = "claim_token")
+    private String claimToken;
+
+    @Column(name = "claim_until")
+    private OffsetDateTime claimUntil;
+
+    @Column(name = "claimed_at")
+    private OffsetDateTime claimedAt;
+
+    @Column(name = "claimed_by")
+    private String claimedBy;
+
+    /** Explicitly marked seed/demo records are the only rows a simulator may move. */
+    @Column(name = "is_demo")
+    private boolean demo;
+
+    @Column(name = "cancelled_at")
+    private OffsetDateTime cancelledAt;
+
+    /** Soft deletion retains a fence but source bytes are removed separately. */
+    @Column(name = "deleted_at")
+    private OffsetDateTime deletedAt;
 
     @Column(name = "created_at", insertable = false, updatable = false)
     private OffsetDateTime createdAt;

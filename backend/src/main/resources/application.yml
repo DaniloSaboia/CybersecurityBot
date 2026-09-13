@@ -13,6 +13,11 @@ spring:
     # default provider stack; override with SPRING_PROFILES_ACTIVE=local
     active: ${SPRING_PROFILES_ACTIVE:mistral}
 
+  task:
+    scheduling:
+      pool:
+        size: 4
+
   servlet:
     multipart:
       # uploads above this are rejected before hitting the ingest pipeline
@@ -48,10 +53,17 @@ spring:
     model:
       chat: ${AI_CHAT_PROVIDER:openai}
       embedding: ${AI_EMBEDDING_PROVIDER:mistral}
+      # Unused starter modalities otherwise auto-create clients requiring keys.
+      moderation: none
+      image: none
+      audio:
+        speech: none
+        transcription: none
     openai:
       base-url: ${OPENROUTER_BASE_URL:https://openrouter.ai/api/v1}
       api-key: ${OPENROUTER_API_KEY:}
       chat:
+        completions-path: /chat/completions
         options:
           model: ${OPENROUTER_CHAT_MODEL:openrouter/free}
           temperature: 0.2
@@ -104,6 +116,12 @@ app:
     allowed-extensions: pdf,txt,md,html,htm,doc,docx,json,csv,eml,log,xml,rtf,ppt,pptx,xls,xlsx
     # URL imports: response body cap (bytes)
     url-max-bytes: 2097152
+  feeds:
+    daily-enabled: ${FEED_SYNC_ENABLED:false}
+    daily-cron: ${FEED_SYNC_CRON:0 0 3 * * *}
+    zone: ${FEED_SYNC_ZONE:UTC}
+    max-changes-per-run: ${FEED_SYNC_MAX_CHANGES:10}
+    poll-ms: 7000
   nvd:
     # NVD throttles anonymous requests hard; an API key lifts the limit
     api-key: ${NVD_API_KEY:}

@@ -39,10 +39,10 @@ export function SeverityTag({ level, small }) {
   return (
     <span className="sev-tag bp-stamp-tag" style={{
       color: m.c, background: m.bg, borderColor: m.c,
-      fontSize: small ? 9 : 10, padding: small ? '1px 5px' : '2px 7px',
+      fontSize: small ? 10 : 11, padding: small ? '2px 6px' : '3px 8px',
     }}>
       <span className="sev-dot" style={{ background: m.c }} />
-      <span className="sev-code">[{label}]</span>
+      <span className="sev-code">{label}</span>
     </span>
   );
 }
@@ -53,10 +53,7 @@ export function CatTag({ id, cat, index }) {
   if (!c) return null;
   return (
     <span className="cat-tag">
-      <span className="cat-tag-bracket">[</span>
-      {c.abbr}
-      <span className="cat-tag-full"> · {c.label}</span>
-      <span className="cat-tag-bracket">]</span>
+      {c.label || c.abbr}
     </span>
   );
 }
@@ -68,7 +65,7 @@ export function Tag({ children }) {
 // status dot for connectors / jobs
 export function StatusDot({ status }) {
   const map = {
-    connected: 'var(--accent)', indexed: 'var(--accent)', connected2: 'var(--accent)',
+    connected: 'var(--ok)', indexed: 'var(--ok)', connected2: 'var(--ok)',
     syncing: 'var(--sev-medium)', embedding: 'var(--sev-medium)', chunking: 'var(--sev-medium)',
     extracting: 'var(--sev-medium)', queued: 'var(--text-faint)',
     error: 'var(--sev-critical)', failed: 'var(--sev-critical)',
@@ -78,7 +75,7 @@ export function StatusDot({ status }) {
   return (
     <span
       className={'status-dot' + (pulse ? ' pulse' : '')}
-      style={{ background: c, boxShadow: `0 0 0 3px color-mix(in srgb, ${c} 20%, transparent)` }}
+      style={{ background: c }}
     />
   );
 }
@@ -193,24 +190,22 @@ export function TitleBlock({
   );
 }
 
-// Blueprint Logo with Technical Registration Grid & Drafting Seal
+// A compact interlocking S mark, shared by the workspace and access page.
 export function Logo({ compact }) {
   return (
     <div className="logo bp-logo">
       <div className="logo-mark bp-logo-mark">
-        <Icon name="shield" size={18} />
-        <span className="bp-mark-cross tl">+</span>
-        <span className="bp-mark-cross tr">+</span>
-        <span className="bp-mark-cross bl">+</span>
-        <span className="bp-mark-cross br">+</span>
+        <svg width="25" height="25" viewBox="0 0 28 28" fill="none" aria-hidden="true">
+          <path d="M20.5 5H9L5 9v7h12v-4H9V9h11.5V5Z" fill="currentColor" />
+          <path d="M7.5 23H19l4-4v-7H11v4h8v3H7.5v4Z" fill="currentColor" opacity=".62" />
+        </svg>
       </div>
       {!compact && (
         <div className="logo-text">
           <div className="logo-head">
             <span className="logo-name">Sentinel</span>
-            <span className="logo-grid-tag">v2.4</span>
           </div>
-          <span className="logo-sub">SecOps Knowledge System</span>
+          <span className="logo-sub">Security knowledge</span>
         </div>
       )}
     </div>
@@ -302,7 +297,7 @@ export function SourceChip({
       onClick={handleClick}
       disabled={isDisabled}
     >
-      <span className="source-chip-prefix">REF//</span>
+      <span className="source-chip-prefix">Source</span>
       <span className="source-chip-id">{a ? a.id : id}</span>
       {a && <span className="source-chip-title">{a.title}</span>}
       <Icon name="chevron" size={13} className="source-chip-arrow" />

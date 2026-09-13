@@ -2,10 +2,10 @@ package com.sentinel.kms.assistant;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sentinel.kms.common.EvidenceReference;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -37,34 +37,46 @@ public class BlockParser {
 
     /**
      * The parse result: ordered blocks and the cited ids (already filtered to
-     * valid ids).
+     * valid ids), plus any exact immutable evidence references resolved from
+     * governed retrieval metadata.
      */
-    public record Parsed(List<Block> blocks, List<String> citations) {
+    public record Parsed(List<Block> blocks, List<String> citations,
+                         List<EvidenceReference> citationReferences) {
+        public Parsed(List<Block> blocks, List<String> citations) {
+            this(blocks, citations, List.of());
+        }
     }
 
     /**
      * @param raw     the model's raw response string
-     * @param validIds the article ids that exist in retrieval; only citations in
-     *                 this set are kept (if empty/null, no filtering is applied)
+     * @param validIds the article ids that exist in authorized retrieval; no
+     *                 citation is accepted when this set is empty or null
      */
     public Parsed parse(String raw, Set<String> validIds) {
+        return parse(raw, CitationResolver.legacyOnly(validIds));
+    }
+
+    /** Parses an answer against an exact, authorized evidence-token registry. */
+    public Parsed parse(String raw, CitationResolver resolver) {
+        CitationResolver effectiveResolver = resolver == null
+                ? CitationResolver.legacyOnly(Set.of()) : resolver;
         String rawTrimmed = raw == null ? "" : raw.trim();
         try {
             String json = extractJson(rawTrimmed);
             if (json == null) {
-                return fallback(rawTrimmed, validIds);
+                return fallback(rawTrimmed, effectiveResolver);
             }
             JsonNode root = mapper.readTree(json);
             JsonNode blocksNode = root.get("blocks");
             if (blocksNode == null || !blocksNode.isArray()) {
-                return fallback(rawTrimmed, validIds);
+                return fallback(rawTrimmed, effectiveResolver);
             }
 
             List<Block> blocks = new ArrayList<>();
-            Set<String> cited = new LinkedHashSet<>();
+            CitationResolver.Citations cited = effectiveResolver.newCitations();
 
             for (JsonNode b : blocksNode) {
-                Block block = toBlock(b, cited);
+                Block block = toBlock(b, cited, effectiveResolver);
                 if (block != null) {
                     blocks.add(block);
                 }
@@ -74,25 +86,22 @@ public class BlockParser {
             JsonNode citationsNode = root.get("citations");
             if (citationsNode != null && citationsNode.isArray()) {
                 for (JsonNode c : citationsNode) {
-                    String id = stripBrackets(c.asText());
-                    if (id != null && !id.isBlank()) {
-                        cited.add(id);
-                    }
+                    effectiveResolver.collectDeclaredCitation(c.asText(), cited);
                 }
             }
 
             if (blocks.isEmpty()) {
-                return fallback(rawTrimmed, validIds);
+                return fallback(rawTrimmed, effectiveResolver);
             }
 
-            return new Parsed(blocks, filterValid(cited, validIds));
+            return new Parsed(blocks, cited.legacyIds(), cited.references());
         } catch (Exception e) {
-            return fallback(rawTrimmed, validIds);
+            return fallback(rawTrimmed, effectiveResolver);
         }
     }
 
     /** Maps one JSON block node to a {@link Block}, harvesting inline citations. */
-    private Block toBlock(JsonNode b, Set<String> cited) {
+    private Block toBlock(JsonNode b, CitationResolver.Citations cited, CitationResolver resolver) {
         if (b == null || !b.isObject()) {
             return null;
         }
@@ -106,7 +115,7 @@ public class BlockParser {
                 if (t == null) {
                     return null;
                 }
-                harvest(t, cited);
+                t = resolver.sanitize(t, cited);
                 return Block.text(t);
             }
             case "steps" -> {
@@ -116,8 +125,7 @@ public class BlockParser {
                 }
                 List<String> list = new ArrayList<>();
                 for (JsonNode it : items) {
-                    String s = it.asText();
-                    harvest(s, cited);
+                    String s = resolver.sanitize(it.asText(), cited);
                     list.add(s);
                 }
                 return Block.steps(list);
@@ -130,8 +138,8 @@ public class BlockParser {
                 if (!"critical".equals(tone) && !"high".equals(tone)) {
                     tone = "high";
                 }
-                harvest(title, cited);
-                harvest(t, cited);
+                title = resolver.sanitize(title, cited);
+                t = resolver.sanitize(t, cited);
                 return Block.callout(tone, title, t);
             }
             case "report" -> {
@@ -143,15 +151,14 @@ public class BlockParser {
                         if (row.isArray()) {
                             List<String> cells = new ArrayList<>();
                             for (JsonNode cell : row) {
-                                String c = cell.asText();
-                                harvest(c, cited);
+                                String c = resolver.sanitize(cell.asText(), cited);
                                 cells.add(c);
                             }
                             rowList.add(cells);
                         }
                     }
                 }
-                harvest(title, cited);
+                title = resolver.sanitize(title, cited);
                 return Block.report(title, rowList);
             }
             default -> {
@@ -204,48 +211,13 @@ public class BlockParser {
     }
 
     /** Fallback path: one text block of the raw output, citations scraped from it. */
-    private Parsed fallback(String rawTrimmed, Set<String> validIds) {
-        Set<String> cited = new LinkedHashSet<>();
-        harvest(rawTrimmed, cited);
-        String text = rawTrimmed.isEmpty()
+    private Parsed fallback(String rawTrimmed, CitationResolver resolver) {
+        CitationResolver.Citations cited = resolver.newCitations();
+        String safe = resolver.sanitize(rawTrimmed, cited);
+        String text = safe.isEmpty()
                 ? "The assistant did not return a usable answer."
-                : rawTrimmed;
-        return new Parsed(List.of(Block.text(text)), filterValid(cited, validIds));
-    }
-
-    /** Adds every {@code [ID]} token found in {@code s} (without brackets) to {@code out}. */
-    private void harvest(String s, Set<String> out) {
-        if (s == null || s.isEmpty()) {
-            return;
-        }
-        Matcher m = CITE_TOKEN.matcher(s);
-        while (m.find()) {
-            out.add(m.group().substring(1, m.group().length() - 1));
-        }
-    }
-
-    private List<String> filterValid(Set<String> cited, Set<String> validIds) {
-        if (validIds == null || validIds.isEmpty()) {
-            return new ArrayList<>(cited);
-        }
-        List<String> kept = new ArrayList<>();
-        for (String id : cited) {
-            if (validIds.contains(id)) {
-                kept.add(id);
-            }
-        }
-        return kept;
-    }
-
-    private String stripBrackets(String s) {
-        if (s == null) {
-            return null;
-        }
-        String t = s.trim();
-        if (t.startsWith("[") && t.endsWith("]") && t.length() >= 2) {
-            t = t.substring(1, t.length() - 1);
-        }
-        return t;
+                : safe;
+        return new Parsed(List.of(Block.text(text)), cited.legacyIds(), cited.references());
     }
 
     private String text(JsonNode node, String field) {

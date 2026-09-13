@@ -3,6 +3,8 @@ package com.sentinel.kms.ingest;
 import com.sentinel.kms.kb.Article;
 import com.sentinel.kms.kb.ArticleRepository;
 import com.sentinel.kms.kb.ArticleSection;
+import com.sentinel.kms.kb.TrustedArticleRegistrationService;
+import com.sentinel.kms.kb.TrustedArticleSource;
 import com.sentinel.kms.vectorstore.EmbeddingIndexService;
 import com.sentinel.kms.watch.WatchlistService;
 import io.micrometer.core.instrument.MeterRegistry;
@@ -13,39 +15,40 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 /**
  * Pulls CISA's Known Exploited Vulnerabilities catalog into the KB: each KEV
  * entry becomes an advisories article (id = the CVE, so NVD and KEV converge
- * on one record), embedded and searchable + citable, and pushed past the
+ * on one record), queued for canonical reindex, and pushed past the
  * watchlist matcher so subscribed users get alerts.
  */
 @Service
 public class KevConnectorService {
 
-    private static final Logger log = LoggerFactory.getLogger(KevConnectorService.class);
-
     private final ArticleRepository articleRepository;
     private final ConnectorRepository connectorRepository;
-    private final EmbeddingIndexService embeddingIndexService;
     private final KevClient kevClient;
     private final WatchlistService watchlistService;
     private final MeterRegistry meters;
+    private final TrustedArticleRegistrationService trustedArticleRegistrationService;
 
     public KevConnectorService(ArticleRepository articleRepository,
                                ConnectorRepository connectorRepository,
                                EmbeddingIndexService embeddingIndexService,
                                KevClient kevClient,
                                WatchlistService watchlistService,
-                               MeterRegistry meters) {
+                               MeterRegistry meters,
+                               TrustedArticleRegistrationService trustedArticleRegistrationService) {
         this.articleRepository = articleRepository;
         this.connectorRepository = connectorRepository;
-        this.embeddingIndexService = embeddingIndexService;
+        // Kept for source-compatible construction.  Trusted registration owns
+        // canonical evidence/outbox publication; direct article-only index
+        // metadata is intentionally prohibited here.
         this.kevClient = kevClient;
         this.watchlistService = watchlistService;
         this.meters = meters;
+        this.trustedArticleRegistrationService = trustedArticleRegistrationService;
     }
 
     /** Result of a sync run (same shape as the NVD connector). */
@@ -67,26 +70,14 @@ public class KevConnectorService {
         }
 
         if (!toSave.isEmpty()) {
-            articleRepository.saveAll(toSave);
+            trustedArticleRegistrationService.persistAndRegister(
+                    articleRepository, toSave, TrustedArticleSource.KEV);
         }
         int created = toSave.size();
 
+        // One durable, revision-fenced outbox row is already enqueued by the
+        // trusted registration transaction for each fresh article.
         int embedded = 0;
-        for (Article article : toSave) {
-            try {
-                List<String> chunks = List.of(
-                        article.getTitle() + " — " + article.getSnippet(),
-                        "Known-exploited vulnerability\n" + descriptionOf(article));
-                embeddingIndexService.index(chunks, Map.of(
-                        "article_id", article.getId(),
-                        "title", article.getTitle(),
-                        "source", "CISA KEV",
-                        "category", "advisories"));
-                embedded++;
-            } catch (Exception e) {
-                log.warn("Embedding failed for {}: {}", article.getId(), e.getMessage());
-            }
-        }
 
         updateConnector(created);
         watchlistService.matchAndAlert(toSave);
@@ -149,14 +140,6 @@ public class KevConnectorService {
         connector.setLastLabel("just now");
         connector.setStatus("connected");
         connectorRepository.save(connector);
-    }
-
-    private String descriptionOf(Article article) {
-        if (article.getBody() != null && !article.getBody().isEmpty()) {
-            String p = article.getBody().get(0).p();
-            return p == null ? "" : p;
-        }
-        return article.getSnippet() == null ? "" : article.getSnippet();
     }
 
     private LocalDate parseDate(String date) {

@@ -1,49 +1,58 @@
 package com.sentinel.kms.ingest;
 
+import com.sentinel.kms.audit.AuditActions;
+import com.sentinel.kms.audit.AuditMetadata;
+import com.sentinel.kms.audit.AuditOutcome;
+import com.sentinel.kms.common.KnowledgeAuditEvent;
+import com.sentinel.kms.common.KnowledgeAuditService;
 import com.sentinel.kms.vectorstore.EmbeddingIndexService;
 import io.micrometer.core.instrument.MeterRegistry;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Runs the real ingestion pipeline for a single job off the request thread:
+ * Runs the real ingestion pipeline for a durable leased claim:
  * <pre>
  *   EXTRACTING -> CHUNKING -> EMBEDDING -> INDEXED
  * </pre>
  * Stage, pct and whenLabel are persisted between stages so a polling UI sees
  * progress. Any failure flips the job to {@code failed} with an error message;
- * exceptions never escape the {@code @Async} method.
+ * exceptions never escape the scheduled worker boundary.
  *
- * <p>The set of job ids currently being processed for real is exposed so the
- * {@link JobSimulator} never fights this component over the same row.
+ * <p>No request-memory bytes, in-memory lock, placeholder retry text, or demo
+ * simulator state is used here.  Every stage write is token/generation fenced
+ * by {@link DurableIngestQueue}; a process restart can safely recover an
+ * expired lease from persisted source material.</p>
  */
 @Component
 public class JobProcessor {
 
     private final IngestJobRepository jobs;
+    private final IngestSourceRepository sources;
+    private final DurableIngestQueue queue;
     private final TextExtractor extractor;
     private final Chunker chunker;
     private final EmbeddingIndexService index;
     private final UrlFetcher urlFetcher;
     private final MeterRegistry meters;
+    private final KnowledgeAuditService audit;
 
     private final int chunkSize;
     private final int chunkOverlap;
-    private final long simulateLatencyMs;
+    private final long sourceMaxBytes;
 
-    /** Ids of jobs this processor is actively driving (claimed by real upload/url/retry). */
-    private final Set<String> active = ConcurrentHashMap.newKeySet();
-
+    @Autowired
     public JobProcessor(
             IngestJobRepository jobs,
+            IngestSourceRepository sources,
+            DurableIngestQueue queue,
             TextExtractor extractor,
             Chunker chunker,
             EmbeddingIndexService index,
@@ -51,9 +60,12 @@ public class JobProcessor {
             MeterRegistry meters,
             @Value("${app.ingest.chunk-size:1200}") int chunkSize,
             @Value("${app.ingest.chunk-overlap:150}") int chunkOverlap,
-            @Value("${app.ingest.simulate-latency-ms:1200}") long simulateLatencyMs
+            @Value("${app.ingest.source-max-bytes:20971520}") long sourceMaxBytes,
+            KnowledgeAuditService audit
     ) {
         this.jobs = jobs;
+        this.sources = sources;
+        this.queue = queue;
         this.extractor = extractor;
         this.chunker = chunker;
         this.index = index;
@@ -61,131 +73,254 @@ public class JobProcessor {
         this.meters = meters;
         this.chunkSize = chunkSize;
         this.chunkOverlap = chunkOverlap;
-        this.simulateLatencyMs = simulateLatencyMs;
+        this.sourceMaxBytes = Math.min(sourceMaxBytes, IngestSource.MAX_PERSISTED_BYTES);
+        this.audit = audit;
     }
 
-    /** True while a real upload/url/retry is processing this job id. */
-    public boolean isActive(String jobId) {
-        return active.contains(jobId);
+    /** Compatibility constructor retained for focused worker tests. */
+    public JobProcessor(
+            IngestJobRepository jobs,
+            IngestSourceRepository sources,
+            DurableIngestQueue queue,
+            TextExtractor extractor,
+            Chunker chunker,
+            EmbeddingIndexService index,
+            UrlFetcher urlFetcher,
+            MeterRegistry meters,
+            int chunkSize,
+            int chunkOverlap,
+            long sourceMaxBytes
+    ) {
+        this(jobs, sources, queue, extractor, chunker, index, urlFetcher, meters,
+                chunkSize, chunkOverlap, sourceMaxBytes, null);
     }
 
     /**
-     * Process a job end-to-end. Exactly one of the sources is set:
-     * {@code rawBytes} for uploads, {@code url} for URL imports (fetched + re-
-     * SSRF-validated here), {@code fallbackText} as a last-resort placeholder.
+     * Process one database-issued claim end-to-end.  The source is always read
+     * from Postgres; URL bytes are stored before extraction on their first
+     * successful fetch so future retries are byte-for-byte stable.
      */
-    @Async
-    public void process(String jobId, byte[] rawBytes, String fallbackText, String url) {
-        active.add(jobId);
+    public void process(DurableJobClaim claim) {
         long startedAt = System.nanoTime();
         boolean succeeded = false;
+        IngestJob job = null;
+        IngestSource source = null;
         try {
-            IngestJob job = jobs.findById(jobId).orElse(null);
+            job = jobs.findById(claim.jobId()).orElse(null);
             if (job == null) {
+                return;
+            }
+            source = sources.findByJobId(job.getId()).orElse(null);
+            if (source == null || !matchesDurableSource(job, source)) {
+                fail(claim, job, source, "DURABLE_SOURCE_UNAVAILABLE",
+                        "Durable source is unavailable; upload or import again");
                 return;
             }
 
             // ---- EXTRACTING ----
-            advance(job, JobStage.EXTRACTING, 25, "now");
-            pause();
-            String text;
-            if (rawBytes != null) {
-                text = extractor.extract(rawBytes, job.getName());
-            } else if (url != null) {
+            if (!advance(claim, job, JobStage.EXTRACTING, 25)) {
+                return;
+            }
+            byte[] rawBytes = source.getSourceBytes();
+            if (!source.hasRetainedBytes() && "url".equals(source.getSourceType())) {
                 try {
-                    byte[] fetched = urlFetcher.fetch(url);
-                    text = extractor.extract(fetched, job.getName());
-                } catch (IllegalArgumentException e) {
-                    fail(job, "URL fetch failed: " + e.getMessage());
+                    byte[] fetched = urlFetcher.fetch(source.getSourceUrl());
+                    if (fetched.length > sourceMaxBytes) {
+                        fail(claim, job, source, "SOURCE_SIZE_LIMIT",
+                                "Fetched source exceeds durable storage limit");
+                        return;
+                    }
+                    if (!queue.retainFetchedSource(claim, source.getId(), fetched, IngestSource.sha256(fetched))) {
+                        return; // deleted, retried, or recovered while the fetch was in flight
+                    }
+                    source.retain(fetched);
+                    rawBytes = fetched;
+                    recordSourceRetained(job, source, claim);
+                } catch (RuntimeException e) {
+                    fail(claim, job, source, "URL_FETCH_FAILED", "URL fetch failed");
                     return;
                 }
-            } else {
-                text = fallbackText != null ? fallbackText : "";
             }
+            if (rawBytes == null || rawBytes.length == 0) {
+                fail(claim, job, source, "DURABLE_SOURCE_UNAVAILABLE",
+                        "Durable source is unavailable; upload or import again");
+                return;
+            }
+            if (!queue.heartbeat(claim)) {
+                return;
+            }
+            String text = extractor.extract(rawBytes, job.getName());
             if (text == null || text.isBlank()) {
-                fail(job, "No extractable text in source");
+                fail(claim, job, source, "NO_EXTRACTABLE_TEXT", "No extractable text in source");
                 return;
             }
             // Uploaded/imported documents are attacker-controllable: neutralize
             // obvious prompt-injection payloads before chunking + embedding so
             // they never reach a RAG prompt from the stored copy.
             text = com.sentinel.kms.common.ContentSanitizer.sanitize(text);
-            advance(job, JobStage.EXTRACTING, 100, "now");
+            if (!advance(claim, job, JobStage.EXTRACTING, 100)) {
+                return;
+            }
 
             // ---- CHUNKING ----
-            advance(job, JobStage.CHUNKING, 30, "now");
-            pause();
+            if (!advance(claim, job, JobStage.CHUNKING, 30)) {
+                return;
+            }
             List<String> chunks = chunker.chunk(text, chunkSize, chunkOverlap);
             if (chunks.isEmpty()) {
-                fail(job, "Chunking produced no content");
+                fail(claim, job, source, "NO_CHUNKS", "Chunking produced no content");
                 return;
             }
             job.setChunks(chunks.size());
-            advance(job, JobStage.CHUNKING, 100, "now");
+            if (!advance(claim, job, JobStage.CHUNKING, 100)) {
+                return;
+            }
 
             // ---- EMBEDDING ----
-            advance(job, JobStage.EMBEDDING, 40, "now");
-            pause();
+            if (!advance(claim, job, JobStage.EMBEDDING, 40)) {
+                return;
+            }
             Map<String, Object> metadata = new HashMap<>();
             metadata.put("source", job.getSource());
-            metadata.put("job_id", job.getId());
             metadata.put("name", job.getName());
+            metadata.put("source_id", source.getId());
+            metadata.put("source_revision_id", source.getSourceRevisionId());
+            metadata.put("source_key", source.getSourceKey());
             if (job.getOwnerSub() != null && !job.getOwnerSub().isBlank()) {
                 metadata.put("owner_sub", job.getOwnerSub());
             }
             try {
-                index.index(chunks, metadata);
+                if (!queue.heartbeat(claim)) {
+                    return;
+                }
+                // Vellum's seam takes the final database row lock and verifies
+                // generation, exact claim token, unexpired lease, and absence
+                // of a delete/cancel tombstone before replacing this source.
+                index.replaceForClaim(job.getId(), claim.generation(), claim.token(), chunks, metadata);
             } catch (Exception e) {
-                fail(job, "Embedding/index failed: " + safeMessage(e));
+                fail(claim, job, source, "INDEX_REPLACEMENT_FAILED", "Embedding/index failed");
                 return;
             }
-            advance(job, JobStage.EMBEDDING, 100, "now");
+            if (!advance(claim, job, JobStage.EMBEDDING, 100)) {
+                return;
+            }
 
             // ---- INDEXED ----
-            advance(job, JobStage.INDEXED, 100, "now");
-            succeeded = true;
+            succeeded = queue.complete(claim, chunks.size());
+            if (succeeded) {
+                recordIndexed(job, source, claim, chunks.size());
+            }
         } catch (Exception e) {
-            // Last-resort guard: never let an exception escape @Async.
-            jobs.findById(jobId).ifPresent(j -> fail(j, "Processing failed: " + safeMessage(e)));
+            // Last-resort guard: a stale claim cannot mutate a newer generation.
+            fail(claim, job, source, "PROCESSING_FAILED", "Processing failed");
         } finally {
-            meters.counter("sentinel.ingest.jobs", "outcome", succeeded ? "indexed" : "failed")
+            meters.counter("sentinel.ingest.jobs", "outcome", succeeded ? "indexed" : "not_indexed")
                     .increment();
             meters.timer("sentinel.ingest.job.latency").record(
                     System.nanoTime() - startedAt, TimeUnit.NANOSECONDS);
-            active.remove(jobId);
         }
     }
 
-    private void advance(IngestJob job, JobStage stage, double pct, String when) {
+    private boolean advance(DurableJobClaim claim, IngestJob job, JobStage stage, double pct) {
         job.setStage(stage.id());
         job.setPct(pct);
-        job.setWhenLabel(when);
-        if (stage == JobStage.INDEXED || stage == JobStage.FAILED) {
-            job.setError(stage == JobStage.INDEXED ? null : job.getError());
-        }
-        jobs.save(job);
-    }
-
-    private void fail(IngestJob job, String message) {
-        job.setStage(JobStage.FAILED.id());
-        job.setError(message);
         job.setWhenLabel("now");
-        jobs.save(job);
+        return queue.progress(claim, stage, pct, job.getChunks());
     }
 
-    private void pause() {
-        if (simulateLatencyMs <= 0) {
+    private void fail(
+            DurableJobClaim claim,
+            IngestJob job,
+            IngestSource source,
+            String failureCode,
+            String message) {
+        if (queue.fail(claim, message)) {
+            record(job, AuditActions.INGEST_PROCESS_FAILED, "ingest_job", claim.jobId(), AuditOutcome.FAILURE,
+                    failureMetadata(job, source, claim, failureCode));
+        }
+    }
+
+    private static boolean matchesDurableSource(IngestJob job, IngestSource source) {
+        return job.getSourceId() != null
+                && job.getSourceId().equals(source.getId())
+                && job.getSourceRevisionId() != null
+                && job.getSourceRevisionId().equals(source.getSourceRevisionId())
+                && job.getSourceKey() != null
+                && job.getSourceKey().equals(source.getSourceKey());
+    }
+
+    private void recordSourceRetained(IngestJob job, IngestSource source, DurableJobClaim claim) {
+        Map<String, Object> metadata = provenance(job, source, claim);
+        metadata.put(AuditMetadata.SIZE_BYTES, Math.max(0L, source.getSourceSizeBytes()));
+        metadata.put(AuditMetadata.RETAINED, true);
+        record(job, AuditActions.INGEST_SOURCE_RETAINED, "ingest_source", source.getId(), AuditOutcome.SUCCESS,
+                metadata);
+    }
+
+    private void recordIndexed(IngestJob job, IngestSource source, DurableJobClaim claim, int chunks) {
+        Map<String, Object> metadata = provenance(job, source, claim);
+        metadata.put(AuditMetadata.CHUNK_COUNT, (long) Math.max(0, chunks));
+        record(job, AuditActions.INGEST_INDEXED, "ingest_job", job.getId(), AuditOutcome.SUCCESS, metadata);
+    }
+
+    private static Map<String, Object> failureMetadata(
+            IngestJob job,
+            IngestSource source,
+            DurableJobClaim claim,
+            String failureCode) {
+        Map<String, Object> metadata = provenance(job, source, claim);
+        metadata.put(AuditMetadata.FAILURE_CODE, failureCode);
+        return metadata;
+    }
+
+    private static Map<String, Object> provenance(IngestJob job, IngestSource source, DurableJobClaim claim) {
+        Map<String, Object> metadata = new LinkedHashMap<>();
+        metadata.put(AuditMetadata.SOURCE_TYPE, sourceType(source, job));
+        metadata.put(AuditMetadata.GENERATION, Math.max(0L, claim.generation()));
+        if (job != null) {
+            metadata.put(AuditMetadata.ATTEMPT, (long) Math.max(0, job.getAttempt()));
+        }
+        if (source != null) {
+            if (source.getId() != null) {
+                metadata.put(AuditMetadata.SOURCE_ID, source.getId());
+            }
+            if (source.getSourceRevisionId() != null) {
+                metadata.put(AuditMetadata.SOURCE_REVISION_ID, source.getSourceRevisionId());
+            }
+        }
+        return metadata;
+    }
+
+    private void record(
+            IngestJob job,
+            String action,
+            String targetKind,
+            String targetId,
+            AuditOutcome outcome,
+            Map<String, ?> metadata) {
+        if (audit == null) {
             return;
         }
         try {
-            Thread.sleep(simulateLatencyMs);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
+            audit.record(KnowledgeAuditEvent.of(
+                    job == null ? null : job.getOwnerSub(),
+                    action,
+                    targetKind,
+                    targetId,
+                    null,
+                    null,
+                    null,
+                    outcome,
+                    metadata));
+        } catch (RuntimeException ignored) {
+            // Audit persistence failures cannot disclose source material or alter claim handling.
         }
     }
 
-    private static String safeMessage(Throwable t) {
-        String m = t.getMessage();
-        return m == null ? t.getClass().getSimpleName() : m;
+    private static String sourceType(IngestSource source, IngestJob job) {
+        if (source != null && "url".equals(source.getSourceType())) {
+            return "url";
+        }
+        return job != null && IngestService.SOURCE_URL.equals(job.getSource()) ? "url" : "upload";
     }
 }

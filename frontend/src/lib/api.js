@@ -6,15 +6,74 @@ import { supabase } from './supabase.js';
 
 const BASE = import.meta.env.VITE_API_BASE || '/api';
 
+// A 401 means the bearer credential is no longer usable. AuthProvider listens
+// for this browser-only event and returns the operator to the normal sign-in
+// flow. A 403 deliberately does not emit it: the session can still be valid.
+export const SESSION_EXPIRED_EVENT = 'sentinel:session-expired';
+
+// A 401 must be tied to the session that made the request. The bearer token
+// stays module-private; browser events carry only this opaque generation.
+let activeSessionToken = null;
+let activeSessionGeneration = null;
+let nextSessionGeneration = 0;
+
+export function setActiveSessionExpiryGeneration(session) {
+  const token = session?.access_token || null;
+  if (token === activeSessionToken) return activeSessionGeneration;
+  activeSessionToken = token;
+  activeSessionGeneration = token ? ++nextSessionGeneration : null;
+  return activeSessionGeneration;
+}
+
+function requestSessionGeneration(session) {
+  return session?.access_token && session.access_token === activeSessionToken
+    ? activeSessionGeneration
+    : null;
+}
+
+export class ApiError extends Error {
+  constructor(status, statusText, detail = '') {
+    const message = status === 401
+      ? 'Session expired. Please sign in again.'
+      : status === 403
+        ? 'Permission denied. Your account does not have access to this resource.'
+        : detail || `${status} ${statusText}`;
+    super(message);
+    this.name = 'ApiError';
+    this.status = status;
+    this.statusText = statusText;
+    this.detail = detail;
+  }
+}
+
+function announceSessionExpiry(generation) {
+  if (typeof window !== 'undefined' && Number.isInteger(generation)) {
+    window.dispatchEvent(new CustomEvent(SESSION_EXPIRED_EVENT, { detail: { generation } }));
+  }
+}
+
+async function responseError(res, generation) {
+  const detail = await res.text().catch(() => '');
+  const error = new ApiError(res.status, res.statusText, detail);
+  if (res.status === 401) announceSessionExpiry(generation);
+  return error;
+}
+
 async function authHeader() {
   const { data } = await supabase.auth.getSession();
-  const token = data?.session?.access_token;
-  return token ? { Authorization: `Bearer ${token}` } : {};
+  const session = data?.session;
+  const token = session?.access_token;
+  return {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    generation: requestSessionGeneration(session),
+  };
 }
 
 // core request helper: throws on non-2xx with the response text, parses JSON otherwise
-async function request(path, { method = 'GET', body, headers, isForm } = {}) {
-  const opts = { method, headers: { ...(await authHeader()), ...headers } };
+async function request(path, { method = 'GET', body, headers, isForm, signal } = {}) {
+  const auth = await authHeader();
+  const opts = { method, headers: { ...auth.headers, ...headers } };
+  if (signal) opts.signal = signal;
   if (body !== undefined) {
     if (isForm) {
       opts.body = body; // FormData — browser sets the multipart boundary
@@ -25,8 +84,7 @@ async function request(path, { method = 'GET', body, headers, isForm } = {}) {
   }
   const res = await fetch(BASE + path, opts);
   if (!res.ok) {
-    const text = await res.text().catch(() => '');
-    throw new Error(text || `${res.status} ${res.statusText}`);
+    throw await responseError(res, auth.generation);
   }
   if (res.status === 204) return null;
   const ct = res.headers.get('content-type') || '';
@@ -62,6 +120,43 @@ export function getArticle(id) {
   return request('/kb/articles/' + encodeURIComponent(id));
 }
 
+// Exact evidence is an immutable snapshot capability, not an article lookup.
+// Keep its accepted identity deliberately narrow: response-only metadata such
+// as sourceUri, sourceVersion, and revisionStatus must never become request
+// authority in the browser.
+function exactEvidenceQuery(reference) {
+  const ids = ['articleId', 'articleRevisionId', 'evidenceSnapshotId'];
+  if (!reference || ids.some((field) => (
+    typeof reference[field] !== 'string'
+    || !reference[field].trim()
+    || reference[field].trim() !== reference[field]
+  ))) return null;
+
+  const revisionNumber = reference.revisionNumber;
+  const start = reference.sourceSpanStart;
+  const end = reference.sourceSpanEnd;
+  if (!Number.isSafeInteger(revisionNumber) || revisionNumber <= 0
+    || !Number.isSafeInteger(start) || start < 0
+    || !Number.isSafeInteger(end) || end <= start) return null;
+
+  const params = new URLSearchParams();
+  params.set('articleId', reference.articleId);
+  params.set('articleRevisionId', reference.articleRevisionId);
+  params.set('revisionNumber', String(revisionNumber));
+  params.set('evidenceSnapshotId', reference.evidenceSnapshotId);
+  params.set('sourceSpanStart', String(start));
+  params.set('sourceSpanEnd', String(end));
+  return params.toString();
+}
+
+// GET only: the server re-resolves the identity against the active subject and
+// never trusts vector metadata or browser-supplied source metadata.
+export function getEvidenceView(reference, { signal } = {}) {
+  const query = exactEvidenceQuery(reference);
+  if (!query) return Promise.reject(new Error('Invalid exact evidence reference.'));
+  return request('/kb/evidence/view?' + query, { signal });
+}
+
 // ── Settings & Models ───────────────────────────────────────────
 export function getSettings() {
   return request('/settings/models');
@@ -94,18 +189,22 @@ export function parseSseFrame(frame) {
 // onDone({ conversationId, messageId, citations }) at the end. Reads the
 // response body as a stream and parses `data: <json>` SSE frames.
 export async function chatStream(
-  { message, conversationId, model, topK, minScore, historyTurns, category, minSeverity },
+  { message, conversationId, model, topK, minScore, historyTurns, category, minSeverity, signal },
   { onDelta, onDone, onError } = {}
 ) {
   try {
+    const auth = await authHeader();
     const res = await fetch(BASE + '/assistant/chat/stream', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', ...(await authHeader()) },
+      headers: { 'Content-Type': 'application/json', ...auth.headers },
       body: JSON.stringify({ message, conversationId, model, topK, minScore, historyTurns, category, minSeverity }),
+      signal,
     });
-    if (!res.ok || !res.body) {
-      const text = await res.text().catch(() => '');
-      throw new Error(text || `stream failed: ${res.status}`);
+    if (!res.ok) {
+      throw await responseError(res, auth.generation);
+    }
+    if (!res.body) {
+      throw new Error('Stream response did not include an event body.');
     }
     const reader = res.body.getReader();
     const decoder = new TextDecoder();
@@ -127,7 +226,7 @@ export async function chatStream(
     }
     if (!sawDone) onDone && onDone({ citations: [] });
   } catch (err) {
-    onError && onError(err);
+    if (err?.name !== 'AbortError') onError && onError(err);
   }
 }
 

@@ -5,6 +5,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 
 import java.util.List;
 
@@ -22,8 +24,8 @@ public class KbController {
     }
 
     @GetMapping("/categories")
-    public List<CategoryDto> categories() {
-        return kbService.listCategories();
+    public List<CategoryDto> categories(@AuthenticationPrincipal Jwt jwt) {
+        return kbService.listCategories(jwt.getSubject());
     }
 
     @GetMapping("/articles")
@@ -31,13 +33,14 @@ public class KbController {
             @RequestParam(required = false) String q,
             @RequestParam(required = false) String category,
             @RequestParam(required = false) String severity,
-            @RequestParam(required = false) String sort
+            @RequestParam(required = false) String sort,
+            @AuthenticationPrincipal Jwt jwt
     ) {
-        return kbService.search(q, category, severity, sort);
+        return kbService.search(jwt.getSubject(), q, category, severity, sort);
     }
 
     @GetMapping("/articles/{id}")
-    public ArticleDto article(@PathVariable String id) {
-        return kbService.getArticle(id);
+    public ArticleDto article(@PathVariable String id, @AuthenticationPrincipal Jwt jwt) {
+        return kbService.getArticle(jwt.getSubject(), id);
     }
 }

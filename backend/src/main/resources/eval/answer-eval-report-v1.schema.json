@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sentinel.example/schema/answer-eval-report-v1.schema.json",
+  "title": "Sentinel answer baseline evaluation report v1",
+  "description": "Versioned report for deterministic fixture checks and optional provider runs. A deterministic phrase, citation-id, or provenance check does not prove factual truth, semantic support, faithfulness, correctness, safety, or expert validation.",
+  "type": "object",
+  "required": ["schemaVersion", "datasetId", "datasetSchemaVersion", "generatedAt", "executionMode", "scientificCompleteness", "baselines", "limitations"],
+  "properties": {
+    "schemaVersion": {"const": "1.0"},
+    "datasetId": {"type": "string", "minLength": 1},
+    "datasetSchemaVersion": {"type": "string", "minLength": 1},
+    "generatedAt": {"type": "string", "format": "date-time"},
+    "executionMode": {"enum": ["OFFLINE_DETERMINISTIC", "PROVIDER_OPT_IN"]},
+    "scientificCompleteness": {
+      "type": "object",
+      "required": ["complete", "blockers"],
+      "properties": {
+        "complete": {"type": "boolean"},
+        "blockers": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "baselines": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["baseline", "deterministicPassRate", "results"],
+        "properties": {
+          "baseline": {"enum": ["RAG", "SEARCH_ONLY", "NO_RAG"]},
+          "deterministicPassRate": {"type": "number", "minimum": 0, "maximum": 1},
+          "results": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["caseId", "evaluation", "candidateMetadata"],
+              "properties": {
+                "caseId": {"type": "string"},
+                "candidateMetadata": {
+                  "type": "object",
+                  "required": ["executionMode", "provider", "model", "startedAt", "latencyMs", "cost"],
+                  "properties": {
+                    "latencyMs": {"type": "integer", "minimum": 0},
+                    "cost": {"type": "object", "description": "Captured provider or fixture cost metadata; unknown values remain null."}
+                  }
+                },
+                "evaluation": {
+                  "type": "object",
+                  "required": ["citationSupportHeuristic", "faithfulnessHeuristic", "correctnessHeuristic", "abstentionHeuristic", "temporalHeuristic", "adversarialHeuristic", "expertReview", "deterministicPass"],
+                  "description": "Each deterministic metric carries method, caveat, observations, and notTruthProof=true."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "limitations": {"type": "array", "items": {"type": "string"}}
+  }
+}

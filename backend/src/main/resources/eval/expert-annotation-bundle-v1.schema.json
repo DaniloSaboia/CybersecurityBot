@@ -1,0 +1,102 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sentinel.example/schema/expert-annotation-bundle-v1.schema.json",
+  "title": "Sentinel external expert annotation bundle v1",
+  "description": "A collection and import schema for externally recorded human reviews. It binds reviews to exact artifact hashes, saved candidates, and immutable evidence tuples. Schema validity does not authenticate reviewers or establish consent, qualification, independence, authorization, or answer truth.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "datasetId", "datasetSchemaVersion", "datasetSha256", "answersSha256", "datasetReviews", "annotations", "adjudications"],
+  "properties": {
+    "schemaVersion": {"const": "1.0"},
+    "datasetId": {"type": "string", "minLength": 1},
+    "datasetSchemaVersion": {"type": "string", "minLength": 1},
+    "datasetSha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "answersSha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "datasetReviews": {"type": "array", "items": {"$ref": "#/$defs/datasetReview"}},
+    "annotations": {"type": "array", "items": {"$ref": "#/$defs/annotation"}},
+    "adjudications": {"type": "array", "items": {"$ref": "#/$defs/adjudication"}}
+  },
+  "$defs": {
+    "status": {"enum": ["PENDING", "ACCEPTED", "REJECTED"]},
+    "verdict": {"enum": ["PASS", "FAIL", "NOT_APPLICABLE", "UNCERTAIN"]},
+    "evidenceReference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["articleId", "articleRevisionId", "revisionNumber", "evidenceSnapshotId", "sourceSpanStart", "sourceSpanEnd", "sourceUri", "sourceVersion", "revisionStatus"],
+      "properties": {
+        "articleId": {"type": "string", "minLength": 1},
+        "articleRevisionId": {"type": "string", "minLength": 1},
+        "revisionNumber": {"type": "integer", "minimum": 1},
+        "evidenceSnapshotId": {"type": "string", "minLength": 1},
+        "sourceSpanStart": {"type": "integer", "minimum": 0},
+        "sourceSpanEnd": {"type": "integer", "minimum": 0},
+        "sourceUri": {"type": "string", "minLength": 1},
+        "sourceVersion": {"type": "string", "minLength": 1},
+        "revisionStatus": {"type": "string", "minLength": 1}
+      }
+    },
+    "labels": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["citationSupport", "faithfulness", "correctness", "abstention", "temporalAccuracy", "adversarialResistance", "authorizationLeakage"],
+      "properties": {
+        "citationSupport": {"$ref": "#/$defs/verdict"},
+        "faithfulness": {"$ref": "#/$defs/verdict"},
+        "correctness": {"$ref": "#/$defs/verdict"},
+        "abstention": {"$ref": "#/$defs/verdict"},
+        "temporalAccuracy": {"$ref": "#/$defs/verdict"},
+        "adversarialResistance": {"$ref": "#/$defs/verdict"},
+        "authorizationLeakage": {"$ref": "#/$defs/verdict"}
+      }
+    },
+    "datasetReview": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "reviewerId", "reviewerQualification", "independent", "reviewedAt", "rationale"],
+      "properties": {
+        "status": {"$ref": "#/$defs/status"},
+        "reviewerId": {"type": "string", "minLength": 1},
+        "reviewerQualification": {"type": "string", "minLength": 1},
+        "independent": {"const": true},
+        "reviewedAt": {"type": "string", "format": "date-time"},
+        "rationale": {"type": "string", "minLength": 1}
+      }
+    },
+    "annotation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["caseId", "baseline", "candidateSha256", "status", "reviewerId", "reviewerQualification", "independent", "reviewedAt", "reviewedEvidence", "labels", "rationale"],
+      "properties": {
+        "caseId": {"type": "string", "minLength": 1},
+        "baseline": {"enum": ["RAG", "SEARCH_ONLY", "NO_RAG"]},
+        "candidateSha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "status": {"$ref": "#/$defs/status"},
+        "reviewerId": {"type": "string", "minLength": 1},
+        "reviewerQualification": {"type": "string", "minLength": 1},
+        "independent": {"const": true},
+        "reviewedAt": {"type": "string", "format": "date-time"},
+        "reviewedEvidence": {"type": "array", "items": {"$ref": "#/$defs/evidenceReference"}},
+        "labels": {"$ref": "#/$defs/labels"},
+        "rationale": {"type": "string", "minLength": 1}
+      }
+    },
+    "adjudication": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["caseId", "baseline", "candidateSha256", "status", "adjudicatorId", "adjudicatorQualification", "independent", "adjudicatedAt", "reviewedEvidence", "labels", "rationale"],
+      "properties": {
+        "caseId": {"type": "string", "minLength": 1},
+        "baseline": {"enum": ["RAG", "SEARCH_ONLY", "NO_RAG"]},
+        "candidateSha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "status": {"$ref": "#/$defs/status"},
+        "adjudicatorId": {"type": "string", "minLength": 1},
+        "adjudicatorQualification": {"type": "string", "minLength": 1},
+        "independent": {"const": true},
+        "adjudicatedAt": {"type": "string", "format": "date-time"},
+        "reviewedEvidence": {"type": "array", "items": {"$ref": "#/$defs/evidenceReference"}},
+        "labels": {"$ref": "#/$defs/labels"},
+        "rationale": {"type": "string", "minLength": 1}
+      }
+    }
+  }
+}

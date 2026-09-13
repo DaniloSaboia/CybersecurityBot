@@ -1,9 +1,9 @@
-// App.jsx — Red Noir shell: auth gate, routed views, theme, command palette.
+// Application shell: authenticated workspace, navigation, and global commands.
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { Icon } from './icons.jsx';
-import { Logo, CursorCoordinateHUD } from './ui.jsx';
+import { Logo } from './ui.jsx';
 import { useMe, queryClient } from './lib/queries.js';
 import { useAuth } from './lib/auth.jsx';
 import { ErrorBoundary } from './ErrorBoundary.jsx';
@@ -17,22 +17,50 @@ import CommandPalette from './views/CommandPalette.jsx';
 import SettingsModal, { getStoredModel, DEFAULT_MODELS } from './views/SettingsModal.jsx';
 
 const NAV = [
-  { id: 'assistant', path: '/', label: 'Assistant', icon: 'chat', sheet: 'RAG · CHAT', exact: true },
-  { id: 'kb', path: '/kb', label: 'Knowledge Base', icon: 'book', sheet: 'ARCHIVE' },
-  { id: 'ingest', path: '/ingest', label: 'Ingestion', icon: 'ingest', sheet: 'PIPELINE' },
-  { id: 'alerts', path: '/alerts', label: 'Watchlists', icon: 'bell', sheet: 'FEED · AUTO' },
+  { id: 'assistant', path: '/', label: 'Assistant', icon: 'chat', exact: true },
+  { id: 'kb', path: '/kb', label: 'Knowledge Base', icon: 'book' },
+  { id: 'ingest', path: '/ingest', label: 'Ingestion', icon: 'ingest' },
+  { id: 'alerts', path: '/alerts', label: 'Watchlists', icon: 'bell' },
 ];
 
+function getOwnedRouterAsk(state, userId) {
+  if (typeof state?.ask !== 'string' || !state.ask.trim() || state.askOwnerId !== userId) return null;
+  return state.ask;
+}
+
 export default function App() {
-  const { user, loading, signOut } = useAuth();
+  const { user, loading, sessionExpired, signOut } = useAuth();
+
+  if (loading) {
+    return (
+      <div style={{ height: '100dvh', display: 'grid', placeItems: 'center', fontFamily: 'var(--sans)', color: 'var(--text-2)', fontSize: 13, background: 'var(--bg)' }}>
+        <div role="status">
+          Loading Sentinel…
+        </div>
+      </div>
+    );
+  }
+  if (!user) return <Login sessionExpired={sessionExpired} />;
+
+  // A keyed boundary is intentional: it removes all protected component-local
+  // state (including conversations and pending view work) before a successor
+  // user's queries have a chance to resolve.
+  return <AuthenticatedConsole key={user.id} user={user} signOut={signOut} />;
+}
+
+function AuthenticatedConsole({ user, signOut }) {
   const navigate = useNavigate();
   const location = useLocation();
   const [openId, setOpenId] = useState(null);
   const [pendingAsk, setPendingAsk] = useState(null);
+  const consumedTransientLocationKey = useRef(null);
   const [navOpen, setNavOpen] = useState(false);
+  const [mobileNav, setMobileNav] = useState(() => window.matchMedia?.('(max-width: 860px)').matches || false);
+  const railRef = useRef(null);
+  const menuRef = useRef(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [paletteOpen, setPaletteOpen] = useState(false);
-  const [activeModel, setActiveModel] = useState(getStoredModel);
+  const [activeModel, setActiveModel] = useState(() => getStoredModel(user.id));
   const [theme, setTheme] = useState(getStoredTheme);
   const [railCollapsed, setRailCollapsed] = useState(
     () => localStorage.getItem('rail-collapsed') === '1'
@@ -43,14 +71,56 @@ export default function App() {
   useEffect(() => { applyTheme(theme); }, [theme]);
   useEffect(() => watchSystemPreference(theme, setTheme), [theme]);
 
-  // Refetch everything with the new token whenever the signed-in user changes.
-  useEffect(() => { queryClient.invalidateQueries(); }, [user?.id]);
+  useEffect(() => {
+    const media = window.matchMedia?.('(max-width: 860px)');
+    if (!media) return;
+    function onLayoutChange(event) {
+      setMobileNav(event.matches);
+      if (!event.matches) setNavOpen(false);
+    }
+    media.addEventListener('change', onLayoutChange);
+    return () => media.removeEventListener('change', onLayoutChange);
+  }, []);
+
+  useEffect(() => {
+    if (!navOpen) return;
+    const rail = railRef.current;
+    const controls = () => [...rail.querySelectorAll('button:not(:disabled), a[href]')]
+      .filter((element) => element.getClientRects().length);
+    // Wait until the browser has applied drawer visibility and main's inert state.
+    const focusFrame = window.requestAnimationFrame(() => controls()[0]?.focus());
+    function onDrawerKey(event) {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        setNavOpen(false);
+      }
+      if (event.key === 'Tab') {
+        const items = controls();
+        const first = items[0];
+        const last = items.at(-1);
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last?.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first?.focus();
+        }
+      }
+    }
+    document.addEventListener('keydown', onDrawerKey);
+    return () => {
+      window.cancelAnimationFrame(focusFrame);
+      document.removeEventListener('keydown', onDrawerKey);
+      menuRef.current?.focus();
+    };
+  }, [navOpen]);
 
   // Global command palette shortcut (Ctrl/Cmd+K).
   useEffect(() => {
     function onKey(e) {
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault();
+        setNavOpen(false);
         setPaletteOpen((o) => !o);
       }
     }
@@ -60,11 +130,30 @@ export default function App() {
 
   // Cross-view bridges arrive via router location.state.
   useEffect(() => {
-    const state = location.state || {};
+    const state = location.state && typeof location.state === 'object' ? location.state : {};
+    const hasTransientState = Object.keys(state).length > 0;
+    if (!hasTransientState) {
+      consumedTransientLocationKey.current = null;
+      return;
+    }
+    // React StrictMode replays effects in development. Consume each router
+    // history entry once so a valid ask cannot be enqueued twice.
+    if (consumedTransientLocationKey.current === location.key) return;
+    consumedTransientLocationKey.current = location.key;
     if (state.openId) setOpenId(state.openId);
-    if (state.ask) setPendingAsk({ text: state.ask, n: Date.now() });
+    if (state.ask !== undefined) {
+      const ask = getOwnedRouterAsk(state, user.id);
+      setPendingAsk(ask ? { text: ask, n: Date.now() } : null);
+    }
     if (state.palette) setPaletteOpen(true);
-  }, [location.state]);
+    // Route state is a transient cross-view bridge, not a transcript store.
+    // Consume it after both accepted and rejected asks so prompts and owner
+    // identifiers cannot survive an account switch in browser history.
+    navigate({ pathname: location.pathname, search: location.search, hash: location.hash }, {
+      replace: true,
+      state: null,
+    });
+  }, [location, navigate, user.id]);
 
   // Hamburger: opens the drawer on narrow screens, collapses the rail on desktop.
   function handleMenuToggle() {
@@ -86,30 +175,17 @@ export default function App() {
 
   // cross-view bridge: KB "Ask assistant" -> switch to chat and send
   const askAssistant = useCallback((text) => {
-    setPendingAsk({ text, n: Date.now() });
-    navigate('/', { state: { ask: text } });
+    navigate('/', { state: { ask: text, askOwnerId: user.id } });
     setNavOpen(false);
-  }, [navigate]);
+  }, [navigate, user.id]);
 
   const handleToggleTheme = useCallback(() => setTheme(cycleTheme(getStoredTheme())), []);
 
   async function handleSignOut() {
     await signOut();
-    queryClient.clear();
   }
 
-  if (loading) {
-    return (
-      <div style={{ height: '100vh', display: 'grid', placeItems: 'center', fontFamily: 'var(--mono)', color: 'var(--accent-bright)', fontSize: 13, background: 'var(--bg)' }}>
-        <div style={{ border: '1px solid var(--accent-dim)', borderRadius: 999, padding: '16px 28px', background: 'var(--accent-soft)', boxShadow: 'var(--accent-glow)' }}>
-          [ INITIALIZING SENTINEL CONSOLE… ]
-        </div>
-      </div>
-    );
-  }
-  if (!user) return <Login />;
-
-  const envName = (me && me.env) || 'PROD · us-east';
+  const envName = (me && me.env) || 'Security workspace';
   const userName = (me && me.user) || user.email || 'analyst';
   const userRole = (me && me.role) || 'Security Analyst';
   const activeNav = NAV.find((n) => (n.exact
@@ -118,41 +194,38 @@ export default function App() {
 
   const modelObj = DEFAULT_MODELS.find((m) => m.id === activeModel);
   const modelShortName = modelObj ? modelObj.name.replace(' Instruct', '') : activeModel.split('/')[1] || activeModel;
-  const unreadAlerts = 0; // badge count refined by the Alerts view's polling
-
+  const navExpanded = mobileNav ? navOpen : !railCollapsed;
   return (
     <div className={'app' + (railCollapsed ? ' rail-collapsed' : '')}>
-      <aside className={'rail' + (navOpen ? ' open' : '')}>
-        <Logo />
-        <nav className="rail-nav">
+      <a className="skip-link" href="#workspace-content">Skip to workspace</a>
+      <aside id="workspace-navigation" ref={railRef} className={'rail' + (navOpen ? ' open' : '')} aria-label="Workspace navigation">
+        <div className="rail-brand"><Logo /><button type="button" className="rail-close topbar-icon" aria-label="Close navigation" onClick={() => setNavOpen(false)}><Icon name="x" size={17} /></button></div>
+        <button type="button" className="rail-search" aria-label="Search workspace commands" title="Search workspace commands" onClick={() => { setNavOpen(false); setPaletteOpen(true); }}>
+          <Icon name="search" size={16} /><span>Search commands</span><kbd>⌘ K</kbd>
+        </button>
+        <div className="rail-section-label">Workspace</div>
+        <nav className="rail-nav" aria-label="Primary navigation">
           {NAV.map((n) => (
             <button
               key={n.id}
               className={'rail-item' + (activeNav.id === n.id ? ' active' : '')}
+              aria-label={n.label}
+              aria-current={activeNav.id === n.id ? 'page' : undefined}
+              title={n.label}
               onClick={() => { navigate(n.path); setNavOpen(false); }}
             >
               <Icon name={n.icon} size={17} />
               <span>{n.label}</span>
-              {n.id === 'alerts' && unreadAlerts > 0 && <span className="rail-badge">{unreadAlerts}</span>}
               {activeNav.id === n.id && <span className="rail-active-bar" />}
             </button>
           ))}
-          <button className="rail-item" onClick={() => setPaletteOpen(true)} title="Command palette (Ctrl+K)">
-            <Icon name="command" size={17} />
-            <span>Commands</span>
-            <span className="rail-kbd">^K</span>
-          </button>
-          <button className="rail-item settings-rail-item" onClick={() => { setSettingsOpen(true); setNavOpen(false); }}>
-            <Icon name="settings" size={17} />
-            <span>Settings</span>
-          </button>
         </nav>
         <div className="rail-foot">
-          <div className="env-badge" onClick={() => setSettingsOpen(true)} style={{ cursor: 'pointer' }} title="Click to view environment &amp; model configuration">
-            <span className="status-dot" style={{ background: 'var(--accent)' }} />
+          <div className="env-badge">
+            <Icon name="database" size={16} />
             <div>
               <div className="env-name">{envName}</div>
-              <div className="env-sub">{modelShortName}</div>
+              <div className="env-sub" title={`Active model: ${modelShortName}`}>{modelShortName}</div>
             </div>
           </div>
           <div className="rail-user">
@@ -168,36 +241,23 @@ export default function App() {
         </div>
       </aside>
 
-      {navOpen && <div className="rail-scrim" onClick={() => setNavOpen(false)} />}
+      {navOpen && <button type="button" className="rail-scrim" tabIndex={-1} aria-label="Dismiss navigation" onClick={() => setNavOpen(false)} />}
 
-      <main className="main">
+      <main className="main" inert={navOpen ? '' : undefined}>
         <div className="topbar">
-          <button className="topbar-menu" title="Toggle sidebar" onClick={handleMenuToggle}><Icon name="menu" size={17} /></button>
+          <button ref={menuRef} className="topbar-menu" title="Toggle sidebar" aria-label="Toggle sidebar" aria-controls="workspace-navigation" aria-expanded={navExpanded} onClick={handleMenuToggle}><Icon name="menu" size={17} /></button>
           <div className="topbar-crumb">
-            <span className="crumb-root">SENTINEL // KMS</span>
+            <span className="crumb-root">Workspace</span>
             <Icon name="chevron" size={12} />
             <span>{activeNav.label}</span>
-            <span style={{ color: 'var(--text-faint)', fontSize: 10 }}>[{activeNav.sheet}]</span>
+
           </div>
 
           <div className="topbar-right">
-            {/* Quick Model Selector Chip */}
-            <button
-              className="topbar-model-chip"
-              onClick={() => setSettingsOpen(true)}
-              title="Click to change AI Model / OpenRouter Settings"
-            >
-              <Icon name="spark" size={12} />
-              <span className="topbar-model-label">MODEL:</span>
-              <span className="topbar-model-val">{modelShortName}</span>
-              <span className="topbar-model-badge">FREE</span>
-            </button>
-
-            <CursorCoordinateHUD />
-
             <button
               className="topbar-icon"
               title="Command palette (Ctrl+K)"
+              aria-label="Commands"
               onClick={() => setPaletteOpen(true)}
             >
               <Icon name="command" size={15} />
@@ -214,7 +274,8 @@ export default function App() {
 
             <button
               className="topbar-icon"
-              title="System &amp; AI Settings"
+              title="Settings — models and retrieval"
+              aria-label="Settings"
               onClick={() => setSettingsOpen(true)}
             >
               <Icon name="settings" size={15} />
@@ -226,17 +287,18 @@ export default function App() {
           </div>
         </div>
 
-        <div className="view-wrap">
+        <div id="workspace-content" className="view-wrap" tabIndex={-1}>
           <ErrorBoundary key={activeNav.id}>
             <Routes location={location}>
               <Route
                 path="/"
                 element={(
                   <Assistant
-                    onOpenArticle={openArticle}
-                    pendingAsk={pendingAsk}
-                    activeModel={activeModel}
-                    onOpenSettings={() => setSettingsOpen(true)}
+                  onOpenArticle={openArticle}
+                  pendingAsk={pendingAsk}
+                  activeModel={activeModel}
+                  userId={user.id}
+                  onOpenSettings={() => setSettingsOpen(true)}
                   />
                 )}
               />
@@ -247,7 +309,7 @@ export default function App() {
               <Route path="/kb/*" element={<KnowledgeBase openId={openId} setOpenId={setOpenId} onAsk={askAssistant} />} />
               <Route path="/ingest" element={<Ingest />} />
               <Route path="/alerts" element={<Alerts onOpenArticle={openArticle} />} />
-              <Route path="*" element={<Assistant onOpenArticle={openArticle} activeModel={activeModel} onOpenSettings={() => setSettingsOpen(true)} />} />
+              <Route path="*" element={<Assistant onOpenArticle={openArticle} activeModel={activeModel} userId={user.id} onOpenSettings={() => setSettingsOpen(true)} />} />
             </Routes>
           </ErrorBoundary>
         </div>
@@ -266,6 +328,7 @@ export default function App() {
         {/* Global Settings Modal */}
         <SettingsModal
           isOpen={settingsOpen}
+          userId={user.id}
           onClose={() => setSettingsOpen(false)}
           onSave={({ model }) => {
             setActiveModel(model);

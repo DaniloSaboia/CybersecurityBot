@@ -11,6 +11,8 @@ import com.sentinel.kms.kb.ArticleRepository;
 import com.sentinel.kms.kb.ArticleSection;
 import com.sentinel.kms.kb.Category;
 import com.sentinel.kms.kb.CategoryRepository;
+import com.sentinel.kms.kb.TrustedArticleRegistrationService;
+import com.sentinel.kms.kb.TrustedArticleSource;
 import com.sentinel.kms.kb.Ioc;
 import com.sentinel.kms.vectorstore.EmbeddingIndexService;
 import org.slf4j.Logger;
@@ -25,12 +27,11 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 /**
- * Seeds the database (and vector store) from {@code classpath:seed/seed.json} on
- * first boot. Idempotent: if any articles already exist it skips entirely.
- * Embedding is best-effort per article so a missing API key never crashes startup.
+ * Seeds immutable governed article data from {@code classpath:seed/seed.json} on
+ * first boot.  Trusted registration atomically creates durable canonical
+ * reindex work; seed data is not directly indexed with legacy metadata.
  */
 @Component
 public class DataSeeder implements CommandLineRunner {
@@ -42,8 +43,8 @@ public class DataSeeder implements CommandLineRunner {
     private final CategoryRepository categoryRepository;
     private final ConnectorRepository connectorRepository;
     private final IngestJobRepository ingestJobRepository;
-    private final EmbeddingIndexService embeddingIndexService;
     private final ObjectMapper objectMapper;
+    private final TrustedArticleRegistrationService trustedArticleRegistrationService;
 
     public DataSeeder(
             @Value("${app.seed.enabled:true}") boolean seedEnabled,
@@ -52,14 +53,17 @@ public class DataSeeder implements CommandLineRunner {
             ConnectorRepository connectorRepository,
             IngestJobRepository ingestJobRepository,
             EmbeddingIndexService embeddingIndexService,
-            ObjectMapper objectMapper) {
+            ObjectMapper objectMapper,
+            TrustedArticleRegistrationService trustedArticleRegistrationService) {
         this.seedEnabled = seedEnabled;
         this.articleRepository = articleRepository;
         this.categoryRepository = categoryRepository;
         this.connectorRepository = connectorRepository;
         this.ingestJobRepository = ingestJobRepository;
-        this.embeddingIndexService = embeddingIndexService;
+        // Kept in the constructor for Spring/test compatibility.  The
+        // lifecycle reindex worker is the only article vector publisher.
         this.objectMapper = objectMapper;
+        this.trustedArticleRegistrationService = trustedArticleRegistrationService;
     }
 
     @Override
@@ -70,28 +74,12 @@ public class DataSeeder implements CommandLineRunner {
         }
         long existingArticles = articleRepository.count();
         if (existingArticles > 0) {
-            // Already seeded. But if the vector store is empty (e.g. the embedding
-            // provider was unavailable on first boot — no API key, Ollama models not
-            // pulled yet), backfill embeddings now so RAG has grounding.
-            long vectors;
-            try {
-                vectors = embeddingIndexService.count();
-            } catch (Exception e) {
-                log.warn("Seed skipped — {} articles present; vector count unavailable: {}",
-                        existingArticles, e.getMessage());
-                return;
-            }
-            if (vectors > 0) {
-                // Still backfill any connector rows added to seed.json after
-                // the initial seed (e.g. new sync-capable feeds).
-                int added = upsertConnectors(root());
-                log.info("Seed skipped — {} articles already present, {} chunks indexed ({} new connectors).",
-                        existingArticles, vectors, added);
-                return;
-            }
-            log.info("Articles present but vector store empty — re-embedding {} articles.", existingArticles);
-            int re = embedArticles(articleRepository.findAll());
-            log.info("Re-embedded {} of {} articles.", re, existingArticles);
+            // Existing rows are either already governed or have a migration
+            // outbox item.  Never relabel their legacy text as current; the
+            // worker derives canonical chunks from immutable evidence.
+            int added = upsertConnectors(root());
+            log.info("Seed skipped — {} articles already present; canonical reindex remains durable ({} new connectors).",
+                    existingArticles, added);
             return;
         }
 
@@ -105,10 +93,12 @@ public class DataSeeder implements CommandLineRunner {
         int connectors = seedConnectors(root.path("connectors"));
         int jobs = seedJobs(root.path("jobs"));
         List<Article> articles = seedArticles(root.path("articles"));
-        int embedded = embedArticles(articles);
+        trustedArticleRegistrationService.persistAndRegister(
+                articleRepository, articles, TrustedArticleSource.SEED);
+        int queued = articles.size();
 
-        log.info("Seed complete — {} categories, {} connectors, {} jobs, {} articles ({} embedded).",
-                categories, connectors, jobs, articles.size(), embedded);
+        log.info("Seed complete — {} categories, {} connectors, {} jobs, {} articles ({} canonical reindex jobs queued).",
+                categories, connectors, jobs, articles.size(), queued);
     }
 
     /** Re-reads seed.json (used for connector backfill on already-seeded DBs). */
@@ -184,6 +174,8 @@ public class DataSeeder implements CommandLineRunner {
             j.setPct(n.path("pct").asDouble());
             j.setChunks(n.path("chunks").asInt());
             j.setWhenLabel(n.path("whenLabel").asText());
+            // Durable ingestion treats only explicit demo rows as simulator-owned.
+            j.setDemo(true);
             if (n.hasNonNull("error")) {
                 j.setError(n.path("error").asText());
             }
@@ -218,31 +210,7 @@ public class DataSeeder implements CommandLineRunner {
             a.setRelated(stringList(n.path("related")));
             out.add(a);
         }
-        articleRepository.saveAll(out);
         return out;
-    }
-
-    private int embedArticles(List<Article> articles) {
-        int embedded = 0;
-        for (Article a : articles) {
-            try {
-                List<String> chunks = new ArrayList<>();
-                chunks.add(a.getTitle() + " — " + a.getSnippet());
-                for (ArticleSection s : a.getBody()) {
-                    chunks.add(s.h() + "\n" + s.p());
-                }
-                Map<String, Object> metadata = Map.of(
-                        "article_id", a.getId(),
-                        "title", a.getTitle(),
-                        "source", a.getSource(),
-                        "category", a.getCategoryId());
-                embeddingIndexService.index(chunks, metadata);
-                embedded++;
-            } catch (Exception ex) {
-                log.warn("Embedding failed for article {} (continuing): {}", a.getId(), ex.getMessage());
-            }
-        }
-        return embedded;
     }
 
     private static List<String> stringList(JsonNode arr) {

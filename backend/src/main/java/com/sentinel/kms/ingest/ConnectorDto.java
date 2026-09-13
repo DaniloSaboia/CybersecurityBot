@@ -11,8 +11,12 @@ public record ConnectorDto(
         String status,
         int docs,
         String last,
-        boolean auto
+        boolean auto,
+        java.util.Map<String, Object> sync
 ) {
+    public ConnectorDto(String id, String name, String kind, String status, int docs, String last, boolean auto) {
+        this(id,name,kind,status,docs,last,auto,java.util.Map.of());
+    }
     public static ConnectorDto from(Connector c) {
         return new ConnectorDto(
                 c.getId(),

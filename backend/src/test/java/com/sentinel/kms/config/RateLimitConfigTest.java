@@ -64,4 +64,18 @@ class RateLimitConfigTest {
         });
         assertThat(response.getStatus()).isEqualTo(200);
     }
+
+    @Test
+    void progressPollingDoesNotConsumeUploadBudgetButRefreshDoes() throws Exception {
+        var filter = filter(1);
+        for (int i = 0; i < 30; i++) {
+            var request = new MockHttpServletRequest("GET", "/api/ingest/jobs");
+            request.setUserPrincipal(() -> "user-1");
+            var response = new MockHttpServletResponse();
+            filter.doFilter(request, response, (req, res) -> {});
+            assertThat(response.getStatus()).isEqualTo(200);
+        }
+        assertThat(run(filter, "/api/connectors/kev/sync").getStatus()).isEqualTo(200);
+        assertThat(run(filter, "/api/ingest/upload").getStatus()).isEqualTo(429);
+    }
 }

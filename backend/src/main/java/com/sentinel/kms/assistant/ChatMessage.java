@@ -1,9 +1,11 @@
 package com.sentinel.kms.assistant;
 
+import com.sentinel.kms.common.EvidenceReference;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -39,6 +41,17 @@ public class ChatMessage {
     @JdbcTypeCode(SqlTypes.ARRAY)
     @Column(name = "citations", columnDefinition = "text[]")
     private List<String> citations = new ArrayList<>();
+
+    /**
+     * Projection of immutable normalized citation rows. It is deliberately not a JSON column:
+     * {@link MessageCitationReferenceStore} loads and writes the authoritative table.
+     */
+    @Transient
+    private List<EvidenceReference> citationReferences = new ArrayList<>();
+
+    /** Internal upload provenance used only to re-authorize transcript replay. */
+    @Transient
+    private List<SourceEvidenceReference> sourceEvidenceReferences = new ArrayList<>();
 
     /** 1 = helpful, -1 = not helpful, null = unrated. */
     private Integer rating;

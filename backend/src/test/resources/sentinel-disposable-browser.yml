@@ -1,0 +1,50 @@
+# Test-only: no imports, no production providers, no model downloads.
+spring:
+  config:
+    import: []
+  ai:
+    model:
+      chat: none
+      embedding: none
+      moderation: none
+      image: none
+      audio:
+        speech: none
+        transcription: none
+    openai:
+      base-url: http://127.0.0.1:9
+    ollama:
+      init:
+        pull-model-strategy: never
+    vectorstore:
+      pgvector:
+        initialize-schema: false
+        dimensions: 1024
+  datasource:
+    hikari:
+      connection-init-sql: SET search_path TO public, extensions
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: none
+server:
+  address: 127.0.0.1
+app:
+  cors:
+    allowed-origins: http://localhost:5173
+  seed:
+    enabled: false
+  ingest:
+    worker-enabled: true
+  nvd:
+    sync-enabled: false
+    sync-cron: '-'
+  rag:
+    query-rewrite-enabled: false
+    rerank-enabled: false
+  ratelimit:
+    chat-per-minute: 1000
+    ingest-per-minute: 1000
+logging:
+  level:
+    root: WARN

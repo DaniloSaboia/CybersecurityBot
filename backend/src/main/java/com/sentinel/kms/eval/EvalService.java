@@ -5,6 +5,7 @@ import com.sentinel.kms.vectorstore.RetrievalFilters;
 import com.sentinel.kms.vectorstore.RetrievedChunk;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -32,15 +33,21 @@ public class EvalService {
     private final EmbeddingIndexService index;
     private final int topK;
     private final double minScore;
+    private final int maxCases;
 
     public EvalService(GoldenSet goldenSet,
                        EmbeddingIndexService index,
                        @Value("${app.rag.top-k:6}") int topK,
-                       @Value("${app.rag.min-score:0.30}") double minScore) {
+                       @Value("${app.rag.min-score:0.30}") double minScore,
+                       @Value("${app.eval.max-cases:64}") int maxCases) {
         this.goldenSet = goldenSet;
         this.index = index;
         this.topK = topK;
         this.minScore = minScore;
+        if (maxCases < 1) {
+            throw new IllegalArgumentException("evaluation case limit must be positive");
+        }
+        this.maxCases = maxCases;
     }
 
     /** Per-case outcome. */
@@ -68,9 +75,24 @@ public class EvalService {
     }
 
     public EvalReport run() {
-        List<CaseResult> results = new ArrayList<>(goldenSet.cases().size());
-        for (EvalCase evalCase : goldenSet.cases()) {
-            results.add(evaluate(evalCase));
+        return run(null);
+    }
+
+    /**
+     * Runs only with an authenticated evaluator identity supplied by the
+     * controller after database-authoritative execution authorization.
+     */
+    public EvalReport run(String subject) {
+        if (subject == null || subject.isBlank()) {
+            throw new AccessDeniedException("evaluation requires an authenticated evaluator subject");
+        }
+        List<EvalCase> cases = goldenSet.cases();
+        if (cases == null || cases.size() > maxCases) {
+            throw new IllegalStateException("evaluation case limit exceeded");
+        }
+        List<CaseResult> results = new ArrayList<>(cases.size());
+        for (EvalCase evalCase : cases) {
+            results.add(evaluate(evalCase, subject));
         }
 
         double meanRecall = results.stream().mapToDouble(CaseResult::recallAtK).average().orElse(0);
@@ -90,13 +112,13 @@ public class EvalService {
         return report;
     }
 
-    private CaseResult evaluate(EvalCase evalCase) {
+    private CaseResult evaluate(EvalCase evalCase, String subject) {
         Set<String> relevant = Set.copyOf(evalCase.expectedArticleIds());
         RetrievalFilters filters = new RetrievalFilters(evalCase.category(), evalCase.minSeverity());
 
         // Exactly the assistant's call: hybrid search, scope filters applied.
         List<RetrievedChunk> chunks = index.hybridSearch(
-                evalCase.question(), topK, minScore, null,
+                evalCase.question(), topK, minScore, subject,
                 filters.isEmpty() ? null : filters);
 
         // Article ids in rank order, de-duplicated (several chunks may share one article).

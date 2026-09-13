@@ -12,7 +12,8 @@ public enum JobStage {
     CHUNKING,
     EMBEDDING,
     INDEXED,
-    FAILED;
+    FAILED,
+    CANCELLED;
 
     /** Lowercase wire id, e.g. "embedding". */
     public String id() {
@@ -24,7 +25,7 @@ public enum JobStage {
     }
 
     public boolean isTerminal() {
-        return this == INDEXED || this == FAILED;
+        return this == INDEXED || this == FAILED || this == CANCELLED;
     }
 
     /** Ordered processing stages (excludes QUEUED/FAILED) used to advance a job. */

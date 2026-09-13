@@ -11,24 +11,22 @@
     <springProperty scope="context" name="appName" source="spring.application.name" defaultValue="sentinel-kms"/>
     <springProperty scope="context" name="logJson" source="LOG_JSON" defaultValue="false"/>
 
-    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
-        <if condition='property("logJson").equalsIgnoreCase("true")'>
-            <then>
-                <encoder class="net.logstash.logback.encoder.LogstashEncoder">
-                    <customFields>{"app":"${appName}"}</customFields>
-                    <includeMdcKeyName>traceId</includeMdcKeyName>
-                    <includeMdcKeyName>spanId</includeMdcKeyName>
-                </encoder>
-            </then>
-            <else>
-                <encoder>
-                    <pattern>%d{HH:mm:ss.SSS} %-5level [%thread] %logger{24} — %msg%n</pattern>
-                </encoder>
-            </else>
-        </if>
+    <!-- Avoid Janino expressions and unsupported conditionals inside appenders.
+         LOG_JSON must be the literal true or false (the documented contract). -->
+    <appender name="CONSOLE_true" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <customFields>{"app":"${appName}"}</customFields>
+            <includeMdcKeyName>traceId</includeMdcKeyName>
+            <includeMdcKeyName>spanId</includeMdcKeyName>
+        </encoder>
+    </appender>
+    <appender name="CONSOLE_false" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} %-5level [%thread] %logger{24} — %msg%n</pattern>
+        </encoder>
     </appender>
 
     <root level="INFO">
-        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="CONSOLE_${logJson}"/>
     </root>
 </configuration>

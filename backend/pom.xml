@@ -23,6 +23,8 @@
     <tika.version>2.9.2</tika.version>
     <bucket4j.version>8.10.1</bucket4j.version>
     <logstash-encoder.version>8.0</logstash-encoder.version>
+    <!-- docker-java's old default API is rejected by current Docker daemons. -->
+    <docker.api.version>1.44</docker.api.version>
   </properties>
 
   <dependencyManagement>
@@ -167,6 +169,15 @@
 
   <build>
     <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <systemPropertyVariables>
+            <api.version>${docker.api.version}</api.version>
+          </systemPropertyVariables>
+        </configuration>
+      </plugin>
       <plugin>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>

@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sentinel.example/schema/answer-eval-report-v2.schema.json",
+  "title": "Sentinel answer baseline evaluation report v2",
+  "description": "Versioned report for deterministic fixture checks, saved outputs, and optional opt-in provider runs. A deterministic phrase, citation, provenance, temporal, adversarial, or denied-fixture check does not prove factual truth, semantic citation support, faithfulness, correctness, safety, authorization enforcement, absence of provider calls, or expert validation.",
+  "type": "object",
+  "required": ["schemaVersion", "datasetId", "datasetSchemaVersion", "generatedAt", "executionMode", "scientificCompleteness", "baselines", "expertAnnotationImport", "limitations"],
+  "properties": {
+    "schemaVersion": {"const": "2.0"},
+    "datasetId": {"type": "string", "minLength": 1},
+    "datasetSchemaVersion": {"type": "string", "minLength": 1},
+    "generatedAt": {"type": "string", "format": "date-time"},
+    "executionMode": {"enum": ["OFFLINE_DETERMINISTIC", "PROVIDER_OPT_IN"]},
+    "scientificCompleteness": {
+      "type": "object",
+      "required": ["complete", "blockers"],
+      "properties": {
+        "complete": {"type": "boolean"},
+        "blockers": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "expertAnnotationImport": {
+      "type": "object",
+      "required": ["status", "issues", "limitations"],
+      "description": "Structural import status for an external annotation sidecar. VALIDATED is not proof of reviewer identity, qualification, independence, consent, or answer truth.",
+      "properties": {
+        "status": {"enum": ["MISSING", "VALIDATED", "INVALID"]},
+        "sourceSha256": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$"},
+        "bundle": {"type": ["object", "null"]},
+        "issues": {"type": "array", "items": {"type": "string"}},
+        "limitations": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "baselines": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["baseline", "deterministicPassRate", "results"],
+        "properties": {
+          "baseline": {"enum": ["RAG", "SEARCH_ONLY", "NO_RAG"]},
+          "deterministicPassRate": {"type": "number", "minimum": 0, "maximum": 1},
+          "results": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["caseId", "evaluation", "candidateMetadata", "candidateSha256"],
+              "properties": {
+                "caseId": {"type": "string", "minLength": 1},
+                "candidateSha256": {"type": "string", "pattern": "^[0-9a-f]{64}$", "description": "Binding digest only; raw candidate answers are intentionally absent from this report."},
+                "candidateMetadata": {
+                  "type": "object",
+                  "required": ["executionMode", "provider", "model", "startedAt", "latencyMs", "cost"],
+                  "properties": {
+                    "latencyMs": {"type": "integer", "minimum": 0},
+                    "cost": {"type": "object", "description": "Captured provider or fixture cost metadata; unknown values remain null."}
+                  }
+                },
+                "evaluation": {
+                  "type": "object",
+                  "required": ["citationSupportHeuristic", "faithfulnessHeuristic", "correctnessHeuristic", "abstentionHeuristic", "temporalHeuristic", "adversarialHeuristic", "authorizationLeakageHeuristic", "expertReview", "deterministicPass"],
+                  "description": "Every deterministic metric is a labelled heuristic with method, caveat, observations, and notTruthProof=true. Authorization leakage is a denied-fixture signal only."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "limitations": {"type": "array", "items": {"type": "string"}}
+  }
+}

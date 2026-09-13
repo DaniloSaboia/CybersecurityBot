@@ -62,10 +62,17 @@ public class PromptBuilder {
                 - "report" rows are arrays of exactly two strings: [label, value].
                 - Use a "steps" block for procedures/playbooks and a "report" block for
                   structured remediation summaries.
-                - Inline citations: whenever you use a fact from a source, append that source's
-                  id in brackets, e.g. [TI-2291], inside the relevant "text" or "steps" item.
-                - The top-level "citations" array MUST list exactly the article ids you cited
-                  inline. Use ONLY ids that appear in the provided context — never any others.
+                - Inline evidence tokens: whenever you use a fact from a source, append that
+                  source's exact EVIDENCE-TOKEN inside the relevant "text" or "steps" item.
+                  Copy it verbatim. Do not construct, alter, or guess an evidence token.
+                - The server validates tokens against retrieved, authorized evidence and renders
+                  accepted tokens as legacy [ARTICLE-ID] citations. Do not emit [ARTICLE-ID]
+                  citation tokens yourself unless one is already present verbatim in a source.
+                - A private uploaded source without an EVIDENCE-TOKEN is still authorized
+                  grounding, but it has no supported article citation reference. You may use
+                  it to answer, but never invent an article id or evidence token for it.
+                - The top-level "citations" array MUST list exactly the evidence tokens you used.
+                  Use ONLY tokens that appear in the provided context — never any others.
                 - If the context is empty or contains nothing relevant to the question, return
                   exactly: {"blocks":[{"type":"text","text":"I couldn't find anything relevant \
                 in the knowledge base for that question."}],"citations":[]}
@@ -85,7 +92,8 @@ public class PromptBuilder {
      * @param titles   article-id -> title lookup for labelling sources
      */
     public String userMessage(String question, List<RetrievedChunk> chunks, Map<String, String> titles) {
-        return userMessage(question, chunks, titles, List.of());
+        return userMessage(question, chunks, titles, List.of(), CitationResolver.legacyOnly(titles == null
+                ? java.util.Set.of() : titles.keySet()));
     }
 
     /**
@@ -95,6 +103,17 @@ public class PromptBuilder {
      */
     public String userMessage(String question, List<RetrievedChunk> chunks, Map<String, String> titles,
                               List<Turn> history) {
+        return userMessage(question, chunks, titles, history, CitationResolver.legacyOnly(titles == null
+                ? java.util.Set.of() : titles.keySet()));
+    }
+
+    /**
+     * Full governed variant. Exact evidence tokens are supplied only for
+     * immutable retrieved spans that survived authorization; the model must
+     * reproduce them verbatim and the response parser resolves them server-side.
+     */
+    public String userMessage(String question, List<RetrievedChunk> chunks, Map<String, String> titles,
+                              List<Turn> history, CitationResolver citations) {
         StringBuilder sb = new StringBuilder();
         sb.append("QUESTION:\n").append(question == null ? "" : question.trim()).append("\n\n");
 
@@ -140,6 +159,10 @@ public class PromptBuilder {
             }
             if (chunk.heading() != null && !chunk.heading().isBlank()) {
                 src.append("  HEADING: ").append(chunk.heading());
+            }
+            String evidenceToken = citations == null ? null : citations.evidenceTokenFor(chunk);
+            if (evidenceToken != null) {
+                src.append("  EVIDENCE-TOKEN: ").append(evidenceToken);
             }
             src.append("\n").append(content).append("\n\n");
 

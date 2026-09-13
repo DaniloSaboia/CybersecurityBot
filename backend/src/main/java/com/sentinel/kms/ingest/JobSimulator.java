@@ -10,31 +10,25 @@ import java.util.concurrent.ThreadLocalRandom;
  * Drives live progress for seeded/demo jobs so the UI shows movement without a
  * real pipeline behind them. Mirrors the prototype's client-side interval.
  *
- * <p>Safety: it only advances jobs that are NOT real manual uploads / URL imports
- * (those are owned by {@link JobProcessor}), and additionally skips any id the
- * processor is actively driving. Every step is idempotent and bounded.
+ * <p>Safety: only rows explicitly marked {@code is_demo} are eligible.  Source
+ * labels and owner nullability are not a reliable authority for whether a row is
+ * a demo, so a real durable job can never be moved by this component.
  */
 @Component
 public class JobSimulator {
 
     private static final List<String> TERMINAL =
-            List.of(JobStage.INDEXED.id(), JobStage.FAILED.id());
+            List.of(JobStage.INDEXED.id(), JobStage.FAILED.id(), JobStage.CANCELLED.id());
 
     private final IngestJobRepository jobs;
-    private final JobProcessor processor;
-
-    public JobSimulator(IngestJobRepository jobs, JobProcessor processor) {
+    public JobSimulator(IngestJobRepository jobs) {
         this.jobs = jobs;
-        this.processor = processor;
     }
 
-    @Scheduled(fixedDelayString = "${app.ingest.simulate-latency-ms:1200}")
+    @Scheduled(fixedDelayString = "${app.ingest.demo-poll-ms:1200}")
     public void tick() {
-        List<IngestJob> inFlight = jobs.findByStageNotIn(TERMINAL);
+        List<IngestJob> inFlight = jobs.findByDemoTrueAndDeletedAtIsNullAndStageNotIn(TERMINAL);
         for (IngestJob job : inFlight) {
-            if (isRealJob(job) || processor.isActive(job.getId())) {
-                continue; // owned by the real pipeline — never touch.
-            }
             nudge(job);
         }
     }
@@ -64,10 +58,5 @@ public class JobSimulator {
             }
         }
         jobs.save(job);
-    }
-
-    private static boolean isRealJob(IngestJob job) {
-        String src = job.getSource();
-        return IngestService.SOURCE_UPLOAD.equals(src) || IngestService.SOURCE_URL.equals(src);
     }
 }

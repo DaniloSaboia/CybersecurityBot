@@ -1,5 +1,8 @@
 package com.sentinel.kms.assistant;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.sentinel.kms.common.EvidenceReference;
+
 import java.util.List;
 
 /**
@@ -10,6 +13,11 @@ import java.util.List;
 public record ChatResponse(
         String conversationId,
         List<Block> blocks,
-        List<String> citations
+        List<String> citations,
+        @JsonInclude(JsonInclude.Include.NON_EMPTY) List<EvidenceReference> citationReferences
 ) {
+    /** Keeps source and JSON callers using the original three-field contract working. */
+    public ChatResponse(String conversationId, List<Block> blocks, List<String> citations) {
+        this(conversationId, blocks, citations, List.of());
+    }
 }

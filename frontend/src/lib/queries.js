@@ -11,8 +11,8 @@ export const queryClient = new QueryClient({
 });
 
 // ── Session / shell & Settings ──────────────────────────────────
-export function useMe() {
-  return useQuery({ queryKey: ['me'], queryFn: api.getMe });
+export function useMe(enabled = true) {
+  return useQuery({ queryKey: ['me'], queryFn: api.getMe, enabled });
 }
 
 export function useSettings() {
@@ -83,7 +83,7 @@ export function useJobs() {
 }
 
 export function useConnectors() {
-  return useQuery({ queryKey: ['connectors'], queryFn: api.getConnectors });
+  return useQuery({ queryKey: ['connectors'], queryFn: api.getConnectors, refetchInterval: 5000 });
 }
 
 export function useVectorStoreStatus() {

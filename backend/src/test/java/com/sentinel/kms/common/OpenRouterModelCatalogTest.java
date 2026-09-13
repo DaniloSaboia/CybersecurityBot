@@ -33,4 +33,39 @@ class OpenRouterModelCatalogTest {
         assertThat(models).extracting(SettingsController.ModelOption::id)
                 .containsExactly("openrouter/free", "vendor/free:free");
     }
+
+    @Test
+    void exposesAllFreeChatModelsRatherThanOnlyEight() {
+        var body = mapper.createObjectNode();
+        var data = body.putArray("data");
+        for (int i = 0; i < 15; i++) {
+            var model = data.addObject().put("id", "vendor/model-" + i);
+            model.putObject("pricing").put("prompt", "0").put("completion", "0");
+            var architecture = model.putObject("architecture");
+            architecture.putArray("input_modalities").add("text");
+            architecture.putArray("output_modalities").add("text");
+        }
+        assertThat(OpenRouterModelCatalog.parse(body)).hasSize(15);
+    }
+
+    @Test
+    void separatesEmbeddingsAndRejectsPaidMissingAndMalformedPrices() throws Exception {
+        var body = mapper.readTree("""
+                {"data":[
+                  {"id":"free-embedding", "pricing":{"prompt":"0","completion":"0"},
+                   "architecture":{"input_modalities":["text"],"output_modalities":["embeddings"]}},
+                  {"id":"paid-request", "pricing":{"prompt":"0","completion":"0","request":"0.01"},
+                   "architecture":{"input_modalities":["text"],"output_modalities":["embeddings"]}},
+                  {"id":"unknown-price", "pricing":{"completion":"0"},
+                   "architecture":{"input_modalities":["text"],"output_modalities":["embeddings"]}},
+                  {"id":"bad-price", "pricing":{"prompt":"unknown","completion":"0"},
+                   "architecture":{"input_modalities":["text"],"output_modalities":["embeddings"]}},
+                  {"id":"music", "pricing":{"prompt":"0","completion":"0"},
+                   "architecture":{"input_modalities":["text"],"output_modalities":["text","audio"]}}
+                ]}
+                """);
+        assertThat(OpenRouterModelCatalog.parseEmbeddings(body))
+                .extracting(SettingsController.ModelOption::id).containsExactly("free-embedding");
+        assertThat(OpenRouterModelCatalog.parse(body)).isEmpty();
+    }
 }

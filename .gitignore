@@ -25,6 +25,11 @@ yarn-error.log*
 frontend/test-results/
 frontend/playwright-report/
 
+# ---- Local Python validation / evaluation outputs ----
+__pycache__/
+*.pyc
+evaluation-results/
+
 # ---- Supabase ----
 supabase/.branches/
 supabase/.temp/
