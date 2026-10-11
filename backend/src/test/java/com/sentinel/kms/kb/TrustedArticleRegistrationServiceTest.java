@@ -12,6 +12,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.contains;
@@ -57,6 +58,17 @@ class TrustedArticleRegistrationServiceTest {
                 org.mockito.ArgumentMatchers.eq("public"), any(), any());
         verify(jdbc, times(2)).update(contains("article_evidence_snapshots"),
                 any(), any(), any(), any(), any(), any(), any(), any());
+    }
+
+    @Test
+    void curatedRegistrationUsesAReservedIdentityAndExplicitProvenance() {
+        assertThat(TrustedArticleSource.CURATED.actor())
+                .isEqualTo("system:knowledge-pack:sentinel-response-starter");
+        TrustedArticleSource.CURATED.verify(article("PB-START-001", "Sentinel response guidance"));
+        assertThatThrownBy(() -> TrustedArticleSource.CURATED.verify(article("user-article", "Sentinel response guidance")))
+                .hasMessageContaining("reserved pack identity");
+        assertThatThrownBy(() -> TrustedArticleSource.CURATED.verify(article("PB-START-001", "CISA official playbook")))
+                .hasMessageContaining("trusted source does not match");
     }
 
     private static Article article(String id, String source) {

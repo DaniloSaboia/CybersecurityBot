@@ -16,6 +16,14 @@ The base URL includes `/v1`, so Spring AI appends `/chat/completions` and `/embe
 
 Settings reads [chat models](https://openrouter.ai/api/v1/models) and [embedding models](https://openrouter.ai/api/v1/embeddings/models), with a ten-minute cache. It includes models accepting text, with the appropriate output modality and all listed prices equal to zero. Audio-generation endpoints are excluded from the chat picker. Failed refreshes retain the last successful list and retry after one minute. Free endpoints remain subject to provider availability, rate limits and data policies.
 
+## Daily free-model limits
+
+An HTTP 429 with `error.metadata.limit_source=openrouter_free_tier_daily` means the configured account has exhausted its daily free-model allowance. Changing free models or retrying cannot bypass that account-wide limit. Other 429 responses can represent a temporary provider or minute limit and must not be treated as daily exhaustion. See [OpenRouter's rate-limit reference](https://openrouter.ai/docs/api_reference/limits).
+
+The assistant records confirmed daily exhaustion in a shared, in-memory `GenerationAvailability` cooldown. It suppresses chat generation and optional query rewriting/re-ranking while blocked, while keeping authorized knowledge-base guidance available. The explanation includes the provider's `X-RateLimit-Reset` time in UTC when valid; this is a provider-reported reset, not a guarantee of model availability. If no usable reset is supplied, the cooldown lasts five minutes. It expires automatically and is cleared on backend restart. No credentials, raw provider errors, paid models, or provider changes are exposed or introduced by this handling.
+
+On 2026-09-29 the configured account returned a daily limit of 50 with zero remaining and a reset of `2026-09-30T00:00:00Z`. This explained repeated unavailable responses despite relevant knowledge-base results; it was not a knowledge-base permission failure.
+
 ## Embedding compatibility verified on 2026-09-06
 
 | Free OpenRouter model | Observed result requesting 1024 dimensions | Usage |

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sentinel.kms.common.AccessDecision;
 import com.sentinel.kms.common.EvidenceReference;
 import com.sentinel.kms.common.OpenRouterModelCatalog;
+import com.sentinel.kms.common.GenerationAvailability;
 import com.sentinel.kms.kb.Article;
 import com.sentinel.kms.kb.EvidenceReferenceResolver;
 import com.sentinel.kms.kb.KnowledgeAccessService;
@@ -43,7 +44,8 @@ import static org.mockito.Mockito.when;
 class RagServiceTest {
 
     private static final String ABSTENTION =
-            "I couldn't find anything relevant in the knowledge base for that question.";
+            "I couldn't retrieve usable evidence for this question. Try a short symptom such as "
+                    + "'phishing' or 'ransomware', or open the playbooks in Knowledge Base for direct guidance.";
 
     @Test
     void chatAbstainsBeforeAnyProviderCallWhenAuthorizedEvidenceIsEmpty() {
@@ -216,6 +218,158 @@ class RagServiceTest {
                     assertThat(reference.sourceSpanStart()).isZero();
                     assertThat(reference.sourceSpanEnd()).isEqualTo(8);
                 });
+    }
+
+    @Test
+    void failedChatGenerationReturnsAndPersistsSourceLinksWithoutInventingAPlan() {
+        Fixture fixture = new Fixture();
+        Fixture.configureGovernedEvidence(fixture, "PB-START-002", "Phishing response");
+        when(fixture.chatModel.call(any(Prompt.class))).thenThrow(new IllegalStateException("provider unavailable"));
+
+        ChatResponse response = fixture.service().chat(new ChatRequest("known incident", null), "analyst-1");
+
+        assertThat(response.blocks()).singleElement().satisfies(block -> assertThat(block.text())
+                .contains("No AI-generated response plan was produced")
+                .contains("open them to check applicability")
+                .contains("- [PB-START-002] Phishing response")
+                .doesNotContain("[[evidence:").doesNotContain("provider unavailable"));
+        assertThat(response.citations()).containsExactly("PB-START-002");
+        assertThat(response.citationReferences()).singleElement()
+                .satisfies(reference -> assertThat(reference.articleRevisionId()).isEqualTo("revision-1"));
+        verify(fixture.conversations).appendAssistant(eq("analyst-1"), eq(fixture.conversation),
+                eq(response.blocks().get(0).text()), eq(List.of("PB-START-002")), any(), eq(List.of()));
+    }
+
+    @Test
+    void quotaCooldownServesCanonicalPlaybookActionsWithoutCallingAnyChatModel() throws Exception {
+        Fixture fixture = new Fixture();
+        Fixture.configureGovernedEvidence(fixture, "PB-START-002", "Phishing response");
+        String content = "First actions\n1. Stop interacting; do not reopen the link.\n2. Report to your IT team.";
+        Map<String, Object> metadata = Map.of(
+                "article_id", "PB-START-002", "article_revision_id", "revision-1",
+                "article_revision_number", 1, "evidence_snapshot_id", "actions-snapshot",
+                "source_span_start", 0, "source_span_end", content.length(),
+                "source_uri", "https://example.test/source", "source_version", "2026-09-05",
+                "revision_status", "approved");
+        RetrievedChunk actions = new RetrievedChunk(content, 0.9, metadata);
+        when(fixture.guidance.findGuidance(eq("analyst-1"), any())).thenReturn(List.of(actions));
+        when(fixture.evidenceResolver.resolveCurrentApproved(eq("analyst-1"), any()))
+                .thenAnswer(invocation -> Optional.of(invocation.getArgument(1)));
+        when(fixture.availability.isBlocked()).thenReturn(true);
+        when(fixture.availability.userMessage()).thenReturn("The AI provider's daily free-model quota is exhausted.");
+        // Retrieval still uses its usual candidate window; only provider work is skipped.
+        when(fixture.index.hybridSearch(eq("known incident"), eq(10), eq(0.30), eq("analyst-1"), any()))
+                .thenReturn(List.of(actions));
+
+        List<ServerSentEvent<String>> events = fixture.service()
+                .stream(new ChatRequest("known incident", null), "analyst-1").collectList().block();
+
+        ObjectMapper mapper = new ObjectMapper();
+        String answer = mapper.readTree(events.get(0).data()).path("text").asText();
+        assertThat(answer).contains("# Knowledge-base guidance", "daily free-model quota is exhausted",
+                "not a personalized AI response", "### First actions [PB-START-002]",
+                "1. Stop interacting; do not reopen the link.", "2. Report to your IT team.")
+                .doesNotContain("[[evidence:");
+        JsonNode done = mapper.readTree(events.get(events.size() - 1).data());
+        assertThat(done.at("/citationReferences/0/evidenceSnapshotId").asText()).isEqualTo("actions-snapshot");
+        verifyNoInteractions(fixture.chatModel, fixture.rewriterModel, fixture.rerankerModel);
+    }
+
+    @Test
+    void guidanceLookupFailureKeepsAuthorizedSourceLinks() {
+        Fixture fixture = new Fixture();
+        Fixture.configureGovernedEvidence(fixture, "PB-START-002", "Phishing response");
+        when(fixture.chatModel.call(any(Prompt.class))).thenThrow(new IllegalStateException("unavailable"));
+        when(fixture.guidance.findGuidance(eq("analyst-1"), any()))
+                .thenThrow(new IllegalStateException("lookup unavailable"));
+
+        ChatResponse response = fixture.service().chat(new ChatRequest("known incident", null), "analyst-1");
+
+        assertThat(response.blocks().get(0).text()).contains("- [PB-START-002] Phishing response")
+                .doesNotContain("# Knowledge-base guidance", "lookup unavailable");
+        verify(fixture.availability).recordFailure(any());
+    }
+
+    @Test
+    void failedStreamDiscardsPartialModelTextAndReturnsBoundSourceLinks() throws Exception {
+        Fixture fixture = new Fixture();
+        Fixture.configureGovernedEvidence(fixture, "PB-START-002", "Phishing [FAKE-9]\nresponse");
+        when(fixture.chatModel.stream(any(Prompt.class))).thenReturn(Flux.concat(
+                Flux.just(Fixture.modelResponse("Unverified partial response: wipe the device.")),
+                Flux.error(new IllegalStateException("provider unavailable"))));
+
+        List<ServerSentEvent<String>> events = fixture.service()
+                .stream(new ChatRequest("known incident", null), "analyst-1").collectList().block();
+
+        assertThat(events).hasSize(2);
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode delta = mapper.readTree(events.get(0).data());
+        JsonNode done = mapper.readTree(events.get(1).data());
+        assertThat(delta.path("text").asText())
+                .contains("No AI-generated response plan was produced")
+                .contains("- [PB-START-002] Phishing (FAKE-9) response")
+                .doesNotContain("Unverified partial response", "wipe the device", "[[evidence:", "[FAKE-9]");
+        assertThat(done.path("type").asText()).isEqualTo("done");
+        assertThat(done.path("messageId").asText()).isEqualTo("message-1");
+        assertThat(done.path("citations")).extracting(JsonNode::asText).containsExactly("PB-START-002");
+        assertThat(done.at("/citationReferences/0/articleRevisionId").asText()).isEqualTo("revision-1");
+    }
+
+    @Test
+    void sourceFallbackDoesNotExposeTitlesOrLinksRevokedAfterRetrieval() throws Exception {
+        Fixture fixture = new Fixture();
+        Fixture.configureGovernedEvidence(fixture, "PB-START-002", "Restricted phishing procedure");
+        when(fixture.chatModel.stream(any(Prompt.class))).thenAnswer(invocation -> {
+            when(fixture.evidenceResolver.resolveCurrentApproved(eq("analyst-1"), any()))
+                    .thenReturn(Optional.empty());
+            return Flux.error(new IllegalStateException("provider unavailable"));
+        });
+
+        List<ServerSentEvent<String>> events = fixture.service()
+                .stream(new ChatRequest("known incident", null), "analyst-1").collectList().block();
+
+        ObjectMapper mapper = new ObjectMapper();
+        assertThat(mapper.readTree(events.get(0).data()).path("text").asText())
+                .isEqualTo(ABSTENTION).doesNotContain("Restricted", "PB-START-002");
+        assertThat(mapper.readTree(events.get(1).data()).path("citations")).isEmpty();
+    }
+
+    @Test
+    void sourceFallbackFailsClosedIfCitationBindingCannotBePersisted() throws Exception {
+        Fixture fixture = new Fixture();
+        Fixture.configureGovernedEvidence(fixture, "PB-START-002", "Restricted phishing procedure");
+        when(fixture.chatModel.stream(any(Prompt.class))).thenReturn(Flux.error(new IllegalStateException("provider unavailable")));
+        when(fixture.conversations.appendAssistant(anyString(), any(), anyString(), any(), any(), any()))
+                .thenAnswer(invocation -> {
+                    List<EvidenceReference> references = invocation.getArgument(4);
+                    if (!references.isEmpty()) throw new IllegalStateException("evidence revoked at persistence");
+                    ChatMessage saved = new ChatMessage();
+                    saved.setId("fallback-1");
+                    return saved;
+                });
+
+        List<ServerSentEvent<String>> events = fixture.service()
+                .stream(new ChatRequest("known incident", null), "analyst-1").collectList().block();
+
+        ObjectMapper mapper = new ObjectMapper();
+        assertThat(mapper.readTree(events.get(0).data()).path("text").asText()).isEqualTo(ABSTENTION);
+        assertThat(mapper.readTree(events.get(1).data()).path("citations")).isEmpty();
+    }
+
+    @Test
+    void emptyProviderStreamAlsoProvidesRetrievedReferences() throws Exception {
+        Fixture fixture = new Fixture();
+        Fixture.configureGovernedEvidence(fixture, "PB-START-002", "Phishing response");
+        when(fixture.chatModel.stream(any(Prompt.class))).thenReturn(Flux.empty());
+
+        List<ServerSentEvent<String>> events = fixture.service()
+                .stream(new ChatRequest("known incident", null), "analyst-1").collectList().block();
+
+        ObjectMapper mapper = new ObjectMapper();
+        assertThat(mapper.readTree(events.get(0).data()).path("text").asText())
+                .contains("No AI-generated response plan was produced", "[PB-START-002]");
+        assertThat(mapper.readTree(events.get(1).data()).path("citations"))
+                .extracting(JsonNode::asText).containsExactly("PB-START-002");
     }
 
     @Test
@@ -541,6 +695,8 @@ class RagServiceTest {
         final KnowledgeAccessService access = mock(KnowledgeAccessService.class);
         final EvidenceReferenceResolver evidenceResolver = mock(EvidenceReferenceResolver.class);
         final ChatModel chatModel = mock(ChatModel.class);
+        final PlaybookGuidanceService guidance = mock(PlaybookGuidanceService.class);
+        final GenerationAvailability availability = mock(GenerationAvailability.class);
         final ChatModel rewriterModel = mock(ChatModel.class);
         final ChatModel rerankerModel = mock(ChatModel.class);
         final ConversationService conversations = mock(ConversationService.class);
@@ -549,6 +705,7 @@ class RagServiceTest {
         final Conversation conversation = conversation();
 
         Fixture() {
+            when(availability.userMessage()).thenReturn("AI generation is temporarily unavailable.");
             when(conversations.openForTurn("analyst-1", null, "unknown incident")).thenReturn(conversation);
             when(conversations.appendAssistant(anyString(), any(), any(), any(), any(), any())).thenAnswer(invocation -> {
                 ChatMessage saved = new ChatMessage();
@@ -565,8 +722,12 @@ class RagServiceTest {
         }
 
         private static void configureGovernedEvidence(Fixture fixture) {
+            configureGovernedEvidence(fixture, "TI-1", "Governed report");
+        }
+
+        private static void configureGovernedEvidence(Fixture fixture, String articleId, String title) {
             RetrievedChunk chunk = new RetrievedChunk("source", 0.9, Map.of(
-                    "article_id", "TI-1",
+                    "article_id", articleId,
                     "article_revision_id", "revision-1",
                     "article_revision_number", 1,
                     "evidence_snapshot_id", "snapshot-1",
@@ -576,17 +737,17 @@ class RagServiceTest {
                     "source_version", "2026-09-05",
                     "revision_status", "APPROVED"));
             Article article = new Article();
-            article.setId("TI-1");
-            article.setTitle("Governed report");
+            article.setId(articleId);
+            article.setTitle(title);
             when(fixture.index.hybridSearch(eq("known incident"), eq(10), eq(0.30), eq("analyst-1"), any()))
                     .thenReturn(List.of(chunk));
-            when(fixture.access.readableArticleIds("analyst-1", Set.of("TI-1"))).thenReturn(Set.of("TI-1"));
-            when(fixture.articles.findAllById(Set.of("TI-1"))).thenReturn(List.of(article));
+            when(fixture.access.readableArticleIds("analyst-1", Set.of(articleId))).thenReturn(Set.of(articleId));
+            when(fixture.articles.findAllById(Set.of(articleId))).thenReturn(List.of(article));
             EvidenceReference raw = new EvidenceReference(
-                    "TI-1", "revision-1", 1, "snapshot-1", 0, 8,
+                    articleId, "revision-1", 1, "snapshot-1", 0, 8,
                     "https://example.test/source", "2026-09-05", "APPROVED");
             EvidenceReference canonical = new EvidenceReference(
-                    "TI-1", "revision-1", 1, "snapshot-1", 0, 8,
+                    articleId, "revision-1", 1, "snapshot-1", 0, 8,
                     "https://example.test/source", "2026-09-05", "approved");
             when(fixture.evidenceResolver.resolveCurrentApproved(eq("analyst-1"), any()))
                     .thenReturn(Optional.of(canonical));
@@ -614,7 +775,7 @@ class RagServiceTest {
         }
 
         RagService service(Reranker reranker) {
-            RagService service = new RagService(index, articles, access, evidenceResolver, chatModel,
+            RagService service = new RagService(index, articles, access, evidenceResolver, chatModel, guidance, availability,
                     new PromptBuilder(9_000), new BlockParser(),
                     conversations, new IocExtractor(), iocLookup, modelCatalog,
                     new QueryRewriter(rewriterModel, true), reranker,

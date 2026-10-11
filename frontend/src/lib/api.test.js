@@ -7,6 +7,7 @@ import {
   SESSION_EXPIRED_EVENT,
   getMe,
   getEvidenceView,
+  retireDemoContent,
   parseSseFrame,
   chatStream,
   setActiveSessionExpiryGeneration,
@@ -66,6 +67,16 @@ beforeEach(() => {
   setActiveSessionExpiryGeneration({
     access_token: 'opaque-test-bearer',
     user: { id: 'analyst-a', email: 'analyst-a@example.test' },
+  });
+});
+
+it('retires demo content through the authenticated API transport without a request body', async () => {
+  const result = { eligibleIds: [], retiredIds: ['PB-118'], preservedIds: [] };
+  const fetchMock = vi.fn(async () => new Response(JSON.stringify(result), { status: 200, headers: { 'content-type': 'application/json' } }));
+  vi.stubGlobal('fetch', fetchMock);
+  await expect(retireDemoContent()).resolves.toEqual(result);
+  expect(fetchMock).toHaveBeenCalledWith('/api/kb/demo-content/retire', {
+    method: 'POST', headers: { Authorization: 'Bearer opaque-test-bearer' },
   });
 });
 

@@ -52,11 +52,14 @@ vi.mock('./lib/queries.js', async (importOriginal) => {
 vi.mock('./views/Assistant.jsx', async () => {
   const React = await import('react');
   return {
-    default: function AssistantSessionProbe({ userId, pendingAsk }) {
+    default: function AssistantSessionProbe({ userId, pendingAsk, onPendingAskConsumed }) {
       const [snapshot] = React.useState(() => `transcript:${userId}; citation:CVE-${userId}; conversation:${userId}`);
       React.useEffect(() => {
-        if (pendingAsk?.text) assistantProbe.autoSends({ userId, text: pendingAsk.text });
-      }, [pendingAsk?.n, pendingAsk?.text, userId]);
+        if (pendingAsk?.text) {
+          assistantProbe.autoSends({ userId, text: pendingAsk.text });
+          onPendingAskConsumed?.(pendingAsk);
+        }
+      }, [pendingAsk, onPendingAskConsumed, userId]);
       return React.createElement(React.Fragment, null,
         React.createElement('output', null, snapshot),
         React.createElement('output', { 'data-testid': 'pending-assistant-ask' }, pendingAsk?.text || 'NO_PENDING_ASK')
@@ -185,7 +188,7 @@ describe('App shell', () => {
     expect(JSON.stringify(window.history.state?.usr || {})).not.toContain('Untyped router question');
   });
 
-  it('delivers a tagged router ask to its owning account', async () => {
+  it('delivers a tagged router ask to its owning account and clears it after consumption', async () => {
     const { supabase } = await import('./lib/supabase.js');
     window.history.replaceState({
       usr: { ask: 'B-owned incident question', askOwnerId: 'analyst-b' },
@@ -195,7 +198,9 @@ describe('App shell', () => {
 
     renderApp();
     await waitFor(() => expect(screen.getByText('transcript:analyst-b; citation:CVE-analyst-b; conversation:analyst-b')).toBeTruthy());
-    await waitFor(() => expect(screen.getByTestId('pending-assistant-ask').textContent).toBe('B-owned incident question'));
+    await waitFor(() => expect(assistantProbe.autoSends).toHaveBeenCalledWith({ userId: 'analyst-b', text: 'B-owned incident question' }));
+    expect(assistantProbe.autoSends).toHaveBeenCalledTimes(1);
+    expect(screen.getByTestId('pending-assistant-ask').textContent).toBe('NO_PENDING_ASK');
     await waitFor(() => expect(window.history.state?.usr?.ask).toBeUndefined());
     expect(window.history.state?.usr?.askOwnerId).toBeUndefined();
   });
