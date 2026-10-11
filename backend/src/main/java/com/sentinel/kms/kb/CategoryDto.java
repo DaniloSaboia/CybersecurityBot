@@ -1,8 +1,8 @@
 package com.sentinel.kms.kb;
 
 /**
- * Wire DTO for a KB category chip. {@code count} maps to
- * {@link Category#getDocCount()} (the headline number shown on the chip).
+ * Wire DTO for a KB category chip. The API supplies the number of documents
+ * readable by the current user, rather than the legacy stored headline count.
  */
 public record CategoryDto(
         String id,

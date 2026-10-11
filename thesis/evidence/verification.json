@@ -1,0 +1,30 @@
+{
+  "reference_count": 100,
+  "unique_urls": 100,
+  "doi_records": 90,
+  "unique_dois": 90,
+  "status_counts": {
+    "resolved-crossref": 89,
+    "unresolved": 10,
+    "resolved-supplied-note": 1
+  },
+  "evidence_counts": {
+    "abstract": 39,
+    "metadata": 61
+  },
+  "duplicate_records": [],
+  "unresolved_keys": [
+    "ref002",
+    "ref010",
+    "ref049",
+    "ref050",
+    "ref051",
+    "ref057",
+    "ref059",
+    "ref063",
+    "ref064",
+    "ref065"
+  ],
+  "all_full_text_appraised": false,
+  "notes": "Evidence level measures directly retrieved evidence. Both supplied notes are abstract/catalogue handoffs, not primary full-text appraisals. Metadata verification does not validate recommendation claims. RAG benchmark ref038 is named RGB, not RETRIEVAL."
+}

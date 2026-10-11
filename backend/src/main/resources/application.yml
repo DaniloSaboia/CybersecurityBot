@@ -130,7 +130,11 @@ app:
     sync-days: 2
     sync-max: 50
   seed:
-    enabled: true
+    # Opt in only for a demonstration environment. Connectors are provisioned regardless.
+    enabled: ${DEMO_SEED_ENABLED:false}
+  knowledge-pack:
+    # Curated response guidance is independent of the optional demo seed.
+    enabled: ${KNOWLEDGE_PACK_ENABLED:true}
 
 management:
   endpoints:

@@ -241,6 +241,12 @@
 .access-settings .model-tag { color: var(--accent); background: var(--accent-soft); border: 1px solid var(--access-line); font-size: 9px; }
 .access-settings .form-hint { color: var(--text-3); font-size: 12px; line-height: 1.7; }
 .access-settings .form-hint strong { color: var(--text-2); font-weight: 500; }
+.access-settings .demo-maintenance { padding: 16px; border: 1px solid var(--access-line); border-radius: 8px; background: var(--bg-2); }
+.access-settings .demo-maintenance p { margin: 8px 0; font-size: 12px; line-height: 1.7; }
+.access-settings .demo-maintenance > button { margin-top: 6px; border: 1px solid var(--access-line-strong); }
+.access-settings .demo-maintenance > button:disabled { opacity: .5; cursor: not-allowed; }
+.access-settings .demo-maintenance-result { color: var(--ok); }
+.access-settings .demo-maintenance-error { color: var(--sev-critical); }
 .access-settings .custom-model-form { padding: 16px 18px; border: 1px solid var(--access-line); border-radius: 8px; background: var(--panel-solid); }
 .access-settings .custom-model-form .status-v { text-align: left; }
 .access-settings .rag-tuning-grid { gap: 22px; }

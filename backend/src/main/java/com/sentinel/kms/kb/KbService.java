@@ -5,6 +5,8 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
@@ -30,13 +32,15 @@ public class KbService {
     /** Categories ordered by their sortOrder, mapped to the wire DTO. */
     public List<CategoryDto> listCategories(String subject) {
         Set<String> readableIds = readableIds(subject, articleRepository.findAllIds());
-        Set<String> readableCategories = articleRepository.findAllById(readableIds).stream()
+        Map<String, Long> readableCounts = articleRepository.findAllById(readableIds).stream()
                 .map(Article::getCategoryId)
                 .filter(category -> category != null && !category.isBlank())
-                .collect(java.util.stream.Collectors.toSet());
+                .collect(java.util.stream.Collectors.groupingBy(
+                        java.util.function.Function.identity(), java.util.stream.Collectors.counting()));
         return categoryRepository.findAllByOrderBySortOrderAsc().stream()
-                .filter(category -> readableCategories.contains(category.getId()))
-                .map(CategoryDto::from)
+                .filter(category -> readableCounts.containsKey(category.getId()))
+                .map(category -> new CategoryDto(category.getId(), category.getLabel(), category.getAbbr(),
+                        Math.toIntExact(readableCounts.get(category.getId()))))
                 .toList();
     }
 
@@ -58,10 +62,13 @@ public class KbService {
         boolean filterSeverity = isActive(severity);
 
         List<String> candidateIds;
-        if (filterCategory || filterSeverity) {
+        if (filterCategory && filterSeverity) {
             candidateIds = articleRepository.findIdsByCategoryAndSeverity(
-                    filterCategory ? category.trim() : null,
-                    filterSeverity ? severity.trim() : null);
+                    category.trim(), severity.trim().toLowerCase(Locale.ROOT));
+        } else if (filterCategory) {
+            candidateIds = articleRepository.findIdsByCategory(category.trim());
+        } else if (filterSeverity) {
+            candidateIds = articleRepository.findIdsBySeverity(severity.trim().toLowerCase(Locale.ROOT));
         } else {
             candidateIds = articleRepository.findAllIds();
         }

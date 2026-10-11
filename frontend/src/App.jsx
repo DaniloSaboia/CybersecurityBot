@@ -14,13 +14,14 @@ import KnowledgeBase from './views/KnowledgeBase.jsx';
 import Ingest from './views/Ingest.jsx';
 import Alerts from './views/Alerts.jsx';
 import CommandPalette from './views/CommandPalette.jsx';
-import SettingsModal, { getStoredModel, DEFAULT_MODELS } from './views/SettingsModal.jsx';
+import SettingsModal, { getStoredModel } from './views/SettingsModal.jsx';
+import './navigation.css';
 
 const NAV = [
-  { id: 'assistant', path: '/', label: 'Assistant', icon: 'chat', exact: true },
-  { id: 'kb', path: '/kb', label: 'Knowledge Base', icon: 'book' },
-  { id: 'ingest', path: '/ingest', label: 'Ingestion', icon: 'ingest' },
-  { id: 'alerts', path: '/alerts', label: 'Watchlists', icon: 'bell' },
+  { id: 'assistant', path: '/', label: 'Assistant', description: 'Work through a problem', icon: 'chat', exact: true },
+  { id: 'kb', path: '/kb', label: 'Knowledge Base', description: 'Playbooks and sources', icon: 'book' },
+  { id: 'ingest', path: '/ingest', label: 'Ingestion', description: 'Add to your knowledge', icon: 'ingest' },
+  { id: 'alerts', path: '/alerts', label: 'Watchlists', description: 'Follow relevant threats', icon: 'bell' },
 ];
 
 function getOwnedRouterAsk(state, userId) {
@@ -179,28 +180,29 @@ function AuthenticatedConsole({ user, signOut }) {
     setNavOpen(false);
   }, [navigate, user.id]);
 
+  const consumePendingAsk = useCallback((consumedAsk) => {
+    setPendingAsk((current) => current === consumedAsk ? null : current);
+  }, []);
+
   const handleToggleTheme = useCallback(() => setTheme(cycleTheme(getStoredTheme())), []);
 
   async function handleSignOut() {
     await signOut();
   }
 
-  const envName = (me && me.env) || 'Security workspace';
-  const userName = (me && me.user) || user.email || 'analyst';
-  const userRole = (me && me.role) || 'Security Analyst';
+  const userName = user.email || me?.user || 'Signed-in user';
+  const userInitial = userName.charAt(0).toUpperCase();
   const activeNav = NAV.find((n) => (n.exact
     ? location.pathname === n.path
     : location.pathname.startsWith(n.path))) || NAV[0];
 
-  const modelObj = DEFAULT_MODELS.find((m) => m.id === activeModel);
-  const modelShortName = modelObj ? modelObj.name.replace(' Instruct', '') : activeModel.split('/')[1] || activeModel;
   const navExpanded = mobileNav ? navOpen : !railCollapsed;
   return (
-    <div className={'app' + (railCollapsed ? ' rail-collapsed' : '')}>
+    <div className={'app workspace-shell' + (railCollapsed ? ' rail-collapsed' : '')}>
       <a className="skip-link" href="#workspace-content">Skip to workspace</a>
-      <aside id="workspace-navigation" ref={railRef} className={'rail' + (navOpen ? ' open' : '')} aria-label="Workspace navigation">
+      <aside id="workspace-navigation" ref={railRef} className={'rail workspace-rail' + (navOpen ? ' open' : '')} aria-label="Workspace navigation">
         <div className="rail-brand"><Logo /><button type="button" className="rail-close topbar-icon" aria-label="Close navigation" onClick={() => setNavOpen(false)}><Icon name="x" size={17} /></button></div>
-        <button type="button" className="rail-search" aria-label="Search workspace commands" title="Search workspace commands" onClick={() => { setNavOpen(false); setPaletteOpen(true); }}>
+        <button type="button" className="rail-search" aria-label="Search workspace commands" data-tooltip="Search commands" title={railCollapsed && !mobileNav ? undefined : 'Search workspace commands'} onClick={() => { setNavOpen(false); setPaletteOpen(true); }}>
           <Icon name="search" size={16} /><span>Search commands</span><kbd>⌘ K</kbd>
         </button>
         <div className="rail-section-label">Workspace</div>
@@ -208,34 +210,28 @@ function AuthenticatedConsole({ user, signOut }) {
           {NAV.map((n) => (
             <button
               key={n.id}
+              type="button"
               className={'rail-item' + (activeNav.id === n.id ? ' active' : '')}
               aria-label={n.label}
               aria-current={activeNav.id === n.id ? 'page' : undefined}
-              title={n.label}
+              title={railCollapsed && !mobileNav ? undefined : n.label}
+              data-tooltip={n.label}
               onClick={() => { navigate(n.path); setNavOpen(false); }}
             >
-              <Icon name={n.icon} size={17} />
-              <span>{n.label}</span>
-              {activeNav.id === n.id && <span className="rail-active-bar" />}
+              <Icon name={n.icon} size={18} />
+              <span className="rail-item-copy"><strong>{n.label}</strong><small>{n.description}</small></span>
             </button>
           ))}
         </nav>
         <div className="rail-foot">
-          <div className="env-badge">
-            <Icon name="database" size={16} />
-            <div>
-              <div className="env-name">{envName}</div>
-              <div className="env-sub" title={`Active model: ${modelShortName}`}>{modelShortName}</div>
+          <div className="rail-account" aria-label={`Signed in as ${userName}`}>
+            <span className="rail-account-avatar" title={userName} aria-hidden="true">{userInitial}</span>
+            <div className="rail-account-copy">
+              <div className="rail-account-name" title={userName}>{userName}</div>
+              <div className="rail-account-status">Signed in</div>
             </div>
-          </div>
-          <div className="rail-user">
-            <div className="avatar avatar-user sm"><Icon name="user" size={13} /></div>
-            <div style={{ minWidth: 0, flex: 1 }}>
-              <div className="user-name" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{userName}</div>
-              <div className="user-role">{userRole}</div>
-            </div>
-            <button className="topbar-icon" title="Sign out" style={{ width: 28, height: 28 }} onClick={handleSignOut}>
-              <Icon name="arrowleft" size={13} />
+            <button type="button" className="rail-signout" aria-label="Sign out" title={railCollapsed && !mobileNav ? undefined : 'Sign out'} data-tooltip="Sign out" onClick={handleSignOut}>
+              <Icon name="arrowleft" size={15} />
             </button>
           </div>
         </div>
@@ -296,6 +292,7 @@ function AuthenticatedConsole({ user, signOut }) {
                   <Assistant
                   onOpenArticle={openArticle}
                   pendingAsk={pendingAsk}
+                  onPendingAskConsumed={consumePendingAsk}
                   activeModel={activeModel}
                   userId={user.id}
                   onOpenSettings={() => setSettingsOpen(true)}

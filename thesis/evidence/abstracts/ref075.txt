@@ -1,0 +1,5 @@
+Source: https://doi.org/10.1007/s10115-023-01860-3
+Evidence: publisher-deposited abstract retrieved via Crossref/DOI metadata; no full-text appraisal.
+
+Abstract
+                  Cybersecurity knowledge graphs, which represent cyber-knowledge with a graph-based data model, provide holistic approaches for processing massive volumes of complex cybersecurity data derived from diverse sources. They can assist security analysts to obtain cyberthreat intelligence, achieve a high level of cyber-situational awareness, discover new cyber-knowledge, visualize networks, data flow, and attack paths, and understand data correlations by aggregating and fusing data. This paper reviews the most prominent graph-based data models used in this domain, along with knowledge organization systems that define concepts and properties utilized in formal cyber-knowledge representation for both background knowledge and specific expert knowledge about an actual system or attack. It is also discussed how cybersecurity knowledge graphs enable machine learning and facilitate automated reasoning over cyber-knowledge.

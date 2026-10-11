@@ -1,0 +1,120 @@
+\chapter{Knowledge lifecycle and incident scenario}\label{app:implementation}
+
+This appendix develops the knowledge-lifecycle and incident-response examples introduced in Chapter~\ref{ch:system}. We use constructed examples to explain how the design connects knowledge maintenance with an analyst's decisions. They are illustrations, not observed incidents, participant task records or model outputs.
+
+\section{A knowledge item through capture and reuse}
+Consider a playbook for suspected account compromise. Its useful content includes the circumstances in which it applies, questions that distinguish possible explanations, evidence to preserve, response options and recovery checks. Responsibility for consequential actions belongs in that context: an analyst may be able to investigate a report without having authority to change an account. A reusable playbook therefore needs to describe both the procedure and the conditions governing its use.
+
+Table~\ref{tab:scenario-checkpoints} follows this item through the design. The requirement identifiers refer to Table~\ref{tab:system-requirements}. The stages describe the implemented lifecycle, while the particular playbook and sequence form an illustrative example.
+
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{0.18\textwidth}>{\raggedright\arraybackslash}p{0.39\textwidth}>{\raggedright\arraybackslash}p{0.35\textwidth}@{}}
+\caption{Knowledge-lifecycle stages illustrated through a response playbook.}\label{tab:scenario-checkpoints}\\
+\toprule
+Stage and requirements & KMS behaviour & Significance for knowledge reuse \\
+\midrule
+\endfirsthead
+\toprule
+Stage and requirements & KMS behaviour & Significance for knowledge reuse \\
+\midrule
+\endhead
+Capture (F1, F2) & An editorial contribution starts a draft revision. An uploaded source retains its content and processing state before indexing. & Processing an upload does not itself grant the material the status of approved organisational guidance. \\
+Review and publication (F1) & An editor submits a revision; a different authorised administrator can approve it. Rejection leaves the existing publication intact. & Unfinished changes remain separate from the procedure currently available for reference. \\
+Search readiness (F2, F3) & Publication records revision-specific indexing work. Replacement checks prevent an obsolete worker from restoring older searchable content. & Publication and semantic-search availability are distinct states; delayed processing does not justify reusing a superseded revision. \\
+Retrieval (F3, N1) & Semantic and lexical search select eligible passages; indicator lookup adds another access-aware route to relevant articles. & The analyst's permitted knowledge, rather than every stored document, supplies candidate evidence. \\
+Guidance (F4) & Selected passages provide context for the answer. Evidence references connect accepted citations to retained material. & An explanation can be examined alongside the knowledge used to construct its context. \\
+Inspection (F4, N1) & Opening an evidence passage checks its identity and current eligibility again. & Earlier access does not confer a permanent right to retrieve the passage. \\
+Revision or expiry (F1, N2) & A reviewed successor can replace the procedure; expiry removes current reading eligibility while preserving its history. & Knowledge can remain attributable after it ceases to be suitable for new operational guidance. \\
+\bottomrule
+\end{longtable}
+
+The review stage in this example describes editor-managed knowledge. Trusted source producers have a separate admission route, so publication does not always mean that an administrator has manually reviewed an item. The distinction matters when interpreting provenance: source attribution identifies the origin, whereas editorial approval records a particular publication decision.
+
+An answer's evidence reference identifies an article, its revision, a retained snapshot and the boundaries of a passage. These elements distinguish the text associated with an earlier answer from a subsequently revised article. They do not explain the model's internal reasoning or certify that a recommendation follows from the text. In the lifecycle, traceability provides something concrete to inspect; judgement about support and applicability remains separate.
+
+\section{Illustrative incident: suspected credential disclosure}
+We use the following constructed report to connect that lifecycle to an incident question:
+\begin{quote}
+I followed a link in a message and entered my work password. I do not know whether anything else changed.
+\end{quote}
+The report establishes what the person says they did. It does not establish whether the account was subsequently accessed, which service was involved or whether the responder has administrative authority. We leave these details unspecified rather than inventing them to complete the scenario.
+
+\subsection{Knowledge needed for the decision}
+In this example, a phishing playbook distinguishes receiving a message from submitting credentials or opening an executable file. Account-recovery guidance describes the applicable procedure, while a local responsibility statement identifies who can authorise and perform account changes. An earlier incident lesson could explain a relevant exception, but only if its circumstances still apply. The documents serve different purposes: a general threat description cannot replace the local authority or recovery procedure.
+
+The assistant can use accessible passages from this material to organise an explanation. The example does not assume that all of these sources exist in every deployment. If a necessary local procedure is absent, the missing context remains a limitation on the advice rather than an invitation to invent an organisational policy.
+
+\subsection{Interaction and decision points}
+\begin{enumerate}
+\item \textbf{Establish the observations.} The analyst records the credential submission as reported and keeps account compromise as a hypothesis. Focused clarification can concern the affected service, whether a file was opened and which steps have already been taken. Passwords and verification codes are not needed for this description.
+\item \textbf{Locate applicable knowledge.} The incident description supplies the retrieval question. Semantic matching can connect everyday wording with a playbook, while explicit terms can support lexical matching. Access and publication rules determine which passages are eligible, independently of how strongly they match the topic.
+\item \textbf{Interpret the guidance.} The explanation distinguishes evidence-preservation and investigation steps from changes that require operational authority. Any proposed action needs its source-supported purpose and conditions. A recommendation to involve the responsible account team remains advice; the KMS does not perform the account change.
+\item \textbf{Inspect the basis for action.} The analyst opens the cited passage and, where needed, the wider procedure. This allows examination of prerequisites, qualifications and responsibility that a short explanation might omit. The decision depends on that applicability check, not on the presence of a citation marker alone.
+\item \textbf{Retain the lesson.} A saved conversation can support handover. If the case reveals an incomplete procedure, a custodian can propose a revision through the publication workflow. Retaining the conversation does not automatically change the playbook or train the model.
+\end{enumerate}
+
+\subsection{Changes that alter the interaction}
+If the first retrieval finds no usable evidence, the assistant directs the analyst to refine the question or browse available playbooks. This differs from a generation outage after relevant material has been found. In the latter situation, an eligible playbook can supply bounded excerpts labelled as existing guidance, or the assistant can provide article references for direct reading. The excerpts do not become a personalised response merely because they appear in the conversation.
+
+A later permission change or expiry can also affect the scenario. A retained citation still identifies the material associated with the earlier answer, but opening it can return an unavailable state under current policy. This makes the distinction between historical reference and present disclosure visible to the analyst. It does not silently replace the cited passage with a different revision.
+
+\chapter{Requirements context and evaluation records}\label{app:instruments}
+
+\section{Requirements-gathering context}
+During requirements gathering, we conducted semi-structured interviews with a research specialist to identify use cases, user roles and requirements, following the literature review. This qualitative input supported the definition of the design problem described in Chapter~\ref{ch:introduction}. Its role was requirements elicitation, distinct from evaluating the effects of the developed system on incident-response tasks. The constructed scenario in Appendix~\ref{app:implementation} is not a reconstruction of an interview or a participant's task record.
+
+The following reporting layouts serve a different purpose again: they illustrate how model and human-evaluation records can retain the distinctions used in Chapter~\ref{ch:evaluation}. They are optional organisational aids, not reproductions of administered instruments, validated questionnaires or evidence that every listed field was collected. They contain no participant responses or measured results.
+% Integrate the transferred records of the completed controlled comparisons and human evaluation without treating these illustrative layouts as the administered protocol. Retain original condition names, instruments, item wording, scoring rules and recorded denominators. Do not reconstruct interview details or participant observations from the layouts.
+
+\section{Units of observation}
+A retrieved passage, a generated answer and an analyst's final decision are related but distinct observations. A relevant document may yield an incomplete passage; a supported explanation may still be unsuitable for the affected environment. Table~\ref{tab:evaluation-record-units} separates these levels so that a result retains the meaning of what was actually assessed.
+
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{0.18\textwidth}>{\raggedright\arraybackslash}p{0.36\textwidth}>{\raggedright\arraybackslash}p{0.38\textwidth}@{}}
+\caption{Evaluation units and their interpretation.}\label{tab:evaluation-record-units}\\
+\toprule
+Level & Unit of observation & Interpretation \\
+\midrule
+\endfirsthead
+\toprule
+Level & Unit of observation & Interpretation \\
+\midrule
+\endhead
+Retrieval & A question and its ranked results under a defined corpus and access condition. & Relevance depends on the eligible reference material and the cutoff. Document relevance does not establish passage completeness. \\
+Response quality & An output and its material claims, considered with the question and supporting passages. & Citation resolution, support, correctness and applicability are separate judgements. Missing or misleading qualifications can matter even when a claim is otherwise true. \\
+Task performance & A participant's attempt at a defined task under a recorded condition. & Elapsed task time concerns the route to a decision. It is interpreted with decision correctness, completion status and error severity. \\
+Usability & A response to an identified item or instrument using its actual wording and scale. & Perceived ease or usefulness describes the participant's assessment, not proof that the recommendation was correct. \\
+\bottomrule
+\end{longtable}
+
+Technical compatibility observations have a narrower unit: the particular request or operation examined. Acceptance of an embedding request, for example, establishes compatibility with that request's parameters; matching vector dimensions does not make representations from different models interchangeable. Such observations explain whether a configuration can operate, not which model gives better incident advice.
+
+\section{Optional reporting layouts}
+Table~\ref{tab:optional-record-layouts} gives field groups for organising existing records. The groups can be linked by case and condition identifiers without combining their outcomes into one success score. A field that was not recorded remains unavailable rather than being inferred from another measure. The layout does not impose a new study design or change the instruments used to collect the records.
+
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{0.23\textwidth}>{\raggedright\arraybackslash}p{0.69\textwidth}@{}}
+\caption{Illustrative reporting layouts, not administered instruments or populated results.}\label{tab:optional-record-layouts}\\
+\toprule
+Record group & Fields for an optional layout \\
+\midrule
+\endfirsthead
+\toprule
+Record group & Fields for an optional layout \\
+\midrule
+\endhead
+Comparison condition & Condition label; corpus and case identifiers; access context; retrieval settings; actual chat and embedding models; generation settings; recorded repetitions; hosting choices for inference, storage and identity. \\
+Question and output & Case and condition; question; ranked passages and cutoff; reference relevance judgements; generated answer and citations; recorded timing with units; completion, timeout or failure status. \\
+Answer assessment & Output and claim identifiers; associated passage; support judgement; completeness and applicability notes; serious errors; reviewer identifier; the scoring rule actually used. \\
+Task attempt & Pseudonymous participant identifier; case and condition; recorded assignment order; timing boundaries and units; final decision; decision-quality judgement; completion status; any recorded evidence consultation. \\
+Usability response & Instrument and item identifiers; original wording and response scale; recorded item responses; applicable scoring rule; missing responses and any retained qualitative explanation. \\
+\bottomrule
+\end{longtable}
+
+The condition record also gives deployment flexibility, N3, a concrete meaning in interpretation: two evaluations can use the same chat model while differing in where embeddings, knowledge and identity are processed. Access context relates to N1, while the association between output, passage and assessment supports the reviewability sought in N2. These descriptions concern what a record means, not a claim that every possible configuration was compared.
+
+\section{Interpreting an aggregate summary}
+Retrieval statistics depend on both the reference set and the evaluation unit. A document-level relevance set does not imply passage-level recall, and a reference set for an unrestricted identity may include material unavailable to another identity. The cutoff also matters when interpreting rank-based results. The relevant set, access condition and scoring definition therefore belong with the result rather than being implicit assumptions.
+
+For response quality, a citation can resolve correctly while the associated claim overstates its source. Completeness requires attention to omitted conditions as well as incorrect statements. Separate error categories preserve these distinctions: a misleading recommendation cannot be understood from a citation count alone. Failed requests and missing outputs likewise retain their declared outcome categories instead of disappearing from the comparison.
+
+Task-time summaries depend on the recorded start and end events, not just the model's response latency. A shorter attempt can end in an incomplete or incorrect decision. Usability responses describe another aspect of the interaction and retain the wording and scoring rules of the actual instrument. Repeated model requests, repeated tasks by one participant and observations from different participants are different units; their counts cannot be substituted for one another.
+
+We read these records together to relate finding knowledge, explaining it and using it in a response decision. This preserves the evaluation dimensions of RQ3 without allowing an operational check, a subjective rating or a single aggregate score to stand for the whole incident-response task.

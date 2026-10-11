@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react';
 import { Icon } from '../icons.jsx';
 import { StampButton } from '../ui.jsx';
-import { useSettings, useVectorStoreStatus, useCategories } from '../lib/queries.js';
+import { useSettings, useVectorStoreStatus, useCategories, useDemoContent, queryClient } from '../lib/queries.js';
+import { retireDemoContent } from '../lib/api.js';
 import './access.css';
 
 export const DEFAULT_MODELS = [
@@ -41,6 +42,7 @@ export default function SettingsModal({ isOpen, onClose, onSave, userId }) {
   const settingsQuery = useSettings();
   const vectorQuery = useVectorStoreStatus();
   const categoriesQuery = useCategories();
+  const demoContentQuery = useDemoContent(userId, isOpen);
   const serverModels = (settingsQuery.data && settingsQuery.data.availableModels) || DEFAULT_MODELS;
   const embeddingModels = settingsQuery.data?.availableEmbeddingModels || [];
   const categories = categoriesQuery.data || [];
@@ -221,6 +223,15 @@ export default function SettingsModal({ isOpen, onClose, onSave, userId }) {
         {/* Tab 2: RAG Tuning */}
         {activeTab === 'rag' && (
           <div className="settings-body">
+            {demoContentQuery.isSuccess && (
+              <DemoContentMaintenance key={userId} preview={demoContentQuery.data} />
+            )}
+            {demoContentQuery.isError && demoContentQuery.error?.status !== 403 && demoContentQuery.error?.status !== 401 && (
+              <div className="demo-maintenance" role="alert">
+                <p>Knowledge maintenance is unavailable — {String(demoContentQuery.error?.message || 'Unable to load the preview.')}</p>
+                <button type="button" className="settings-cancel-btn" onClick={() => demoContentQuery.refetch()}>Retry maintenance preview</button>
+              </div>
+            )}
             <h3 className="settings-section-title">Evidence used in answers</h3>
 
             <div className="rag-tuning-grid">
@@ -401,5 +412,41 @@ export default function SettingsModal({ isOpen, onClose, onSave, userId }) {
         </div>
       </div>
     </div>
+  );
+}
+
+function DemoContentMaintenance({ preview }) {
+  const [busy, setBusy] = useState(false);
+  const [result, setResult] = useState(null);
+  const [error, setError] = useState('');
+  const eligible = preview?.eligibleIds?.length || 0;
+  const preserved = preview?.preservedIds?.length || 0;
+
+  async function retire() {
+    if (busy || !eligible) return;
+    setBusy(true);
+    setError('');
+    setResult(null);
+    try {
+      const next = await retireDemoContent();
+      setResult(next);
+      await Promise.all(['demo-content', 'articles', 'article', 'article-index', 'categories', 'vectorstore'].map((key) =>
+        queryClient.invalidateQueries({ queryKey: [key] })));
+    } catch (failure) {
+      setError(String(failure?.message || 'Unable to retire demo content. Try again.'));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <section className="demo-maintenance" aria-labelledby="demo-maintenance-title" aria-busy={busy}>
+      <h3 id="demo-maintenance-title" className="settings-section-title">Retire sample knowledge</h3>
+      <p className="form-hint">Remove unchanged demo articles from active knowledge and assistant retrieval. Article history and your edits are preserved.</p>
+      <p className="form-hint">{eligible} unchanged sample {eligible === 1 ? 'article' : 'articles'} eligible · {preserved} edited or protected {preserved === 1 ? 'article' : 'articles'} preserved</p>
+      <button type="button" className="settings-cancel-btn" disabled={busy || !eligible} onClick={retire}>{busy ? 'Retiring demo content…' : 'Retire demo content'}</button>
+      {result && <p className="demo-maintenance-result" role="status">Retired {result.retiredIds.length} sample {result.retiredIds.length === 1 ? 'article' : 'articles'}. Preserved {result.preservedIds.length} edited or protected {result.preservedIds.length === 1 ? 'article' : 'articles'}. History remains available.</p>}
+      {error && <p className="demo-maintenance-error" role="alert">{error}</p>}
+    </section>
   );
 }

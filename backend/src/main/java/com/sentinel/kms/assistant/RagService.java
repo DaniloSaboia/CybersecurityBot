@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sentinel.kms.common.EvidenceReference;
 import com.sentinel.kms.common.OpenRouterModelCatalog;
+import com.sentinel.kms.common.GenerationAvailability;
 import com.sentinel.kms.kb.Article;
 import com.sentinel.kms.kb.ArticleRepository;
 import com.sentinel.kms.kb.EvidenceReferenceResolver;
@@ -47,7 +48,8 @@ import java.util.concurrent.TimeUnit;
  * </ol>
  *
  * <p>The chat model call is wrapped so an LLM failure degrades to a graceful
- * "assistant unavailable" message rather than a 500.
+ * playbook fallback rather than a 500. It quotes existing approved guidance,
+ * never synthesizes a plan on failure, and retains the normal policy gates.
  */
 @Service
 public class RagService {
@@ -59,11 +61,12 @@ public class RagService {
 
     /** Fixed local response used when no authorized evidence survives retrieval. */
     static final String NO_EVIDENCE_ABSTENTION =
-            "I couldn't find anything relevant in the knowledge base for that question.";
+            "I couldn't retrieve usable evidence for this question. Try a short symptom such as "
+                    + "'phishing' or 'ransomware', or open the playbooks in Knowledge Base for direct guidance.";
 
     /** System prompt for the streaming variant: natural-language SecOps answer, not JSON. */
     private static final String STREAM_SYSTEM_PROMPT = """
-            You are Sentinel, a SecOps analyst assistant for a SOC knowledge console.
+            You are Sentinel, a cybersecurity problem-solving assistant for people and IT teams.
             Answer the user's security question using ONLY the information in the provided
             context sources — including any IOC INDEX MATCH sources, which list the
             indicators found in the KB's article index. Do not use outside knowledge and
@@ -98,7 +101,7 @@ public class RagService {
 
             If the context is empty or contains nothing relevant to the question, say so
             plainly: that you couldn't find anything relevant in the knowledge base.
-            """;
+            """ + "\n" + PromptBuilder.PRACTICAL_RESPONSE_GUIDANCE;
 
     private final ObjectMapper mapper = new ObjectMapper();
 
@@ -107,6 +110,8 @@ public class RagService {
     private final KnowledgeAccessService knowledgeAccess;
     private final EvidenceReferenceResolver evidenceReferenceResolver;
     private final ChatModel chatModel;
+    private final PlaybookGuidanceService playbookGuidance;
+    private final GenerationAvailability generationAvailability;
     private final PromptBuilder promptBuilder;
     private final BlockParser blockParser;
     private final ConversationService conversations;
@@ -127,6 +132,8 @@ public class RagService {
                       KnowledgeAccessService knowledgeAccess,
                       EvidenceReferenceResolver evidenceReferenceResolver,
                       ChatModel chatModel,
+                      PlaybookGuidanceService playbookGuidance,
+                      GenerationAvailability generationAvailability,
                       PromptBuilder promptBuilder,
                       BlockParser blockParser,
                       ConversationService conversations,
@@ -145,6 +152,8 @@ public class RagService {
         this.knowledgeAccess = knowledgeAccess;
         this.evidenceReferenceResolver = evidenceReferenceResolver;
         this.chatModel = chatModel;
+        this.playbookGuidance = playbookGuidance;
+        this.generationAvailability = generationAvailability;
         this.promptBuilder = promptBuilder;
         this.blockParser = blockParser;
         this.conversations = conversations;
@@ -181,6 +190,10 @@ public class RagService {
             return abstain(conversation, userSub, startedAt);
         }
 
+        if (generationAvailability.isBlocked()) {
+            return sourceFallbackChat(conversation, userSub, grounding, startedAt);
+        }
+
         String raw;
         try {
             var clientPrompt = ChatClient.create(chatModel).prompt()
@@ -194,13 +207,13 @@ public class RagService {
                     .call()
                     .content();
         } catch (Exception e) {
+            generationAvailability.recordFailure(e);
             meters.counter("sentinel.rag.model.failures", "mode", "chat").increment();
             log.warn("Chat model call failed for conversation {}: {}", conversation.getId(), e.toString());
-            return new ChatResponse(
-                    conversation.getId(),
-                    List.of(Block.text(
-                            "The assistant is temporarily unavailable. Please try again in a moment.")),
-                    List.of());
+            return sourceFallbackChat(conversation, userSub, grounding, startedAt);
+        }
+        if (raw == null || raw.isBlank()) {
+            return sourceFallbackChat(conversation, userSub, grounding, startedAt);
         }
 
         BlockParser.Parsed parsed = blockParser.parse(raw, grounding.citationResolver());
@@ -237,8 +250,8 @@ public class RagService {
      * a final {@code {"type":"done","conversationId":...,"messageId":...,"citations":[...]}}
      * event carries the conversation id, the persisted assistant-message id (for
      * feedback), and the grounded citation ids scraped from the accumulated
-     * answer. The stream never errors out to the client: on failure it emits an
-     * apologetic delta followed by a done event with no citations.
+     * answer. On generation failure, approved playbook sections or retrieved source
+     * links remain available with normal citation binding.
      */
     public Flux<ServerSentEvent<String>> stream(ChatRequest req, String userSub) {
         validateModel(req.model());
@@ -254,6 +267,9 @@ public class RagService {
         Grounding grounding = groundingForGeneration(req, userSub, history, queryTopK, queryMinScore);
         if (!grounding.hasEvidence()) {
             return abstentionStream(conversation, userSub, startedAt);
+        }
+        if (generationAvailability.isBlocked()) {
+            return sourceFallbackStream(conversation, userSub, grounding);
         }
         String user = promptBuilder.userMessage(req.message(), grounding.chunks(), grounding.titles(), history,
                 grounding.citationResolver());
@@ -280,12 +296,103 @@ public class RagService {
                 });
 
         return withDone.onErrorResume(e -> {
+            generationAvailability.recordFailure(e);
             meters.counter("sentinel.rag.model.failures", "mode", "stream").increment();
             log.warn("Streaming chat model call failed for conversation {}: {}",
                     conversation.getId(), e.toString());
-            return persistedFallbackStream(conversation, userSub,
-                    "The assistant is temporarily unavailable. Please try again in a moment.");
+            return sourceFallbackStream(conversation, userSub, grounding);
         });
+    }
+
+    private record SourceFallback(String text, Grounding grounding) {}
+
+    /** Quotes complete authorized playbook sections; no locally invented incident plan. */
+    private SourceFallback sourceFallback(Grounding original, String userSub) {
+        Grounding guidance = Grounding.empty();
+        try {
+            guidance = buildGrounding(playbookGuidance.findGuidance(userSub, original.chunks()),
+                    original.titles(), userSub);
+        } catch (RuntimeException e) {
+            log.warn("Playbook fallback lookup unavailable; using authorized source links");
+        }
+        if (guidance.hasEvidence()) {
+            String id = guidance.chunks().get(0).articleId();
+            StringBuilder text = new StringBuilder("# Knowledge-base guidance\n\n")
+                    .append(generationAvailability.userMessage())
+                    .append("\n\nThese are existing playbook steps, not a personalized AI response. ")
+                    .append("Check that they apply to your situation.\n\n## ")
+                    .append(displayTitle(guidance.titles().get(id)));
+            for (RetrievedChunk chunk : guidance.chunks()) {
+                String token = guidance.citationResolver().evidenceTokenFor(chunk);
+                if (token == null || chunk.content() == null) continue;
+                int newline = chunk.content().indexOf('\n');
+                if (newline < 0) continue;
+                text.append("\n\n### ").append(displayTitle(chunk.content().substring(0, newline)))
+                        .append(" ").append(token).append("\n\n")
+                        .append(chunk.content().substring(newline + 1));
+            }
+            return new SourceFallback(text.toString(), guidance);
+        }
+        StringBuilder text = new StringBuilder(generationAvailability.userMessage())
+                .append(" No AI-generated response plan was produced.");
+        List<String> links = new ArrayList<>();
+        Set<String> linkedIds = new LinkedHashSet<>();
+        for (boolean playbooks : List.of(true, false)) {
+            for (RetrievedChunk chunk : original.chunks()) {
+                String id = chunk.articleId();
+                if (links.size() == 3 || id == null || linkedIds.contains(id)
+                        || id.startsWith("PB-") != playbooks) continue;
+                String token = original.citationResolver().evidenceTokenFor(chunk);
+                if (token == null) continue;
+                links.add("- " + token + " " + displayTitle(original.titles().get(id)));
+                linkedIds.add(id);
+            }
+        }
+        if (!links.isEmpty()) {
+            text.append(" These knowledge-base references were retrieved for your question; ")
+                    .append("open them to check applicability.\n\n").append(String.join("\n", links));
+        } else {
+            text.append(" Review your available source material or try again later.");
+        }
+        return new SourceFallback(text.toString(), original);
+    }
+
+    private static String displayTitle(String value) {
+        String title = value == null ? "" : value.replace('[', '(').replace(']', ')')
+                .replaceAll("[\\r\\n\\t]+", " ").replace('*', ' ').replace('`', ' ')
+                .replace('<', ' ').replace('>', ' ').strip();
+        if (title.isBlank()) return "Knowledge-base reference";
+        return title.length() > 180 ? title.substring(0, 180) + "…" : title;
+    }
+
+    private Flux<ServerSentEvent<String>> sourceFallbackStream(
+            Conversation conversation, String userSub, Grounding original) {
+        SourceFallback fallback = sourceFallback(original, userSub);
+        return emitAuthorizedBufferedStream(conversation, userSub,
+                List.of(fallback.text()), fallback.grounding());
+    }
+
+    private ChatResponse sourceFallbackChat(Conversation conversation, String userSub,
+                                            Grounding grounding, long startedAt) {
+        SourceFallback fallback = sourceFallback(grounding, userSub);
+        grounding = fallback.grounding();
+        if (!groundingStillAuthorized(grounding, userSub)) {
+            return abstain(conversation, userSub, startedAt);
+        }
+        CitationResolver.Citations citations = grounding.citationResolver().newCitations();
+        String text = grounding.citationResolver().sanitize(fallback.text(), citations);
+        try {
+            ChatMessage saved = conversations.appendAssistant(userSub, conversation, text,
+                    citations.legacyIds(), evidenceToPersist(grounding, citations.references()), grounding.sourceReferences());
+            List<EvidenceReference> references = declaredReferencesFromPersisted(saved, citations.references());
+            meters.timer("sentinel.rag.chat.latency").record(System.nanoTime() - startedAt, TimeUnit.NANOSECONDS);
+            return new ChatResponse(conversation.getId(), List.of(Block.text(text)),
+                    saved.getCitations() == null ? List.of() : List.copyOf(saved.getCitations()), references);
+        } catch (RuntimeException e) {
+            log.warn("Fallback evidence persistence failed closed for conversation {}: {}",
+                    conversation.getId(), e.toString());
+            return abstain(conversation, userSub, startedAt);
+        }
     }
 
     // ---- retrieval + IOC grounding shared by both variants ----
@@ -313,7 +420,7 @@ public class RagService {
                                              int effectiveTopK, double effectiveMinScore) {
         RetrievalFilters filters = new RetrievalFilters(req.category(), req.minSeverity());
         Grounding literal = grounding(req.message(), req.message(), effectiveTopK, effectiveMinScore, userSub, filters);
-        if (!literal.hasEvidence()) {
+        if (!literal.hasEvidence() || generationAvailability.isBlocked()) {
             return literal;
         }
 
@@ -708,6 +815,9 @@ public class RagService {
      */
     private Flux<ServerSentEvent<String>> emitAuthorizedBufferedStream(
             Conversation conversation, String userSub, List<String> providerDeltas, Grounding grounding) {
+        if (providerDeltas == null || providerDeltas.stream().allMatch(delta -> delta == null || delta.isBlank())) {
+            return sourceFallbackStream(conversation, userSub, grounding);
+        }
         CitationResolver.StreamingSanitizer sanitizer = grounding.citationResolver().streamingSanitizer();
         List<ServerSentEvent<String>> safeEvents = new ArrayList<>();
         StringBuilder answer = new StringBuilder();

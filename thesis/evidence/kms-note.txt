@@ -1,0 +1,384 @@
+## 1. Cybersecurity ontology for dynamic analysis of IT systems
+- Authors: J. Pastuszuk; P. Burek; B. Ksiezopolski
+- Year: 2021
+- Venue: Procedia Computer Science, 192, 1011–1020
+- Stable Mendeley URL: https://www.mendeley.com/catalogue/5fdc7022-0223-319f-95e6-4851fedb06eb/
+- DOI/publisher URL: https://doi.org/10.1016/j.procs.2021.08.104
+- Scope tags: Cybersecurity; KMS; AI
+- Evidence type/method: Ontology/framework paper; reviews deficiencies in existing cyber ontologies, proposes a Dynamic CyberSecurity Ontology, and outlines monitoring plus automatic data mining from changing sources.
+- Concrete thesis relevance: Establishes freshness, continuous inventory, source aggregation, and temporal change as requirements for the KMS knowledge model and retrieval index.
+- Limitation: Abstract-only evidence in this round; implementation maturity, evaluation design, and operational latency were not checked in full text.
+
+## 2. A framework for conceptual characterization of ontologies and its application in the cybersecurity domain
+- Authors: B. F. Martins; L. J. Serrano Gil; J. F. Reyes Román; J. I. Panach; O. Pastor; M. Hadad; B. Rochwerger
+- Year: 2022
+- Venue: Software and Systems Modeling, 21(4), 1437–1464
+- Stable Mendeley URL: https://www.mendeley.com/catalogue/0467c2f1-cc68-371a-ada9-f7b564068b7b/
+- DOI/publisher URL: https://doi.org/10.1007/s10270-022-01013-0
+- Scope tags: Cybersecurity; KMS
+- Evidence type/method: Review and ontology-engineering framework; identifies 28 cyber ontologies, proposes terminological validation and an ontology-classification framework, then derives best practices.
+- Concrete thesis relevance: Supplies defensible criteria for choosing, aligning, and validating the ontology beneath a cybersecurity KG/RAG system instead of adopting vocabularies ad hoc.
+- Limitation: Abstract-only evidence; the completeness of the 28-ontology search and the detailed validation criteria require full-text appraisal.
+
+## 3. A survey on cybersecurity knowledge graph construction
+- Authors: X. Zhao; R. Jiang; Y. Han; A. Li; Z. Peng
+- Year: 2024
+- Venue: Computers & Security
+- Stable Mendeley URL: https://www.mendeley.com/catalogue/daaccf8a-c004-3090-ac55-54e9cc0f0310/
+- DOI/publisher URL: https://doi.org/10.1016/j.cose.2023.103524
+- Scope tags: Cybersecurity; KMS; AI
+- Evidence type/method: Comprehensive review and comparison of cybersecurity KG construction approaches, application obstacles, and future opportunities.
+- Concrete thesis relevance: Frames the end-to-end knowledge layer—ontology design, triple extraction, construction, reasoning, and application—and can justify architectural choices for the graph feeding retrieval.
+- Limitation: Abstract-only evidence; search protocol, study quality assessment, and comparative dimensions were not independently verified.
+
+## 4. Cybersecurity ontology and defense solutions: The POC platform
+- Authors: E. Zuanelli
+- Year: 2022
+- Venue: Procedia Computer Science, 205, 300–309
+- Stable Mendeley URL: https://www.mendeley.com/catalogue/aa7f3730-a9ed-3c7b-a99d-31d22e60deb1/
+- DOI/publisher URL: https://doi.org/10.1016/j.procs.2022.09.031
+- Scope tags: Cybersecurity; KMS; AI
+- Evidence type/method: Platform/ontology description grounded in linguistics, semantics, cognitive psychology, and AI for threat intelligence, information sharing, and incident reports.
+- Concrete thesis relevance: Supports representing analyst language, incident narratives, and indicator correlations in a common semantic layer before machine retrieval or reasoning.
+- Limitation: Abstract-only evidence; empirical platform accuracy, interoperability, and production deployment are not reported in the accessible abstract.
+
+## 5. An Ontology-Based Cybersecurity Framework for AI-Enabled Systems and Applications
+- Authors: D. Preuveneers; W. Joosen
+- Year: 2024
+- Venue: Future Internet, 16(3)
+- Stable Mendeley URL: https://www.mendeley.com/catalogue/ba9f5549-d118-332a-b435-1b44d2c9bb75/
+- DOI/publisher URL: https://doi.org/10.3390/fi16030069
+- Scope tags: AI; Cybersecurity; KMS
+- Evidence type/method: Ontology-based framework extending established cyber ontologies to formalize machine-learning threats, attacks, defenses, and their evolving relationships.
+- Concrete thesis relevance: Gives the proposed KMS an information model for threats against its own SLM/LLM/RAG components and a basis for automated security assessment through reasoning.
+- Limitation: Abstract-only evidence; coverage of model threats and evidence for reasoning correctness need full-text validation.
+
+## 6. COMAT: A Cybersecurity Ontology Based on MITRE ATT&CK
+- Authors: Y. T. Huang; R. Vaitheeshwari; M. C. Chen; Y. D. Lin; R. H. Hwang; P. C. Lin; Y. C. Lai; E. H. K. Wu; Z. J. Liao; C. K. Chen
+- Year: 2026
+- Venue: IEEE Network, 40(1), 304–311
+- Stable Mendeley URL: https://www.mendeley.com/catalogue/4cbf43d7-d2d9-3ab3-acde-238ff430a50c/
+- DOI/publisher URL: https://doi.org/10.1109/MNET.2025.3562901
+- Scope tags: Cybersecurity; KMS; AI
+- Evidence type/method: MITRE ATT&CK-based ontology with forward- and backward-query modules and inference paths for CTI analysis.
+- Concrete thesis relevance: Directly informs ATT&CK-aligned schema design and graph-query patterns that a retrieval layer can expose for adversary-technique lookup and explanation.
+- Limitation: Abstract-only evidence; the catalogue year is 2026 although the DOI was registered in 2025, and benchmark details are not exposed in the abstract.
+
+## 7. UCO: A Unified Cybersecurity Ontology
+- Authors: Z. Syed; A. Pädia; T. Finin; L. Mathews; A. Joshi
+- Year: 2016
+- Venue: AAAI Workshop – Technical Report, WS-16-01–WS-16-15, 195–202
+- Stable Mendeley URL: https://www.mendeley.com/catalogue/169f44f0-7df5-38c8-beaf-d1fa4ca0b47b/
+- DOI/publisher URL: No DOI or publisher URL exposed by the Mendeley record.
+- Scope tags: Cybersecurity; KMS
+- Evidence type/method: Unified ontology integrating heterogeneous cybersecurity schemas, sharing standards, existing cyber ontologies, and Linked Open Data; includes a prototype and use cases.
+- Concrete thesis relevance: A foundational interoperability candidate for normalizing heterogeneous CTI and linking domain entities to wider knowledge before retrieval.
+- Limitation: Abstract-only evidence; it is a workshop technical report, and current maintenance, vocabulary coverage, and production adoption need checking.
+
+## 8. A Systematic Literature Review on Cybersecurity Ontology
+- Authors: A. B. M. M. Hasan; L. Brankovic; D. Paul; C. Sanin
+- Year: 2025
+- Venue: Procedia Computer Science, 270, 3598–3607
+- Stable Mendeley URL: https://www.mendeley.com/catalogue/42174c7c-f613-31a4-83e2-739415814996/
+- DOI/publisher URL: https://doi.org/10.1016/j.procs.2025.09.485
+- Scope tags: Cybersecurity; KMS
+- Evidence type/method: Systematic literature review using a refined search strategy, data management, and continuous evaluation to examine major cybersecurity ontologies.
+- Concrete thesis relevance: Identifies terminology inconsistency, semantic-equivalence mapping, and stakeholder communication as governance requirements for a thesis KMS.
+- Limitation: Abstract-only evidence; the paper is recent and the review protocol, database coverage, and primary-study quality assessment were not inspected.
+
+## 9. Reference Ontology for Cybersecurity Operational Information
+- Authors: T. Takahashi; Y. Kadobayashi
+- Year: 2014
+- Venue: The Computer Journal, 58(10), 2297–2312
+- Stable Mendeley URL: https://www.mendeley.com/catalogue/1614a4f5-75d8-3112-9628-37ea0cf669fc/
+- DOI/publisher URL: https://doi.org/10.1093/comjnl/bxu101
+- Scope tags: Cybersecurity; KMS
+- Evidence type/method: Reference-ontology design developed with operational cybersecurity organizations; demonstrates standards coverage and describes an extensible information structure plus prototype knowledge base.
+- Concrete thesis relevance: Strong foundation for cross-organizational schema orchestration, standards mapping, and operational exchange requirements that the AI retrieval layer must preserve.
+- Limitation: Abstract-only evidence; older standards coverage may be stale, and no modern LLM/RAG integration is evaluated.
+
+## 10. Cybersecurity knowledge graphs
+- Authors: L. F. Sikos
+- Year: 2023
+- Venue: Knowledge and Information Systems, 65(9), 3511–3531
+- Stable Mendeley URL: https://www.mendeley.com/catalogue/4d10ab6e-801f-302b-9289-e7d8ee63f267/
+- DOI/publisher URL: https://doi.org/10.1007/s10115-023-01860-3
+- Scope tags: Cybersecurity; KMS; AI
+- Evidence type/method: Domain review of graph data models and knowledge-organization systems for cyber knowledge, with discussion of aggregation, fusion, visualization, ML, and automated reasoning.
+- Concrete thesis relevance: Provides the conceptual rationale for using a KG as the durable, explainable knowledge substrate beneath retrieval and generation.
+- Limitation: Abstract-only evidence; the accessible record does not establish a quantitative comparison or a single validated reference architecture.
+
+## 11. Cybersecurity knowledge graphs construction and quality assessment
+- Authors: H. Li; Z. Shi; C. Pan; D. Zhao; N. Sun
+- Year: 2024
+- Venue: Complex & Intelligent Systems, 10(1), 1201–1217
+- Stable Mendeley URL: https://www.mendeley.com/catalogue/86f18499-5b58-38f1-bfa8-b40b8f2d99e7/
+- DOI/publisher URL: https://doi.org/10.1007/s40747-023-01205-1
+- Scope tags: Cybersecurity; KMS; AI
+- Evidence type/method: Empirical KG construction and quality assessment; builds CS13K/Neo4j, extends an ontology, and tests an attention/Transformer-based AttTucker model using F1 and accuracy.
+- Concrete thesis relevance: Converts vague KG quality into testable criteria—noise/conflict resistance, F1, accuracy, topology/path information—that should gate facts before RAG retrieval.
+- Limitation: Abstract-only evidence; dataset representativeness, leakage controls, baselines, and reproducibility were not checked.
+
+## 12. A Cybersecurity Knowledge Graph Completion Method Based on Ensemble Learning and Adversarial Training
+- Authors: P. Wang; J. Liu; D. Hou; S. Zhou
+- Year: 2022
+- Venue: Applied Sciences, 12(24)
+- Stable Mendeley URL: https://www.mendeley.com/catalogue/f4740b48-607d-3199-bdcf-5f6bdc4bf660/
+- DOI/publisher URL: https://doi.org/10.3390/app122412947
+- Scope tags: Cybersecurity; KMS; AI
+- Evidence type/method: Empirical KG-completion method combining ensemble relation models, cooperative adversarial training, and UCB-based perturbation selection on a CVE/CWE/CAPEC-derived graph.
+- Concrete thesis relevance: Shows how incompleteness and noisy cyber data can be treated explicitly; candidate completion must be confidence-scored and separated from authoritative facts consumed by RAG.
+- Limitation: Abstract-only evidence; the claim of superiority lacks visible metric values and may not transfer beyond the constructed benchmark.
+
+## 13. CSKG4APT: A Cybersecurity Knowledge Graph for Advanced Persistent Threat Organization Attribution
+- Authors: Y. Ren; Y. Xiao; Y. Zhou; Z. Zhang; Z. Tian
+- Year: 2023
+- Venue: IEEE Transactions on Knowledge and Data Engineering, 35(6), 5695–5709
+- Stable Mendeley URL: https://www.mendeley.com/catalogue/dceb0f77-746b-3146-ad53-fd71c020f832/
+- DOI/publisher URL: https://doi.org/10.1109/TKDE.2022.3175719
+- Scope tags: Cybersecurity; KMS; AI
+- Evidence type/method: Implemented APT knowledge-graph platform using ontology, OSCTI extraction, deep learning, expert knowledge, graph completion/update, and an attribution method.
+- Concrete thesis relevance: Demonstrates an operational pipeline from fragmented threat reports to structured, updated analyst decision support—the same boundary a KMS/RAG architecture must implement.
+- Limitation: Abstract-only evidence; attribution validity, false-positive cost, provenance handling, and generalization beyond APT scenarios require full-text review.
+
+## 14. Recent Progress of Using Knowledge Graph for Cybersecurity
+- Authors: K. Liu; F. Wang; Z. Ding; S. Liang; Z. Yu; Y. Zhou
+- Year: 2022
+- Venue: Electronics, 11(15)
+- Stable Mendeley URL: https://www.mendeley.com/catalogue/d389a4b2-1a91-3fbb-96a8-3231fc0e4bd9/
+- DOI/publisher URL: https://doi.org/10.3390/electronics11152287
+- Scope tags: Cybersecurity; KMS; AI
+- Evidence type/method: Review of KG concepts, schemas, construction methods, datasets, open-source extraction frameworks, application scenarios, and research directions; proposes a 9-category/18-subcategory classification.
+- Concrete thesis relevance: Useful design map for selecting datasets, extraction components, and application coverage while preventing the thesis from treating KG construction as the whole KMS.
+- Limitation: Abstract-only evidence; described as a broad review, but systematic-search and study-quality procedures are not exposed.
+
+## 15. SC-LKM: A Semantic Chunking and Large Language Model-Based Cybersecurity Knowledge Graph Construction Method
+- Authors: P. Wang; Y. Zhang; Z. Zhou; Y. Wang
+- Year: 2025
+- Venue: Electronics, 14(14)
+- Stable Mendeley URL: https://www.mendeley.com/catalogue/2d3fb1b2-f3a8-3268-a67e-5b079bfa85aa/
+- DOI/publisher URL: https://doi.org/10.3390/electronics14142878
+- Scope tags: AI; Cybersecurity; RAG; KMS
+- Evidence type/method: Empirical GraphRAG/LLM KG-construction method using hierarchical semantic chunking, document hierarchy, topic similarity, entity continuity, and Qwen2.5-14B-Instruct; compared on entity coverage, topology density, and semantic consistency.
+- Concrete thesis relevance: Direct evidence that chunking policy affects graph integrity and retrieval quality; supplies concrete evaluation dimensions for an LLM/RAG ingestion pipeline.
+- Limitation: Abstract-only evidence; baseline selection, dataset size, statistical uncertainty, and portability to smaller models were not checked.
+
+## 16. Enhancing cybersecurity through autonomous knowledge graph construction by integrating heterogeneous data sources
+- Authors: H. Alharbi; A. Hur; H. Alkahtani; H. F. Ahmad
+- Year: 2025
+- Venue: PeerJ Computer Science, 11
+- Stable Mendeley URL: https://www.mendeley.com/catalogue/b972565a-6ff6-3888-a32c-067cbd5af4c8/
+- DOI/publisher URL: https://doi.org/10.7717/peerj-cs.2768
+- Scope tags: Cybersecurity; KMS; AI
+- Evidence type/method: Autonomous construction from heterogeneous structured/unstructured sources using NLP, semantic triples, logical rules, graph analytics, and question-style query validation.
+- Concrete thesis relevance: Supports multi-source ingestion, rule-based enrichment, and competency-question testing of the graph before it is exposed to natural-language retrieval.
+- Limitation: Abstract-only evidence; question-set coverage, provenance, update behavior, and the strength of comparison baselines remain unclear.
+
+## 17. Research on quality assessment methods for cybersecurity knowledge graphs
+- Authors: Z. Shi; H. Li; D. Zhao; C. Pan
+- Year: 2024
+- Venue: Computers & Security, 142
+- Stable Mendeley URL: https://www.mendeley.com/catalogue/579c2091-5e99-3cfe-8d9e-38cecd210faf/
+- DOI/publisher URL: https://doi.org/10.1016/j.cose.2024.103848
+- Scope tags: Cybersecurity; KMS; AI
+- Evidence type/method: Parameter-efficient KG quality model using community partitioning, centrality-selected entities, linkage/K-nearest-neighbor encoding, graph attention, and F1/accuracy evaluation.
+- Concrete thesis relevance: Offers both resource-efficiency and graph-quality criteria for deciding whether a cyber KG is trustworthy enough for retrieval on constrained SLM deployments.
+- Limitation: Abstract-only evidence; computational cost, calibration, error taxonomy, and external-dataset generalization were not inspected.
+
+## 18. Data-Driven Cybersecurity Knowledge Graph Construction for Industrial Control System Security
+- Authors: G. Shen; W. Wang; Q. Mu; Y. Pu; Y. Qin; M. Yu
+- Year: 2020
+- Venue: Wireless Communications and Mobile Computing, 2020
+- Stable Mendeley URL: https://www.mendeley.com/catalogue/36f0d909-0879-3436-9177-765b83f5b731/
+- DOI/publisher URL: https://doi.org/10.1155/2020/8883696
+- Scope tags: Cybersecurity; KMS; AI
+- Evidence type/method: Domain implementation integrating fragmented threat data and ICS topology; tests a distant-supervised ResPCNN-ATT relation extractor and constructs an ICS KG.
+- Concrete thesis relevance: Demonstrates that domain context and asset topology should be retained alongside textual evidence, and that relation-extraction accuracy is a pre-retrieval quality gate.
+- Limitation: Abstract-only evidence; ICS specificity may limit transfer, and current availability/reliability of the CSER and ICSER datasets was not verified.
+
+## 19. Cyber threat intelligence model: An evaluation of taxonomies, sharing standards, and ontologies within cyber threat intelligence
+- Authors: V. Mavroeidis; S. Bromander
+- Year: 2017
+- Venue: 2017 European Intelligence and Security Informatics Conference (EISIC), 91–98
+- Stable Mendeley URL: https://www.mendeley.com/catalogue/f2de9993-35ba-38fa-b3bb-2157deb6a5f5/
+- DOI/publisher URL: https://doi.org/10.1109/EISIC.2017.20
+- Scope tags: Cybersecurity; KMS
+- Evidence type/method: CTI capability model used to analyze and evaluate existing taxonomies, sharing standards, and ontologies.
+- Concrete thesis relevance: Provides coverage criteria for selecting or composing the KMS vocabulary and argues for a multi-layer ontology rather than a single flat taxonomy.
+- Limitation: Abstract-only evidence; standards and ontology coverage reflect the 2017 landscape and need a current gap check.
+
+## 20. Knowledge Graphs and Semantic Web Tools in Cyber Threat Intelligence: A Systematic Literature Review
+- Authors: C. Bratsas; E. K. Anastasiadis; A. K. Angelidis; L. Ioannidis; R. Kotsakis; S. Ougiaroglou
+- Year: 2024
+- Venue: Journal of Cybersecurity and Privacy
+- Stable Mendeley URL: https://www.mendeley.com/catalogue/531027e6-b3f4-3caa-b9b3-460c3f1527b7/
+- DOI/publisher URL: https://doi.org/10.3390/jcp4030025
+- Scope tags: Cybersecurity; KMS; AI
+- Evidence type/method: Systematic review of ontologies, KGs, and semantic-web tools in CTI, including interoperability and ML/DL-assisted augmentation/inference.
+- Concrete thesis relevance: Directly supports a common structured schema for heterogeneous CTI and identifies semantic interoperability across SOCs as an integration requirement.
+- Limitation: Abstract-only evidence; review protocol quality and whether inferred facts are distinguished from sourced CTI must be checked in full text.
+
+## 21. Cyber Threat Intelligence Mining for Proactive Cybersecurity Defense: A Survey and New Perspectives
+- Authors: N. Sun; M. Ding; J. Jiang; W. Xu; X. Mo; Y. Tai; J. Zhang
+- Year: 2023
+- Venue: IEEE Communications Surveys & Tutorials, 25(3), 1748–1774
+- Stable Mendeley URL: https://www.mendeley.com/catalogue/cdbcee4d-c5aa-3618-a36f-aae4140bb4c4/
+- DOI/publisher URL: https://doi.org/10.1109/COMST.2023.3273282
+- Scope tags: Cybersecurity; KMS; AI
+- Evidence type/method: Comprehensive survey and taxonomy of CTI mining by intended purpose across multiple data sources, covering entities/events, TTPs, actors, indicators, exploits, malware, and threat hunting.
+- Concrete thesis relevance: Defines the principal knowledge-object classes and user intents the KMS retrieval layer should support and evaluate separately.
+- Limitation: Abstract-only evidence; survey coverage, taxonomy overlap, and the freshness of included tools/datasets were not independently checked.
+
+## 22. Current approaches and future directions for Cyber Threat Intelligence sharing: A survey
+- Authors: P. Alaeifar; S. Pal; Z. Jadidi; M. Hussain; E. Foo
+- Year: 2024
+- Venue: Journal of Information Security and Applications, 83
+- Stable Mendeley URL: https://www.mendeley.com/catalogue/db71a08e-b614-3f9a-aa1b-2904d418a8df/
+- DOI/publisher URL: https://doi.org/10.1016/j.jisa.2024.103786
+- Scope tags: Cybersecurity; KMS; AI
+- Evidence type/method: Comprehensive survey of CTI fundamentals, uses, sharing architectures, challenges, and how proposed approaches address them.
+- Concrete thesis relevance: Establishes legal/regulatory obligations, interoperability, data reliability, and architecture as acceptance constraints for cross-organizational knowledge ingestion and RAG access.
+- Limitation: Abstract-only evidence; detailed appraisal of each proposal and jurisdiction-specific legal applicability require full-text and local-context review.
+
+## 23. A comprehensive survey of manual and dynamic approaches for cybersecurity taxonomy generation
+- Authors: A. Spyros; A. Kougioumtzidou; A. Papoutsis; E. Darra; D. Kavallieros; A. Tziouvaras; T. Tsikrika; S. Vrochidis; I. Kompatsiaris
+- Year: 2025
+- Venue: Knowledge and Information Systems
+- Stable Mendeley URL: https://www.mendeley.com/catalogue/3f31b7f1-32b2-3c81-8ed8-59e8ff391ef3/
+- DOI/publisher URL: https://doi.org/10.1007/s10115-025-02382-w
+- Scope tags: Cybersecurity; KMS; AI
+- Evidence type/method: Systematic literature review comparing manual and dynamic taxonomy-generation methods, their characteristics, applications, datasets, advantages, and limitations.
+- Concrete thesis relevance: Supports a governed hybrid in which expert-curated taxonomy structure is dynamically updated from new cyber evidence instead of either approach operating alone.
+- Limitation: Abstract-only evidence; the review is recent, and evidence for long-term stability of dynamically generated taxonomies is not visible.
+
+## 24. Countermeasures and their taxonomies for risk treatment in cybersecurity: A systematic mapping review
+- Authors: I. D. Sánchez-García; T. S. Feliu Gilabert; J. A. Calvo-Manzano
+- Year: 2023
+- Venue: Computers & Security
+- Stable Mendeley URL: https://www.mendeley.com/catalogue/49ee1952-7bf6-3100-a95e-c8b9e9b5c0a5/
+- DOI/publisher URL: https://doi.org/10.1016/j.cose.2023.103170
+- Scope tags: Cybersecurity; KMS
+- Evidence type/method: Systematic mapping review of 74 studies, with 25 analyzed and 26 countermeasure catalogues/taxonomies identified; assesses trends, domains, complexity, and residual-risk coverage.
+- Concrete thesis relevance: Gives measurable taxonomy-quality dimensions and shows that the KMS must represent residual risk rather than merely retrieve a control label.
+- Limitation: Abstract-only evidence; selection details and the validity of fitting non-cyber institutional taxonomies to cyber risk require full-text appraisal.
+
+## 25. An End-to-End Framework for Cybersecurity Taxonomy and Ontology Generation and Updating
+- Authors: A. Kougioumtzidou; A. Papoutsis; D. Kavallieros; T. Mavropoulos; T. Tsikrika; S. Vrochidis; I. Kompatsiaris
+- Year: 2024
+- Venue: 2024 IEEE International Conference on Cyber Security and Resilience (CSR), 247–254
+- Stable Mendeley URL: https://www.mendeley.com/catalogue/8b06ad87-938d-39da-ba3b-b43e148d6e8a/
+- DOI/publisher URL: https://doi.org/10.1109/CSR61664.2024.10679346
+- Scope tags: AI; Cybersecurity; KMS
+- Evidence type/method: Implemented three-phase AI-assisted framework for taxonomy construction, ontology construction, and updating using NLP/Transformers, a STIX 2.1 schema, and Owlready2.
+- Concrete thesis relevance: A close architectural precedent for maintaining the structured knowledge layer that an SLM/LLM/RAG service queries, including explicit update operations.
+- Limitation: Abstract-only evidence; the abstract claims effective construction/update without exposing benchmark size, error rates, governance, or human-review effort.
+
+## 26. Building a cyber risk treatment taxonomy
+- Authors: I. D. Sánchez-García; T. S. Feliu; J. A. Calvo-Manzano
+- Year: 2025
+- Venue: Cluster Computing, 28(3)
+- Stable Mendeley URL: https://www.mendeley.com/catalogue/6cc9426c-0e35-3842-8e0a-075c2e8236ee/
+- DOI/publisher URL: https://doi.org/10.1007/s10586-024-04899-1
+- Scope tags: Cybersecurity; KMS
+- Evidence type/method: Taxonomy development using a knowledge-management taxonomy framework; produces 229 countermeasures in a five-level hierarchy and applies it in a banking case study.
+- Concrete thesis relevance: Demonstrates cross-framework control normalization and provides a case-backed pattern for translating retrieved risks into structured countermeasure options.
+- Limitation: Abstract-only evidence; one banking case does not establish generalizability, and effectiveness beyond identifying additional controls remains unclear.
+
+## 27. Systematic review: Cybersecurity risk taxonomy
+- Authors: A. M. Rea-Guaman; T. San Feliu; J. A. Calvo-Manzano; I. D. Sanchez-Garcia
+- Year: 2018
+- Venue: Advances in Intelligent Systems and Computing, 688, 137–146
+- Stable Mendeley URL: https://www.mendeley.com/catalogue/0efc6a59-7a1e-3c78-954a-d2d0eb47e180/
+- DOI/publisher URL: https://doi.org/10.1007/978-3-319-69341-5_13
+- Scope tags: Cybersecurity; KMS
+- Evidence type/method: Systematic review of 1990–2017 literature; classifies selected cyber-risk taxonomies using a five-level perspective and tracks a shift toward service/business-level risk.
+- Concrete thesis relevance: Supports representing risk at asset, service, and business levels so retrieval can answer both technical and organizational questions.
+- Limitation: Abstract-only evidence; only five primary elements were retained, and the evidence base ends in 2017.
+
+## 28. Knowledge sharing in organization: A systematic review
+- Authors: A. Yeboah
+- Year: 2023
+- Venue: Cogent Business & Management
+- Stable Mendeley URL: https://www.mendeley.com/catalogue/3317dbff-9b37-3a70-b7c2-f09ff793a9bf/
+- DOI/publisher URL: https://doi.org/10.1080/23311975.2023.2195027
+- Scope tags: KMS
+- Evidence type/method: Systematic review of 110 articles organized into knowledge-sharing enablers, processes, and outcomes.
+- Concrete thesis relevance: Provides an organizational evaluation frame: the KMS should be assessed for sharing processes and outcomes aligned with strategy, not only retrieval accuracy or usage volume.
+- Limitation: Abstract-only evidence and not cybersecurity-specific; transfer to SOCs and security-sensitive sharing is an inference requiring validation.
+
+## 29. Ontology-Based Knowledge Management Tools for Knowledge Sharing in Organization—A Review
+- Authors: M. A. Osman; S. A. Mohd Noah; S. Saad
+- Year: 2022
+- Venue: IEEE Access
+- Stable Mendeley URL: https://www.mendeley.com/catalogue/89536b56-e363-32a6-852a-6e3e0ed547bd/
+- DOI/publisher URL: https://doi.org/10.1109/ACCESS.2022.3163758
+- Scope tags: KMS; AI
+- Evidence type/method: Review of 13 ontology-based KM tools across ten comparison criteria, including knowledge source/type, extraction, input, retrieval, sharing technology, ontology source, and methodology.
+- Concrete thesis relevance: Provides a ready-made evaluation checklist for the complete KMS around the model layer and highlights extraction/retrieval from implicit knowledge as a design gap.
+- Limitation: Abstract-only evidence; tool currency, selection completeness, and empirical validation of the proposed ideal components need full-text review.
+
+## 30. Knowledge Sharing in Organizations: A Conceptual Framework
+- Authors: M. Ipe
+- Year: 2003
+- Venue: Human Resource Development Review, 2(4), 337–359
+- Stable Mendeley URL: https://www.mendeley.com/catalogue/bb7ed6c4-8e45-346a-afd5-b42e27661687/
+- DOI/publisher URL: https://doi.org/10.1177/1534484303257985
+- Scope tags: KMS
+- Evidence type/method: Conceptual model derived from a literature review of factors influencing individual-level knowledge sharing inside organizations.
+- Concrete thesis relevance: Grounds adoption and contribution requirements: an accurate RAG interface will still fail as a KMS if incentives, culture, relationships, and opportunities to share are neglected.
+- Limitation: Abstract-only evidence, not cybersecurity-specific, and more than two decades old; application to modern SOC and AI-mediated work is inferential.
+
+## 31. A Systematic Literature Review on Cyber Threat Intelligence for Organizational Cybersecurity Resilience
+- Authors: S. Saeed; S. A. Suayyid; M. S. Al-Ghamdi; H. Al-Muhaisen; A. M. Almuhaideb
+- Year: 2023
+- Venue: Sensors, 23(16)
+- Stable Mendeley URL: https://www.mendeley.com/catalogue/b2db9f06-cec0-322d-a594-e69437ab463e/
+- DOI/publisher URL: https://doi.org/10.3390/s23167273
+- Scope tags: Cybersecurity; KMS; AI
+- Evidence type/method: Systematic review with study selection and quality valuation; proposes an organizational CTI framework comprising a knowledge base, behavior/signature/anomaly detection, and visualization dashboards.
+- Concrete thesis relevance: Supplies a KMS-level architecture and outcome metrics—risk, attack counts/types, severity, and stakeholder collaboration—around the retrieval component.
+- Limitation: Abstract-only evidence; framework effectiveness appears proposed rather than operationally validated, and review-quality details were not inspected.
+
+## 32. Cyber threat intelligence sharing: Survey and research directions
+- Authors: T. D. Wagner; K. Mahbub; E. Palomar; A. E. Abdallah
+- Year: 2019
+- Venue: Computers & Security, 87
+- Stable Mendeley URL: https://www.mendeley.com/catalogue/c96f12a6-0d78-381d-a1ac-507921c6e680/
+- DOI/publisher URL: https://doi.org/10.1016/j.cose.2019.101589
+- Scope tags: Cybersecurity; KMS
+- Evidence type/method: Extensive literature survey of technical and non-technical CTI-sharing problems, with emphasis on automation, relevance, trust, and community priorities.
+- Concrete thesis relevance: Requires the KMS to treat trust, relevance, privacy/anonymity, and human/organizational constraints as first-class retrieval and sharing criteria.
+- Limitation: Abstract-only evidence; it mixes academic and gray literature, and its 2019 technology/standards snapshot needs updating.
+
+## 33. Promoting research on cyber threat intelligence sharing in ecosystems
+- Authors: C. Abraham; F. Bélanger; S. Daultrey
+- Year: 2025
+- Venue: Journal of Cybersecurity, 11(1)
+- Stable Mendeley URL: https://www.mendeley.com/catalogue/65c03b34-afab-37c3-ba6d-dc8bca41d835/
+- DOI/publisher URL: https://doi.org/10.1093/cybsec/tyaf016
+- Scope tags: Cybersecurity; KMS
+- Evidence type/method: Perspective and conceptual framework informed by interviews with 40 cybersecurity professionals; identifies ten factors shaping CTI-sharing outcomes.
+- Concrete thesis relevance: Adds human–technology trust and ecosystem context to evaluation, preventing the thesis from reducing knowledge sharing to data-format interoperability.
+- Limitation: Abstract-only evidence; interview sampling, analysis rigor, and the ten-factor framework’s predictive validity were not checked.
+
+## 34. Cyber Information Retrieval Through Pragmatics Understanding and Visualization
+- Authors: N. Sun; J. Zhang; S. Gao; L. Y. Zhang; S. Camtepe; Y. Xiang
+- Year: 2023
+- Venue: IEEE Transactions on Dependable and Secure Computing, 20(2), 1186–1199
+- Stable Mendeley URL: https://www.mendeley.com/catalogue/68f95910-e8b5-340c-9216-e5ade20a0914/
+- DOI/publisher URL: https://doi.org/10.1109/TDSC.2022.3151148
+- Scope tags: AI; Cybersecurity; RAG; KMS
+- Evidence type/method: Implemented semantic cyber search engine using neural entity extraction, linguistic features, embeddings, hidden metadata, augmented search, analytics, and visualization; evaluated on real-world datasets.
+- Concrete thesis relevance: Direct retrieval baseline for indexing and search: the RAG retriever should be evaluated for semantic/entity coverage, precision of relevant knowledge, understandability, and analyst-facing visualization—not only generation fluency.
+- Limitation: Abstract-only evidence; exact datasets, metrics, baselines, and user-study evidence were not inspected, and applying its results to generative RAG is an inference.
+
+## 35. A Systematic Review of Fairness, Accountability, Transparency, and Ethics in Information Retrieval
+- Authors: N. Bernard; K. Balog
+- Year: 2025
+- Venue: ACM Computing Surveys
+- Stable Mendeley URL: https://www.mendeley.com/catalogue/c8003c07-61ad-35b2-b595-191a7ab48246/
+- DOI/publisher URL: https://doi.org/10.1145/3637211
+- Scope tags: AI; RAG; KMS
+- Evidence type/method: Systematic review of definitions, methods, and evaluation approaches for fairness, accountability, transparency, and ethics in information retrieval; develops requirement taxonomies and practical definitions.
+- Concrete thesis relevance: Supplies non-accuracy acceptance criteria for the RAG layer: automated fairness tests, audits for accountability/transparency, and user studies where system behavior cannot be judged from rankings alone.
+- Limitation: Abstract-only evidence and not cybersecurity-specific; mapping its multi-dimensional criteria to sensitive CTI access, authorization, and analyst workflows is an inference.

@@ -21,10 +21,18 @@ public interface ArticleRepository
     @Query("select a.id from Article a")
     List<String> findAllIds();
 
+    // Select a query for each active-filter combination. Binding null inside
+    // lower(:severity) can make PostgreSQL infer bytea instead of text.
+    @Query("select a.id from Article a where a.categoryId = :category")
+    List<String> findIdsByCategory(String category);
+
+    /** severity must be non-null and normalized to lowercase by the caller. */
+    @Query("select a.id from Article a where lower(a.severity) = :severity")
+    List<String> findIdsBySeverity(String severity);
+
     @Query("""
             select a.id from Article a
-            where (:category is null or a.categoryId = :category)
-              and (:severity is null or lower(a.severity) = lower(:severity))
+            where a.categoryId = :category and lower(a.severity) = :severity
             """)
     List<String> findIdsByCategoryAndSeverity(String category, String severity);
 }

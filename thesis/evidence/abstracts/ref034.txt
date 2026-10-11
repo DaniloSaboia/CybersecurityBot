@@ -1,0 +1,24 @@
+Source: https://doi.org/10.1145/3780095
+Evidence: publisher-deposited abstract retrieved via Crossref/DOI metadata; no full-text appraisal.
+
+Machine learning (ML) increasingly underpins foundation models and autonomous pipelines in high-stakes domains such as finance, healthcare, and national infrastructure, rendering these systems prime targets for sophisticated adversarial threats. Attackers now leverage advanced Tactics, Techniques, and Procedures (TTPs) spanning data poisoning, model extraction, prompt injection, automated jailbreaking, training data exfiltration, and—more recently—
+                    preference-guided black-box optimization
+                    that exploits models’ own comparative judgments to craft successful attacks iteratively. These emerging text-only, query-based methods demonstrate that larger and better-calibrated models can be paradoxically more vulnerable to introspection-driven jailbreaks and cross-modal manipulations. While traditional cybersecurity frameworks offer partial mitigation, they lack ML-specific threat modeling and fail to capture evolving attack vectors across foundation, multimodal, and federated settings.
+                    Objective:
+                    This research empirically characterizes modern ML security risks by identifying dominant attacker TTPs, exposed vulnerabilities, and lifecycle stages most frequently targeted in foundation-model, multimodal, and retrieval-augmented (RAG) pipelines. The study also assesses the scalability of current defenses against generative and introspection-based attacks, highlighting the need for adaptive, ML-aware security mechanisms.
+                    Methods:
+                    We conduct a large-scale empirical analysis of ML security, extracting 93 distinct threats from multiple sources: real-world incidents in MITRE ATLAS (26), the AI Incident Database (12), and peer-reviewed literature (55), supplemented by 854 ML repositories from GitHub and the Python Advisory database. A multi-agent reasoning system with enhanced Retrieval-Augmented Generation (RAG)—powered by ChatGPT-4o (temperature 0.4)—automatically extracts TTPs, vulnerabilities, and lifecycle stages from over 300 scientific articles using evidence-grounded reasoning. The resulting ontology-driven threat graph supports cross-source validation and lifecycle mapping.
+                    Results:
+                    Our analysis uncovers multiple unreported threats beyond current ATLAS coverage, including model-stealing attacks against commercial LLM APIs, data leakage through parameter memorization, and preference-guided query optimization enabling text-only jailbreaks and multimodal adversarial examples.
+                    Gradient-based obstinate attacks
+                    ,
+                    MASTERKEY automated jailbreaking
+                    ,
+                    federated learning poisoning
+                    ,
+                    diffusion backdoor embedding
+                    , and
+                    preference-oriented optimization leakage
+                    emerge as dominant TTPs, disproportionately impacting pretraining and inference. Graph-based dependency analysis shows that specific ML libraries and model hubs exhibit dense vulnerability clusters lacking effective issue-tracking and patch-propagation mechanisms.
+                    Conclusion:
+                    This study underscores the urgent need for adaptive, ML-specific security frameworks that address introspection-based and preference-guided attacks alongside classical adversarial vectors. Robust dependency management, automated threat intelligence, and continuous monitoring are essential to mitigate supply-chain and inference-time risks throughout the ML lifecycle. By unifying empirical evidence from incidents, literature, and repositories, this research delivers a comprehensive threat landscape for next-generation AI systems and establishes a foundation for proactive, multi-agent security governance in the era of large-scale and generative AI.

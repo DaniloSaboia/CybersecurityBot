@@ -13,17 +13,17 @@ import './assistant.css';
 
 // Keep these examples aligned with the existing backend SuggestionService.
 const STARTER_QUESTIONS = [
-  { id: 'triage', icon: 'alert', label: 'We got a device-code phishing alert — how do I triage?' },
-  { id: 'summarize', icon: 'intel', label: "Summarize this week's critical threat intel" },
-  { id: 'playbook', icon: 'book', label: 'Pull the BEC containment playbook steps' },
-  { id: 'report', icon: 'doc', label: 'Draft a remediation report for CVE-2024-21413' },
+  { id: 'triage', icon: 'alert', label: 'I clicked a suspicious email link. What should I do first?' },
+  { id: 'summarize', icon: 'intel', label: 'Files are encrypted and there is a ransom note. How do we contain this safely?' },
+  { id: 'playbook', icon: 'book', label: 'Someone accessed my work account. How do I regain control and check for damage?' },
+  { id: 'report', icon: 'doc', label: 'An API key was exposed publicly. How do I revoke it and investigate misuse?' },
 ];
 
 const STARTER_TITLES = {
-  triage: 'Triage an alert',
-  summarize: 'Review threat intelligence',
-  playbook: 'Find containment steps',
-  report: 'Plan remediation',
+  triage: 'Suspicious email or link',
+  summarize: 'Ransomware or encrypted files',
+  playbook: 'Compromised account',
+  report: 'Exposed password or API key',
 };
 
 const INTRO_MSG = {
@@ -37,7 +37,7 @@ const INTRO_MSG = {
   citationReferences: [],
 };
 
-export default function Assistant({ onOpenArticle, pendingAsk, activeModel, onOpenSettings, userId }) {
+export default function Assistant({ onOpenArticle, pendingAsk, onPendingAskConsumed, activeModel, onOpenSettings, userId }) {
   const [messages, setMessages] = useState([INTRO_MSG]);
   const [input, setInput] = useState('');
   const [conversationId, setConversationId] = useState(null);
@@ -51,6 +51,7 @@ export default function Assistant({ onOpenArticle, pendingAsk, activeModel, onOp
   const streamAbortRef = useRef(null);
   const historyRequestRef = useRef(0);
   const evidenceOpenerRef = useRef(null);
+  const consumedAskRef = useRef(null);
 
   const [busy, setBusy] = useState(false);
   const [thinking, setThinking] = useState(false);
@@ -177,7 +178,7 @@ export default function Assistant({ onOpenArticle, pendingAsk, activeModel, onOp
   // Stream the answer over SSE
   function send(text) {
     const q = (text != null ? text : input).trim();
-    if (!q || busy) return;
+    if (!q || busy || streamAbortRef.current) return false;
     historyRequestRef.current += 1;
     streamAbortRef.current?.abort();
     const controller = new AbortController();
@@ -262,12 +263,24 @@ export default function Assistant({ onOpenArticle, pendingAsk, activeModel, onOp
         },
       }
     );
+    return true;
   }
 
   useEffect(() => {
-    if (pendingAsk && pendingAsk.text) send(pendingAsk.text);
+    if (!pendingAsk?.text || busy || consumedAskRef.current === pendingAsk) return undefined;
+    let cancelled = false;
+    // StrictMode replays mount effects. Start only after that replay settles,
+    // then consume the cross-view request so returning from a citation cannot
+    // submit it again in a fresh Assistant mount.
+    queueMicrotask(() => {
+      if (!cancelled && send(pendingAsk.text)) {
+        consumedAskRef.current = pendingAsk;
+        onPendingAskConsumed?.(pendingAsk);
+      }
+    });
+    return () => { cancelled = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pendingAsk && pendingAsk.n]);
+  }, [pendingAsk, busy, onPendingAskConsumed]);
 
   // Export the current transcript as a Markdown file.
   function exportThread() {
@@ -294,7 +307,7 @@ export default function Assistant({ onOpenArticle, pendingAsk, activeModel, onOp
       <div className="view-head">
         <div>
           <h1 className="view-title">AI Assistant</h1>
-          <p className="view-sub">Investigate threats using your security knowledge base.</p>
+          <p className="view-sub">Find your next step with guidance from your security knowledge base.</p>
         </div>
         <div className="assistant-head-actions">
           <div className="assistant-scope" role="status" aria-live="polite">
@@ -403,14 +416,15 @@ export default function Assistant({ onOpenArticle, pendingAsk, activeModel, onOp
 
               {messages.length === 1 && messages[0].intro && (
                 <section className="assistant-start">
-                  <h2>What are you investigating?</h2>
-                  <p>Bring a threat, an indicator, or a response question. Build your next step from the evidence in your knowledge base.</p>
+                  <h2>What happened?</h2>
+                  <p>Describe a security problem in your own words. Get help with what to check, what to do next, and how to know it worked.</p>
                   <div className="assistant-evidence-guide">
                     <Icon name="link" size={17} />
                     <span>Follow an answer back to its sources.<small>Open cited articles and, when available, the exact revision and passage used.</small></span>
                   </div>
                 </section>
               )}
+              {isEmpty && <IncidentIntake onSend={send} />}
               {messages.filter((m) => !m.intro).map((m, i) =>
                 m.role === 'user' ? (
                   <UserBubble key={i} text={m.text} />
@@ -496,6 +510,39 @@ function UserBubble({ text }) {
   );
 }
 
+function IncidentIntake({ onSend }) {
+  const [happened, setHappened] = useState('');
+  const [affected, setAffected] = useState('');
+  const [actions, setActions] = useState('');
+
+  function submit(event) {
+    event.preventDefault();
+    if (!happened.trim()) return;
+    onSend([
+      'Help me respond to this cybersecurity problem using the relevant playbook and cite your sources.',
+      `What happened: ${happened.trim()}`,
+      `Affected devices, accounts, or services: ${affected.trim() || 'Not yet known.'}`,
+      `Actions already taken: ${actions.trim() || 'Not specified.'}`,
+      'Give me a prioritized plan: what to do now, what evidence to preserve, how to recover, how to verify recovery, and when to contact IT or an incident responder. Explain the purpose and expected result of each action. Ask up to three essential questions if needed; do not assume missing facts.',
+    ].join('\n\n'));
+  }
+
+  return (
+    <details className="incident-intake">
+      <summary><Icon name="shield" size={17} /><span>Build a response plan<small>Add the details that make the guidance useful to you.</small></span><Icon name="chevron" size={16} /></summary>
+      <form onSubmit={submit}>
+        <label htmlFor="incident-happened">What happened? <span>Required</span></label>
+        <textarea id="incident-happened" value={happened} onChange={(event) => setHappened(event.target.value)} required maxLength={4000} rows={3} placeholder="For example: I entered my password after following a link in an email about an unpaid invoice." />
+        <div className="incident-intake-fields">
+          <div><label htmlFor="incident-affected">What is affected?</label><input id="incident-affected" value={affected} onChange={(event) => setAffected(event.target.value)} maxLength={1500} placeholder="Devices, accounts, services, or not sure" /></div>
+          <div><label htmlFor="incident-actions">What have you already done?</label><input id="incident-actions" value={actions} onChange={(event) => setActions(event.target.value)} maxLength={1500} placeholder="For example: reported it to IT" /></div>
+        </div>
+        <div className="incident-intake-footer"><p>Describe the issue without passwords, secret keys, or personal data.</p><button type="submit" disabled={!happened.trim()}>Get response plan <Icon name="arrowright" size={15} /></button></div>
+      </form>
+    </details>
+  );
+}
+
 function AssistantTurn({ msg, onOpenArticle, onViewEvidence, index, fresh }) {
   const blocks = Array.isArray(msg.blocks) ? msg.blocks : [];
   const cites = Array.isArray(msg.citations) ? msg.citations : [];
@@ -535,7 +582,7 @@ function AssistantTurn({ msg, onOpenArticle, onViewEvidence, index, fresh }) {
         {msg.loading && <div className="thinking" role="status"><span /><span /><span /> <em>Retrieving conversation…</em></div>}
         {blocks.map((b, i) => (
           <div className="block-anim" key={i} style={{ animationDelay: (i * 0.12 + 0.04) + 's' }}>
-            <Block b={b} onOpen={onOpenArticle} index={index} />
+            <Block b={b} onOpen={onOpenArticle} index={index} citations={cites} citationReferences={citationReferences} />
           </div>
         ))}
         {hasCites && (
@@ -618,17 +665,18 @@ function AssistantTurn({ msg, onOpenArticle, onViewEvidence, index, fresh }) {
   );
 }
 
-function Block({ b, onOpen }) {
+function Block({ b, onOpen, citations, citationReferences }) {
   if (!b) return null;
-  if (b.type === 'text') return <div className="msg-rich">{renderRichText(b.text, onOpen)}</div>;
+  const references = { citations, citationReferences };
+  if (b.type === 'text') return <div className="msg-rich">{renderRichText(b.text, onOpen, references)}</div>;
   if (b.type === 'steps') {
     const items = Array.isArray(b.items) ? b.items : [];
     return (
       <ol className="msg-steps">
         {items.map((it, i) => (
           <li key={i}>
-            <span className="step-n">{i + 1}.</span>
-            <span>{renderInline(it, onOpen)}</span>
+            <span className="step-n" aria-hidden="true">{i + 1}.</span>
+            <span className="step-content">{renderInline(it, onOpen, references)}</span>
           </li>
         ))}
       </ol>
@@ -639,8 +687,8 @@ function Block({ b, onOpen }) {
       <div className={`msg-callout tone-${b.tone}`}>
         <Icon name="alert" size={15} />
         <div>
-          <div className="callout-title">{b.title}</div>
-          <div className="callout-text">{b.text}</div>
+          <div className="callout-title">{renderInline(b.title, onOpen, references)}</div>
+          <div className="callout-text">{renderRichText(b.text, onOpen, references)}</div>
         </div>
       </div>
     );
@@ -650,12 +698,12 @@ function Block({ b, onOpen }) {
       <div className="msg-report">
         <div className="report-head">
           <Icon name="doc" size={14} />
-          <span>{b.title}</span>
+          <span>{renderInline(b.title, onOpen, references)}</span>
           <CopyBtn className="report-copy" label="Copy" text={(b.title || '') + '\n\n' + rows.map((r) => r[0] + ': ' + r[1]).join('\n')} />
         </div>
         <table className="report-table">
           <tbody>
-            {rows.map((r, i) => (<tr key={i}><th>{r[0]}</th><td>{r[1]}</td></tr>))}
+            {rows.map((r, i) => (<tr key={i}><th scope="row">{renderInline(r[0], onOpen, references)}</th><td>{renderInline(r[1], onOpen, references)}</td></tr>))}
           </tbody>
         </table>
       </div>

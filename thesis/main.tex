@@ -1,0 +1,72 @@
+% Build from this directory: tectonic -k --keep-logs main.tex
+\documentclass[12pt,a4paper,twoside,openright]{book}
+\usepackage{fontspec}
+\usepackage{emptypage}
+\setmainfont{lmroman12-regular.otf}[BoldFont=lmroman12-bold.otf,ItalicFont=lmroman12-italic.otf,BoldItalicFont=lmroman10-bolditalic.otf]
+\setsansfont{lmsans12-regular.otf}[BoldFont=lmsans10-bold.otf,ItalicFont=lmsans12-oblique.otf]
+\setmonofont{lmmono12-regular.otf}
+\usepackage[portuguese,english]{babel}
+
+\usepackage[a4paper,inner=25mm,outer=25mm,top=30mm,bottom=25mm,headheight=15pt]{geometry}
+\usepackage{setspace}
+\setstretch{1.16}
+\usepackage{microtype}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs,longtable,tabularx,array}
+\usepackage{graphicx}
+\usepackage{placeins}
+\usepackage{enumitem}
+\usepackage[table]{xcolor}
+\definecolor{TableNavy}{HTML}{243B53}
+\definecolor{TableStripe}{HTML}{F0F5F8}
+\usepackage{xurl}
+\urlstyle{tt}
+\Urlmuskip=0mu plus 2mu\relax
+\renewcommand{\tabularxcolumn}[1]{>{\raggedright\arraybackslash}p{#1}}
+\usepackage[numbers,sort&compress]{natbib}
+\setcitestyle{square,comma}
+\usepackage{titlesec}
+\titleformat{\chapter}[display]{\normalfont\centering}{\MakeUppercase{\chaptertitlename}\ \thechapter}{15pt}{\large\bfseries}
+\titlespacing*{\chapter}{0pt}{35pt}{25pt}
+\titleformat{\section}{\normalfont\normalsize\bfseries}{\thesection.}{0.6em}{}
+\titleformat{\subsection}{\normalfont\normalsize\bfseries}{\thesubsection.}{0.6em}{}
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyfoot[LE,RO]{\small\thepage}
+\renewcommand{\headrulewidth}{0pt}
+\fancypagestyle{plain}{\fancyhf{}\fancyfoot[LE,RO]{\small\thepage}\renewcommand{\headrulewidth}{0pt}}
+\usepackage[unicode,hidelinks,breaklinks]{hyperref}
+\hypersetup{pdfsubject={Knowledge management and machine learning for cybersecurity incident response}}
+\setcounter{tocdepth}{2}
+\setcounter{secnumdepth}{3}
+\setlength{\emergencystretch}{3em}
+\newcommand{\draftfield}[1]{\textcolor{gray}{[#1 -- to be confirmed]}}
+\input{metadata}
+\hypersetup{pdftitle={\thesistitle},pdfauthor={\thesisauthor}}
+\begin{document}
+\raggedbottom
+\frontmatter
+\input{frontmatter}
+\tableofcontents
+\listoffigures
+\addcontentsline{toc}{chapter}{List of Figures}
+\listoftables
+\addcontentsline{toc}{chapter}{List of Tables}
+\input{acronyms}
+\mainmatter
+\input{chapters/01-introduction}
+\input{chapters/02-literature}
+\input{chapters/03-system}
+\input{chapters/04-evaluation}
+\input{chapters/05-conclusion}
+\appendix
+\input{appendices}
+\backmatter
+\cleardoublepage
+\phantomsection
+\addcontentsline{toc}{chapter}{References}
+\renewcommand{\bibname}{References}
+\bibliographystyle{plainnat}
+\bibliography{references,supplementary}
+\end{document}

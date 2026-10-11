@@ -20,6 +20,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import java.io.InputStream;
@@ -34,6 +35,7 @@ import java.util.List;
  * reindex work; seed data is not directly indexed with legacy metadata.
  */
 @Component
+@Order(100)
 public class DataSeeder implements CommandLineRunner {
 
     private static final Logger log = LoggerFactory.getLogger(DataSeeder.class);
@@ -47,7 +49,7 @@ public class DataSeeder implements CommandLineRunner {
     private final TrustedArticleRegistrationService trustedArticleRegistrationService;
 
     public DataSeeder(
-            @Value("${app.seed.enabled:true}") boolean seedEnabled,
+            @Value("${app.seed.enabled:false}") boolean seedEnabled,
             ArticleRepository articleRepository,
             CategoryRepository categoryRepository,
             ConnectorRepository connectorRepository,
@@ -68,8 +70,12 @@ public class DataSeeder implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
+        JsonNode configured = root();
+        int addedCategories = seedCategories(configured.path("categories"));
+        int addedConnectors = upsertConnectors(configured);
         if (!seedEnabled) {
-            log.info("Data seeding disabled (app.seed.enabled=false).");
+            log.info("Demonstration articles/jobs disabled (app.seed.enabled=false); {} missing connectors provisioned.",
+                    addedConnectors);
             return;
         }
         long existingArticles = articleRepository.count();
@@ -77,9 +83,8 @@ public class DataSeeder implements CommandLineRunner {
             // Existing rows are either already governed or have a migration
             // outbox item.  Never relabel their legacy text as current; the
             // worker derives canonical chunks from immutable evidence.
-            int added = upsertConnectors(root());
             log.info("Seed skipped — {} articles already present; canonical reindex remains durable ({} new connectors).",
-                    existingArticles, added);
+                    existingArticles, addedConnectors);
             return;
         }
 
@@ -89,8 +94,8 @@ public class DataSeeder implements CommandLineRunner {
             root = objectMapper.readTree(in);
         }
 
-        int categories = seedCategories(root.path("categories"));
-        int connectors = seedConnectors(root.path("connectors"));
+        int categories = addedCategories;
+        int connectors = addedConnectors;
         int jobs = seedJobs(root.path("jobs"));
         List<Article> articles = seedArticles(root.path("articles"));
         trustedArticleRegistrationService.persistAndRegister(
@@ -133,15 +138,16 @@ public class DataSeeder implements CommandLineRunner {
     private int seedCategories(JsonNode arr) {
         List<Category> out = new ArrayList<>();
         for (JsonNode n : arr) {
+            if (categoryRepository.existsById(n.path("id").asText())) continue;
             Category c = new Category();
             c.setId(n.path("id").asText());
             c.setLabel(n.path("label").asText());
             c.setAbbr(n.path("abbr").asText());
-            c.setDocCount(n.path("docCount").asInt());
+            c.setDocCount(0);
             c.setSortOrder(n.path("sortOrder").asInt());
             out.add(c);
         }
-        categoryRepository.saveAll(out);
+        if (!out.isEmpty()) categoryRepository.saveAll(out);
         return out.size();
     }
 

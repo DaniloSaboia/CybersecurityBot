@@ -5,6 +5,14 @@ import { Icon } from '../icons.jsx';
 import './workflows.css';
 import { SeverityTag, Tag, SourceChip, IocTypeIcon, CopyBtn, fmtDate, SEVERITY, StampButton } from '../ui.jsx';
 import { useArticles, useArticle, useCategories, useArticleIndex } from '../lib/queries.js';
+import { renderRichText } from '../lib/richText.jsx';
+
+const PLAYBOOK_TOPICS = [
+  { label: 'Suspicious message', query: 'phishing' },
+  { label: 'Encrypted files', query: 'ransomware' },
+  { label: 'Compromised account', query: 'account' },
+  { label: 'Exposed secret', query: 'secret' },
+];
 
 export default function KnowledgeBase({ openId, setOpenId, onAsk }) {
   const [query, setQuery] = useState('');
@@ -29,6 +37,12 @@ export default function KnowledgeBase({ openId, setOpenId, onAsk }) {
   const isSplit = !!openId;
   const surfaced = articleListQuery.isPending ? '—' : articleListQuery.isError ? 'Unavailable' : total.toLocaleString();
 
+  function browsePlaybooks(topic = '') {
+    setCat('playbooks');
+    setQuery(topic);
+    setSev('all');
+  }
+
   return (
     <div className={'kb workflow-view' + (isSplit ? ' kb-split' : '')}>
       <div className="kb-main">
@@ -48,6 +62,15 @@ export default function KnowledgeBase({ openId, setOpenId, onAsk }) {
             {query && <button type="button" aria-label="Clear knowledge-base search" onClick={() => setQuery('')}><Icon name="x" size={13} /></button>}
           </div>
         </div>
+
+        {!isSplit && (
+          <section className="kb-playbooks" aria-labelledby="kb-playbooks-title">
+            <div className="kb-playbooks-heading"><div><h2 id="kb-playbooks-title">Put a response plan into action</h2><p>Find first actions, evidence to preserve, recovery steps, and checks that the problem is resolved.</p></div><button type="button" className="workflow-button" onClick={() => browsePlaybooks()}><Icon name="book" size={15} /> Browse all playbooks</button></div>
+            <div className="kb-playbook-topics" role="group" aria-label="Find a playbook by problem">
+              {PLAYBOOK_TOPICS.map((topic) => <button type="button" key={topic.query} aria-pressed={cat === 'playbooks' && query === topic.query} onClick={() => browsePlaybooks(topic.query)}>{topic.label}<Icon name="arrowright" size={12} /></button>)}
+            </div>
+          </section>
+        )}
 
         <div className="kb-cats" role="group" aria-label="Knowledge-base collection filter">
           <button type="button" aria-pressed={cat === 'all'} className={'cat-chip' + (cat === 'all' ? ' active' : '')} onClick={() => setCat('all')}>
@@ -220,8 +243,10 @@ function ArticleDetail({ a, onClose, onOpen, onAsk, articleIndex }) {
           <span className="article-id big">{a.id}</span>
         </div>
         <div className="article-detail-actions">
-          <StampButton className="ad-btn" action="CONSULT" context="AI" onClick={() => onAsk(`Tell me more about ${a.id}: ${a.title}`)}>
-            <Icon name="chat" size={13} /> Ask AI
+          <StampButton className="ad-btn" action="CONSULT" context="AI" onClick={() => onAsk(a.category === 'playbooks'
+            ? `Help me use the playbook ${a.id}: ${a.title}. First ask me what happened, which systems or accounts are affected, and what I have already done. Then use the cited playbook to guide containment, recovery, and verification. Do not assume that I have administrator access.`
+            : `Tell me more about ${a.id}: ${a.title}`)}>
+            <Icon name="chat" size={13} /> {a.category === 'playbooks' ? 'Help me use this playbook' : 'Ask AI'}
           </StampButton>
           <button type="button" className="ad-btn icon" onClick={onClose} title="Close document" aria-label="Close document">
             <Icon name="x" size={15} />
@@ -269,7 +294,9 @@ function ArticleDetail({ a, onClose, onOpen, onAsk, articleIndex }) {
           {(a.body || []).map((sec, i) => (
             <div className="article-section" key={i}>
               <h4>{sec.h}</h4>
-              <p>{sec.p}</p>
+              {sec.h?.toLowerCase() === 'authoritative sources'
+                ? <SourceReferences text={sec.p} />
+                : renderRichText(sec.p, onOpen)}
             </div>
           ))}
         </div>
@@ -285,4 +312,20 @@ function ArticleDetail({ a, onClose, onOpen, onAsk, articleIndex }) {
       </div>
     </section>
   );
+}
+
+// Only the explicit sources section creates external links. Indicator values and
+// suspicious URLs elsewhere in an article remain non-clickable text.
+function SourceReferences({ text }) {
+  return <ul className="article-source-links">{String(text || '').split('\n').filter((line) => line.trim()).map((line, index) => {
+    const match = line.match(/^(.*?)\s+—\s+(https?:\/\/\S+)$/i);
+    let url;
+    try {
+      if (match) {
+        const parsed = new URL(match[2]);
+        if (['https:', 'http:'].includes(parsed.protocol) && !parsed.username && !parsed.password) url = parsed.href;
+      }
+    } catch { /* Invalid references remain readable text. */ }
+    return <li key={index}>{url ? <a href={url} target="_blank" rel="noopener noreferrer">{match[1]} <Icon name="link" size={12} /><span>{new URL(url).hostname}</span></a> : line}</li>;
+  })}</ul>;
 }

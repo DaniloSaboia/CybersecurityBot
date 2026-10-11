@@ -1,0 +1,1391 @@
+{
+  "packId": "sentinel-response-starter",
+  "version": "2026-09-29.1",
+  "sourceCheckedOn": "2026-09-29",
+  "reviewStatus": "requires-local-human-review",
+  "audience": "Small organizations, their IT teams and people reporting security problems",
+  "coverageNote": "Sixteen common defensive response scenarios. No claim of complete threat coverage, organization-specific validation, legal advice, incident diagnosis or automated remediation.",
+  "contentProvenance": "Original AI-assisted editorial synthesis. Source check is distinct from human operational review. Publisher source excerpts were read using public web retrieval; the registry identifies retrieval limitations.",
+  "categories": [
+    {
+      "id": "playbooks",
+      "label": "Playbooks & Runbooks",
+      "abbr": "PB",
+      "docCount": 0,
+      "sortOrder": 3
+    }
+  ],
+  "sources": [
+    {
+      "id": "nist-ir",
+      "title": "NIST SP 800-61 Rev. 3: incident response",
+      "publisher": "NIST",
+      "url": "https://csrc.nist.gov/pubs/sp/800/61/r3/final",
+      "sourceCheckedOn": "2026-09-29",
+      "verification": "Publisher page and full PDF read"
+    },
+    {
+      "id": "ncsc-phishing",
+      "title": "Phishing: actions to take",
+      "publisher": "UK NCSC",
+      "url": "https://www.ncsc.gov.uk/section/respond-recover/phishing",
+      "sourceCheckedOn": "2026-09-29",
+      "verification": "Publisher content read through search"
+    },
+    {
+      "id": "fbi-bec",
+      "title": "Business Email Compromise",
+      "publisher": "FBI",
+      "url": "https://www.fbi.gov/how-we-can-help-you/common-frauds-and-scams/business-email-compromise",
+      "sourceCheckedOn": "2026-09-29",
+      "verification": "Publisher content read through search"
+    },
+    {
+      "id": "cisa-ransomware",
+      "title": "#StopRansomware Guide",
+      "publisher": "CISA",
+      "url": "https://www.cisa.gov/stopransomware/ransomware-guide",
+      "sourceCheckedOn": "2026-09-29",
+      "verification": "Publisher content read through search"
+    },
+    {
+      "id": "nist-malware",
+      "title": "NIST SP 800-83 Rev. 1: malware prevention and handling",
+      "publisher": "NIST",
+      "url": "https://csrc.nist.gov/pubs/sp/800/83/r1/final",
+      "sourceCheckedOn": "2026-09-29",
+      "verification": "Publisher page and full PDF read; 2013 guidance, use current product procedures"
+    },
+    {
+      "id": "ms-account",
+      "title": "Respond to a compromised email account in Microsoft 365",
+      "publisher": "Microsoft",
+      "url": "https://learn.microsoft.com/en-us/defender-office-365/responding-to-a-compromised-email-account",
+      "sourceCheckedOn": "2026-09-29",
+      "verification": "Publisher page read"
+    },
+    {
+      "id": "ncsc-account",
+      "title": "Recovering a hacked account",
+      "publisher": "UK NCSC",
+      "url": "https://www.ncsc.gov.uk/guidance/recovering-a-hacked-account",
+      "sourceCheckedOn": "2026-09-29",
+      "verification": "Publisher content read through search"
+    },
+    {
+      "id": "aws-keys",
+      "title": "Practical steps to minimize key exposure using AWS Security Services",
+      "publisher": "AWS",
+      "url": "https://aws.amazon.com/blogs/security/practical-steps-to-minimize-key-exposure-using-aws-security-services/",
+      "sourceCheckedOn": "2026-09-29",
+      "verification": "Publisher page read"
+    },
+    {
+      "id": "owasp-secrets",
+      "title": "Secrets Management Cheat Sheet",
+      "publisher": "OWASP",
+      "url": "https://cheatsheetseries.owasp.org/cheatsheets/Secrets_Management_Cheat_Sheet.html",
+      "sourceCheckedOn": "2026-09-29",
+      "verification": "Publisher page read"
+    },
+    {
+      "id": "cisa-kev",
+      "title": "Known Exploited Vulnerabilities Catalog",
+      "publisher": "CISA",
+      "url": "https://www.cisa.gov/known-exploited-vulnerabilities-catalog",
+      "sourceCheckedOn": "2026-09-29",
+      "verification": "Publisher search-index text read; direct retrieval unavailable"
+    },
+    {
+      "id": "cisa-response",
+      "title": "Cybersecurity Incident and Vulnerability Response Playbooks",
+      "publisher": "CISA",
+      "url": "https://www.cisa.gov/sites/default/files/publications/Cybersecurity_Incident_Vulnerability_Response_Playbooks_508C.pdf",
+      "sourceCheckedOn": "2026-09-29",
+      "verification": "Publisher search-index text read"
+    },
+    {
+      "id": "owasp-logging",
+      "title": "Logging Cheat Sheet",
+      "publisher": "OWASP",
+      "url": "https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html",
+      "sourceCheckedOn": "2026-09-29",
+      "verification": "Publisher page read"
+    },
+    {
+      "id": "owasp-sqli",
+      "title": "SQL Injection Prevention Cheat Sheet",
+      "publisher": "OWASP",
+      "url": "https://cheatsheetseries.owasp.org/cheatsheets/SQL_Injection_Prevention_Cheat_Sheet.html",
+      "sourceCheckedOn": "2026-09-29",
+      "verification": "Publisher page read"
+    },
+    {
+      "id": "owasp-authz",
+      "title": "Authorization Cheat Sheet",
+      "publisher": "OWASP",
+      "url": "https://cheatsheetseries.owasp.org/cheatsheets/Authorization_Cheat_Sheet.html",
+      "sourceCheckedOn": "2026-09-29",
+      "verification": "Publisher page read"
+    },
+    {
+      "id": "ftc-breach",
+      "title": "Data Breach Response: A Guide for Business",
+      "publisher": "FTC",
+      "url": "https://www.ftc.gov/business-guidance/resources/data-breach-response-guide-business",
+      "sourceCheckedOn": "2026-09-29",
+      "verification": "Publisher content read through search"
+    },
+    {
+      "id": "cloudflare-ddos",
+      "title": "Under a DDoS attack?",
+      "publisher": "Cloudflare",
+      "url": "https://developers.cloudflare.com/fundamentals/security/under-ddos-attack/",
+      "sourceCheckedOn": "2026-09-29",
+      "verification": "Publisher content read through search"
+    },
+    {
+      "id": "cloudflare-defense",
+      "title": "Proactive DDoS defense",
+      "publisher": "Cloudflare",
+      "url": "https://developers.cloudflare.com/ddos-protection/best-practices/proactive-defense/",
+      "sourceCheckedOn": "2026-09-29",
+      "verification": "Publisher content read through search"
+    },
+    {
+      "id": "cloudflare-challenge",
+      "title": "Under Attack mode",
+      "publisher": "Cloudflare",
+      "url": "https://developers.cloudflare.com/fundamentals/reference/under-attack-mode/",
+      "sourceCheckedOn": "2026-09-29",
+      "verification": "Publisher content read through search"
+    },
+    {
+      "id": "apple-lost",
+      "title": "How to find your lost iPhone or iPad",
+      "publisher": "Apple",
+      "url": "https://support.apple.com/en-ie/101593",
+      "sourceCheckedOn": "2026-09-29",
+      "verification": "Publisher page read"
+    },
+    {
+      "id": "cisa-insider",
+      "title": "Insider Threat Mitigation Guide",
+      "publisher": "CISA",
+      "url": "https://www.cisa.gov/sites/default/files/2022-11/Insider%20Threat%20Mitigation%20Guide_Final_508.pdf",
+      "sourceCheckedOn": "2026-09-29",
+      "verification": "Publisher search-index text read; direct retrieval unavailable"
+    },
+    {
+      "id": "cisa-supply",
+      "title": "Defending Against Software Supply Chain Attacks",
+      "publisher": "CISA",
+      "url": "https://www.cisa.gov/sites/default/files/publications/defending_against_software_supply_chain_attacks_508_1.pdf",
+      "sourceCheckedOn": "2026-09-29",
+      "verification": "Publisher search-index text read; direct retrieval unavailable"
+    },
+    {
+      "id": "ftc-small",
+      "title": "Cybersecurity for Small Business",
+      "publisher": "FTC",
+      "url": "https://www.ftc.gov/business-guidance/small-businesses/cybersecurity",
+      "sourceCheckedOn": "2026-09-29",
+      "verification": "Publisher content read through search"
+    },
+    {
+      "id": "ncsc-backups",
+      "title": "Ransomware-resistant backups",
+      "publisher": "UK NCSC",
+      "url": "https://www.ncsc.gov.uk/collection/ransomware-resistant-backups",
+      "sourceCheckedOn": "2026-09-29",
+      "verification": "Publisher page read"
+    },
+    {
+      "id": "ncsc-recovery",
+      "title": "Mitigating malware and ransomware attacks",
+      "publisher": "UK NCSC",
+      "url": "https://www.ncsc.gov.uk/guidance/mitigating-malware-and-ransomware-attacks",
+      "sourceCheckedOn": "2026-09-29",
+      "verification": "Publisher page read"
+    },
+    {
+      "id": "aws-s3",
+      "title": "Blocking public access to your Amazon S3 storage",
+      "publisher": "AWS",
+      "url": "https://docs.aws.amazon.com/AmazonS3/latest/userguide/access-control-block-public-access.html",
+      "sourceCheckedOn": "2026-09-29",
+      "verification": "Publisher content read through search"
+    }
+  ],
+  "articles": [
+    {
+      "id": "PB-START-001",
+      "title": "Something is wrong: triage a suspected security incident",
+      "category": "playbooks",
+      "severity": "high",
+      "tags": [
+        "response-playbook",
+        "triage",
+        "incident-response",
+        "first-response",
+        "help"
+      ],
+      "source": "Sentinel response guidance",
+      "updated": "2026-09-29",
+      "author": "Sentinel editorial synthesis (AI-assisted)",
+      "confidence": "Source-informed; human review required",
+      "reads": 0,
+      "cvss": null,
+      "snippet": "Start here when the cause is unclear: establish impact, protect people, preserve facts and choose a response path.",
+      "body": [
+        {
+          "h": "When to use this playbook",
+          "p": "Use when someone reports suspicious activity, missing information or an unexplained outage. An alert is a lead, not proof of compromise."
+        },
+        {
+          "h": "Questions to answer",
+          "p": "Which service, account or device? What changed, when and in which time zone? Is harm continuing? Are safety, payments, personal data or administrator access involved?"
+        },
+        {
+          "h": "First actions",
+          "p": "1. Assign an incident lead and a recorder; use a trusted communication channel.\n2. Stop the specific harmful activity using the narrowest reversible control available to an authorized responder.\n3. Escalate safety risks to the responsible emergency or operations team before changing equipment."
+        },
+        {
+          "h": "Evidence to preserve",
+          "p": "Record observations separately from assumptions: timestamps, affected assets, alert IDs, actions, owners and outcomes. Preserve original logs in restricted storage."
+        },
+        {
+          "h": "Containment and recovery",
+          "p": "Choose the closest playbook; combine account, endpoint and data-loss paths when needed. Agree service priorities, a rollback plan and an owner before disruptive changes."
+        },
+        {
+          "h": "Verify recovery",
+          "p": "Require evidence that the entry point is addressed, essential work succeeds and monitoring works. Record unresolved uncertainty and who accepts residual risk."
+        },
+        {
+          "h": "Prevent recurrence and escalate",
+          "p": "Escalate uncontrolled spread, privileged compromise or unavailable evidence to an incident response specialist. Set the next update time and track follow-up fixes."
+        },
+        {
+          "h": "Decision checkpoint",
+          "p": "Create a working incident record: incident lead, affected service, first observation, current impact, next action, action owner and next update time. Mark each assertion as observed, inferred or unknown. For every proposed change, record expected benefit, possible interruption and how to reverse it. If the person responding lacks authority or cannot judge the operational impact, hand that change to the service owner; continue gathering safe facts. An unknown cause should not delay containing verified ongoing harm, but it should prevent claims that the problem is solved."
+        },
+        {
+          "h": "Authoritative sources",
+          "p": "NIST SP 800-61 Rev. 3: incident response — https://csrc.nist.gov/pubs/sp/800/61/r3/final"
+        },
+        {
+          "h": "Scope and review",
+          "p": "Source check: 2026-09-29. Original AI-assisted guidance for small-organization IT teams; not a confirmed incident diagnosis, operational approval or exhaustive threat coverage. Adapt to your systems with the service owner. Only authorized responders should change access or infrastructure. Severity indicates potential impact, not a finding about your environment."
+        }
+      ],
+      "iocs": [],
+      "related": [
+        "PB-START-002",
+        "PB-START-004",
+        "PB-START-006",
+        "PB-START-010"
+      ],
+      "sourceIds": [
+        "nist-ir"
+      ]
+    },
+    {
+      "id": "PB-START-002",
+      "title": "I clicked a suspicious link: phishing and malicious messages",
+      "category": "playbooks",
+      "severity": "high",
+      "tags": [
+        "response-playbook",
+        "phishing",
+        "email",
+        "smishing",
+        "clicked-link",
+        "credential-theft"
+      ],
+      "source": "Sentinel response guidance",
+      "updated": "2026-09-29",
+      "author": "Sentinel editorial synthesis (AI-assisted)",
+      "confidence": "Source-informed; human review required",
+      "reads": 0,
+      "cvss": null,
+      "snippet": "Distinguish a message received, a link opened, credentials entered and software executed; each needs a different response.",
+      "body": [
+        {
+          "h": "When to use this playbook",
+          "p": "Use for suspicious email, SMS, QR codes, collaboration messages or fake login pages. Receiving a message alone does not confirm compromise."
+        },
+        {
+          "h": "Questions to answer",
+          "p": "Did you only open a link, enter a password or one-time code, approve sign-in, download or run a file, or send money?"
+        },
+        {
+          "h": "First actions",
+          "p": "1. Stop interacting; do not reopen the link to investigate.\n2. Report through your organization's trusted IT channel and retain the original message.\n3. If credentials or approval were shared, use the account-takeover playbook from a known-clean device. If software ran, use the malware playbook."
+        },
+        {
+          "h": "Evidence to preserve",
+          "p": "Save the message with headers, message ID, approximate interaction time and affected account. Share suspicious URLs as text; never paste passwords or live tokens."
+        },
+        {
+          "h": "Containment and recovery",
+          "p": "IT should review sign-in and endpoint alerts, then remove confirmed malicious messages using the mail platform. For a link-only visit, assess downloads and browser alerts before assuming infection."
+        },
+        {
+          "h": "Verify recovery",
+          "p": "Check affected accounts for unrecognized activity; confirm endpoint scans and mail controls complete. Tell the reporter the outcome without blame."
+        },
+        {
+          "h": "Prevent recurrence and escalate",
+          "p": "Use phishing-resistant authentication and an easy reporting route. Escalate money loss to finance immediately; contact the bank through verified details."
+        },
+        {
+          "h": "Decision checkpoint",
+          "p": "Branch on what the person actually did. Message received only: report and let IT assess distribution. Link opened only: check for downloads or alerts and watch account activity. Password entered or MFA approved: treat identity access as exposed. File executed or security protection disabled: escalate endpoint containment. Payment or bank details shared: engage finance separately. Record the answers in the case so the next responder does not need the person to repeat the event. Do not upload a confidential attachment to a public malware-analysis service to find out whether it is malicious."
+        },
+        {
+          "h": "Authoritative sources",
+          "p": "Phishing: actions to take — https://www.ncsc.gov.uk/section/respond-recover/phishing"
+        },
+        {
+          "h": "Scope and review",
+          "p": "Source check: 2026-09-29. Original AI-assisted guidance for small-organization IT teams; not a confirmed incident diagnosis, operational approval or exhaustive threat coverage. Adapt to your systems with the service owner. Only authorized responders should change access or infrastructure. Severity indicates potential impact, not a finding about your environment."
+        }
+      ],
+      "iocs": [],
+      "related": [
+        "PB-START-003",
+        "PB-START-005",
+        "PB-START-006"
+      ],
+      "sourceIds": [
+        "ncsc-phishing"
+      ]
+    },
+    {
+      "id": "PB-START-003",
+      "title": "A payment request looks wrong: business email compromise",
+      "category": "playbooks",
+      "severity": "critical",
+      "tags": [
+        "response-playbook",
+        "bec",
+        "invoice-fraud",
+        "email",
+        "payment",
+        "fraud"
+      ],
+      "source": "Sentinel response guidance",
+      "updated": "2026-09-29",
+      "author": "Sentinel editorial synthesis (AI-assisted)",
+      "confidence": "Source-informed; human review required",
+      "reads": 0,
+      "cvss": null,
+      "snippet": "Stop a fraudulent payment, verify the request outside email and investigate the mailbox without losing transaction evidence.",
+      "body": [
+        {
+          "h": "When to use this playbook",
+          "p": "Use for changed bank details, urgent transfers, gift-card requests or a trusted supplier thread that suddenly asks for unusual payment."
+        },
+        {
+          "h": "Questions to answer",
+          "p": "Was money sent? Which transaction and bank? Was the request verified through a previously known number? Could either mailbox be compromised?"
+        },
+        {
+          "h": "First actions",
+          "p": "1. Ask finance to pause the disputed payment and related changes.\n2. If funds moved, contact your bank immediately using verified contact details and request its fraud/recovery process.\n3. Verify the request by a separate trusted channel, not the number or reply address in the message."
+        },
+        {
+          "h": "Evidence to preserve",
+          "p": "Preserve original messages, headers, invoices, payment references, beneficiary details and callback notes in restricted incident records."
+        },
+        {
+          "h": "Containment and recovery",
+          "p": "If mailbox access is suspected, follow account containment and review forwarding, mailbox rules and unauthorized delegates. Check whether other pending invoices were altered before resuming payments."
+        },
+        {
+          "h": "Verify recovery",
+          "p": "Finance independently confirms legitimate payment details. IT documents the mailbox findings and session cleanup. A recovery request is not proof funds were returned."
+        },
+        {
+          "h": "Prevent recurrence and escalate",
+          "p": "Require independent verification for bank-detail changes and dual approval for risky payments. Escalate actual loss to leadership and appropriate local law enforcement."
+        },
+        {
+          "h": "Decision checkpoint",
+          "p": "Keep finance and IT tasks separate but synchronized. Finance owns payment holds, bank communications and the record of attempted recovery. IT owns mailbox and identity investigation. Preserve an original copy of the suspicious invoice and compare it with a previously verified payment instruction; do not ask the potentially compromised thread to validate itself. Record who approved any resumed payment and the independent verification used. Inform counterparties through established contacts if their ongoing transactions may be affected, using the incident lead's approved communication plan."
+        },
+        {
+          "h": "Authoritative sources",
+          "p": "Business Email Compromise — https://www.fbi.gov/how-we-can-help-you/common-frauds-and-scams/business-email-compromise\nRespond to a compromised email account in Microsoft 365 — https://learn.microsoft.com/en-us/defender-office-365/responding-to-a-compromised-email-account"
+        },
+        {
+          "h": "Scope and review",
+          "p": "Source check: 2026-09-29. Original AI-assisted guidance for small-organization IT teams; not a confirmed incident diagnosis, operational approval or exhaustive threat coverage. Adapt to your systems with the service owner. Only authorized responders should change access or infrastructure. Severity indicates potential impact, not a finding about your environment."
+        }
+      ],
+      "iocs": [],
+      "related": [
+        "PB-START-002",
+        "PB-START-006",
+        "PB-START-010"
+      ],
+      "sourceIds": [
+        "fbi-bec",
+        "ms-account"
+      ]
+    },
+    {
+      "id": "PB-START-004",
+      "title": "Files are encrypted: ransomware and extortion response",
+      "category": "playbooks",
+      "severity": "critical",
+      "tags": [
+        "response-playbook",
+        "ransomware",
+        "extortion",
+        "encrypted-files",
+        "recovery"
+      ],
+      "source": "Sentinel response guidance",
+      "updated": "2026-09-29",
+      "author": "Sentinel editorial synthesis (AI-assisted)",
+      "confidence": "Source-informed; human review required",
+      "reads": 0,
+      "cvss": null,
+      "snippet": "Contain spread, protect backups and restore essential services only after the compromise path is addressed.",
+      "body": [
+        {
+          "h": "When to use this playbook",
+          "p": "Use for ransom notes, unexplained mass encryption, deleted backups or an extortion claim. Treat possible data theft as a separate investigation."
+        },
+        {
+          "h": "Questions to answer",
+          "p": "Which systems are affected? Is encryption continuing? Are backups and identity systems reachable from compromised accounts? Which services affect safety?"
+        },
+        {
+          "h": "First actions",
+          "p": "1. Notify the incident lead using a trusted separate channel.\n2. Authorized IT should isolate affected devices or network segments promptly while preserving management access where safe.\n3. Protect backup administration. Do not connect backup media to an infected system or run an unverified decryptor."
+        },
+        {
+          "h": "Evidence to preserve",
+          "p": "Retain ransom notes, alert timelines, logs and affected-file examples. A qualified responder should decide forensic imaging and volatile-memory capture."
+        },
+        {
+          "h": "Containment and recovery",
+          "p": "Keep isolated systems powered when safe; if isolation is impossible and spread continues, the incident lead must weigh shutdown against lost volatile evidence. Rebuild from trusted images, close entry points and reset affected credentials before staged restoration."
+        },
+        {
+          "h": "Verify recovery",
+          "p": "Test restored data and critical workflows in an isolated environment. Check for persistence and renewed encryption; the incident lead approves reconnection."
+        },
+        {
+          "h": "Prevent recurrence and escalate",
+          "p": "Escalate to specialist responders, insurer contacts where applicable and appropriate authorities. Payment decisions require leadership and legal advice; payment cannot guarantee recovery."
+        },
+        {
+          "h": "Decision checkpoint",
+          "p": "Separate containment from recovery decisions. A business owner should name the minimum service needed to continue essential work and the dependencies it requires. A responder should document why the selected restore environment and credentials are trusted. If evidence indicates stolen data, keep the breach investigation open even after files are restored. Do not use a demand note as proof of either data theft or successful decryption. Record any specialist advice and decision owner before a change that affects an entire site, identity system or backup estate."
+        },
+        {
+          "h": "Authoritative sources",
+          "p": "#StopRansomware Guide — https://www.cisa.gov/stopransomware/ransomware-guide\nMitigating malware and ransomware attacks — https://www.ncsc.gov.uk/guidance/mitigating-malware-and-ransomware-attacks"
+        },
+        {
+          "h": "Scope and review",
+          "p": "Source check: 2026-09-29. Original AI-assisted guidance for small-organization IT teams; not a confirmed incident diagnosis, operational approval or exhaustive threat coverage. Adapt to your systems with the service owner. Only authorized responders should change access or infrastructure. Severity indicates potential impact, not a finding about your environment."
+        }
+      ],
+      "iocs": [],
+      "related": [
+        "PB-START-001",
+        "PB-START-005",
+        "PB-START-010",
+        "PB-START-015"
+      ],
+      "sourceIds": [
+        "cisa-ransomware",
+        "ncsc-recovery"
+      ]
+    },
+    {
+      "id": "PB-START-005",
+      "title": "A computer may be infected: endpoint malware",
+      "category": "playbooks",
+      "severity": "high",
+      "tags": [
+        "response-playbook",
+        "malware",
+        "endpoint",
+        "virus",
+        "edr",
+        "suspicious-process"
+      ],
+      "source": "Sentinel response guidance",
+      "updated": "2026-09-29",
+      "author": "Sentinel editorial synthesis (AI-assisted)",
+      "confidence": "Source-informed; human review required",
+      "reads": 0,
+      "cvss": null,
+      "snippet": "Isolate a suspect endpoint, preserve evidence and decide whether controlled cleanup or rebuilding is justified.",
+      "body": [
+        {
+          "h": "When to use this playbook",
+          "p": "Use for antivirus or endpoint-detection alerts, unexpected processes, browser changes or unexplained connections. A slow computer alone is insufficient evidence."
+        },
+        {
+          "h": "Questions to answer",
+          "p": "What was detected and did it execute? Which user was signed in? Was privileged access available? Are other devices showing the same behavior?"
+        },
+        {
+          "h": "First actions",
+          "p": "1. Stop using the device for passwords or administrative work.\n2. Ask authorized IT to isolate it through endpoint tooling or disconnect networking when safe.\n3. Keep the alert and notify the device owner; do not delete files or reset the device before evidence decisions."
+        },
+        {
+          "h": "Evidence to preserve",
+          "p": "Record hostname, user, detection time, file hash, process lineage and connections from existing tools. Restrict access to exported logs or samples."
+        },
+        {
+          "h": "Containment and recovery",
+          "p": "Use updated trusted security tools under IT direction. Investigate the initial entry point and related accounts. Where system integrity cannot be established, plan a clean rebuild after preserving evidence and needed data."
+        },
+        {
+          "h": "Verify recovery",
+          "p": "Confirm protections are active, persistence checks are complete and restored applications work. One clean scan does not prove all compromise is removed."
+        },
+        {
+          "h": "Prevent recurrence and escalate",
+          "p": "Patch the entry point and reduce unnecessary local administrator rights. Escalate credential theft, repeated detection or multiple affected devices."
+        },
+        {
+          "h": "Decision checkpoint",
+          "p": "Decide the next step from evidence and device function. A quarantined attachment that never executed may need scoped investigation; detected execution with credential access needs identity investigation as well. A shared server or medical/industrial device needs its owner involved before disconnection. Keep a record of what each remediation tool changed. If nobody can establish whether privileged persistence remains, record that uncertainty and plan specialist review or controlled rebuilding instead of repeatedly running the same scan."
+        },
+        {
+          "h": "Authoritative sources",
+          "p": "NIST SP 800-83 Rev. 1: malware prevention and handling — https://csrc.nist.gov/pubs/sp/800/83/r1/final"
+        },
+        {
+          "h": "Scope and review",
+          "p": "Source check: 2026-09-29. Original AI-assisted guidance for small-organization IT teams; not a confirmed incident diagnosis, operational approval or exhaustive threat coverage. Adapt to your systems with the service owner. Only authorized responders should change access or infrastructure. Severity indicates potential impact, not a finding about your environment."
+        }
+      ],
+      "iocs": [],
+      "related": [
+        "PB-START-004",
+        "PB-START-006",
+        "PB-START-015"
+      ],
+      "sourceIds": [
+        "nist-malware"
+      ]
+    },
+    {
+      "id": "PB-START-006",
+      "title": "My account was taken over: passwords, MFA and session theft",
+      "category": "playbooks",
+      "severity": "high",
+      "tags": [
+        "response-playbook",
+        "account-takeover",
+        "mfa",
+        "identity",
+        "session-theft",
+        "password",
+        "login"
+      ],
+      "source": "Sentinel response guidance",
+      "updated": "2026-09-29",
+      "author": "Sentinel editorial synthesis (AI-assisted)",
+      "confidence": "Source-informed; human review required",
+      "reads": 0,
+      "cvss": null,
+      "snippet": "Recover trusted control, revoke sessions and inspect persistence; a password reset alone may leave access behind.",
+      "body": [
+        {
+          "h": "When to use this playbook",
+          "p": "Use for unrecognized successful logins, unexpected MFA approvals, changed recovery details or messages sent without the account owner's knowledge."
+        },
+        {
+          "h": "Questions to answer",
+          "p": "Can the owner still sign in? Is the account privileged? Were sessions, recovery methods, OAuth grants, delegates or forwarding rules changed?"
+        },
+        {
+          "h": "First actions",
+          "p": "1. Use a known-clean device and the provider's official recovery route.\n2. An authorized administrator should block risky access, revoke active sessions and reset compromised credentials.\n3. Review authentication methods and remove unauthorized registrations after documenting them."
+        },
+        {
+          "h": "Evidence to preserve",
+          "p": "Export sign-in and audit events, authentication changes, mailbox rules and consent grants; preserve timestamps and identifiers without recording live tokens."
+        },
+        {
+          "h": "Containment and recovery",
+          "p": "Review forwarding, delegates and application access; remove confirmed unauthorized persistence. Change reused passwords on other services. Re-enroll strong authentication after verifying the owner's identity."
+        },
+        {
+          "h": "Verify recovery",
+          "p": "Test legitimate sign-in and recovery routes. Confirm session revocation completed, recognizing provider delays; monitor for new sign-ins and repeated changes."
+        },
+        {
+          "h": "Prevent recurrence and escalate",
+          "p": "Prefer phishing-resistant MFA, separate administrator identities and monitored recovery procedures. Escalate administrator compromise or repeated access after reset to specialist responders."
+        },
+        {
+          "h": "Decision checkpoint",
+          "p": "Make an explicit inventory of access paths: password, active browser sessions, mobile applications, app passwords, recovery addresses, MFA methods and granted applications. Provider controls do not necessarily revoke all of these with one button. If the compromised account is the only administrator, use the provider's documented recovery or emergency-access procedure and avoid locking out the last trusted administrator without a recovery route. A user-visible successful login proves access was restored; it does not prove the attacker lost every other route."
+        },
+        {
+          "h": "Authoritative sources",
+          "p": "Respond to a compromised email account in Microsoft 365 — https://learn.microsoft.com/en-us/defender-office-365/responding-to-a-compromised-email-account\nRecovering a hacked account — https://www.ncsc.gov.uk/guidance/recovering-a-hacked-account"
+        },
+        {
+          "h": "Scope and review",
+          "p": "Source check: 2026-09-29. Original AI-assisted guidance for small-organization IT teams; not a confirmed incident diagnosis, operational approval or exhaustive threat coverage. Adapt to your systems with the service owner. Only authorized responders should change access or infrastructure. Severity indicates potential impact, not a finding about your environment."
+        }
+      ],
+      "iocs": [],
+      "related": [
+        "PB-START-002",
+        "PB-START-003",
+        "PB-START-005",
+        "PB-START-007"
+      ],
+      "sourceIds": [
+        "ms-account",
+        "ncsc-account"
+      ]
+    },
+    {
+      "id": "PB-START-007",
+      "title": "An API key was exposed: leaked cloud or application secrets",
+      "category": "playbooks",
+      "severity": "critical",
+      "tags": [
+        "response-playbook",
+        "secrets",
+        "api-key",
+        "cloud",
+        "aws",
+        "token",
+        "credential-leak"
+      ],
+      "source": "Sentinel response guidance",
+      "updated": "2026-09-29",
+      "author": "Sentinel editorial synthesis (AI-assisted)",
+      "confidence": "Source-informed; human review required",
+      "reads": 0,
+      "cvss": null,
+      "snippet": "Revoke the exposed credential and trace its use; deleting it from a repository does not make it safe again.",
+      "body": [
+        {
+          "h": "When to use this playbook",
+          "p": "Use when a secret appears in source control, chat, logs, a public build artifact or an exposure alert."
+        },
+        {
+          "h": "Questions to answer",
+          "p": "Which credential and owner? What permissions, environments and workloads depend on it? When was it exposed? Could it mint temporary credentials?"
+        },
+        {
+          "h": "First actions",
+          "p": "1. Notify the credential owner and incident lead; do not paste the secret into tickets or chat.\n2. Revoke or disable the exposed credential promptly. If continuity matters, coordinate a minimal replacement and verify the dependency switch.\n3. Review and revoke derived sessions using provider-specific procedures."
+        },
+        {
+          "h": "Evidence to preserve",
+          "p": "Record credential identifier, exposure location and time range. Preserve audit logs, permission changes and affected workload identifiers in restricted storage."
+        },
+        {
+          "h": "Containment and recovery",
+          "p": "Investigate new identities, policy changes, data access and unexpected resources. Update secret stores and dependent workloads; remove exposed copies after evidence capture. Repository history cleanup cannot invalidate a key."
+        },
+        {
+          "h": "Verify recovery",
+          "p": "Confirm the old credential is rejected through an authorized provider check; confirm replacement workloads work and suspicious activity stops. Review all relevant regions/accounts."
+        },
+        {
+          "h": "Prevent recurrence and escalate",
+          "p": "Use short-lived workload identities, least privilege and secret scanning. Escalate root, administrator, signing-key or multi-environment exposure immediately."
+        },
+        {
+          "h": "Decision checkpoint",
+          "p": "Treat the secret's permissions as the initial boundary of the investigation, then expand if logs show new credentials or privileges. Inventory services that will fail when the key is revoked and identify the owner responsible for each replacement. Do not grant a broader replacement role merely to make an error disappear. A provider-generated public identifier is not always a secret; confirm the credential type before rotating unrelated resources. Record the revocation timestamp and the earliest and latest suspicious events so downstream responders can correlate them."
+        },
+        {
+          "h": "Authoritative sources",
+          "p": "Practical steps to minimize key exposure using AWS Security Services — https://aws.amazon.com/blogs/security/practical-steps-to-minimize-key-exposure-using-aws-security-services/\nSecrets Management Cheat Sheet — https://cheatsheetseries.owasp.org/cheatsheets/Secrets_Management_Cheat_Sheet.html"
+        },
+        {
+          "h": "Scope and review",
+          "p": "Source check: 2026-09-29. Original AI-assisted guidance for small-organization IT teams; not a confirmed incident diagnosis, operational approval or exhaustive threat coverage. Adapt to your systems with the service owner. Only authorized responders should change access or infrastructure. Severity indicates potential impact, not a finding about your environment."
+        }
+      ],
+      "iocs": [],
+      "related": [
+        "PB-START-006",
+        "PB-START-010",
+        "PB-START-014",
+        "PB-START-016"
+      ],
+      "sourceIds": [
+        "aws-keys",
+        "owasp-secrets"
+      ]
+    },
+    {
+      "id": "PB-START-008",
+      "title": "A critical vulnerability affects us: prioritize and remediate",
+      "category": "playbooks",
+      "severity": "critical",
+      "tags": [
+        "response-playbook",
+        "vulnerability",
+        "cve",
+        "kev",
+        "patching",
+        "exploitation",
+        "internet-facing"
+      ],
+      "source": "Sentinel response guidance",
+      "updated": "2026-09-29",
+      "author": "Sentinel editorial synthesis (AI-assisted)",
+      "confidence": "Source-informed; human review required",
+      "reads": 0,
+      "cvss": null,
+      "snippet": "Confirm the affected asset and exposure, mitigate safely, and distinguish patch completion from incident recovery.",
+      "body": [
+        {
+          "h": "When to use this playbook",
+          "p": "Use for a vendor alert, a relevant CISA KEV entry or credible exploitation evidence. A published CVE does not prove your asset is affected."
+        },
+        {
+          "h": "Questions to answer",
+          "p": "Which exact product/version/configuration? Is the vulnerable function reachable? Is it business-critical? Is there evidence of attempted or successful exploitation?"
+        },
+        {
+          "h": "First actions",
+          "p": "1. Match the vendor advisory to your inventory and assign an asset owner.\n2. Prioritize exploitable internet-facing and high-impact assets; use KEV as evidence of known exploitation, not proof of a local breach.\n3. Apply the vendor's temporary mitigation when a safe patch cannot be installed immediately."
+        },
+        {
+          "h": "Evidence to preserve",
+          "p": "Save affected versions, exposure checks, advisory URL, relevant logs and change records. Preserve compromise evidence before rebuilding."
+        },
+        {
+          "h": "Containment and recovery",
+          "p": "Test the supported fix with a rollback plan, then deploy through an expedited change process. If compromise is suspected, investigate persistence and credential theft; patching alone is insufficient."
+        },
+        {
+          "h": "Verify recovery",
+          "p": "Recheck installed versions and configuration, perform an authorized non-destructive validation and test service health. Track exceptions with an owner and expiry."
+        },
+        {
+          "h": "Prevent recurrence and escalate",
+          "p": "Keep asset inventories and update ownership current. Escalate active exploitation or unsupported products. KEV deadlines for government bodies do not automatically define your organization's legal obligations."
+        },
+        {
+          "h": "Decision checkpoint",
+          "p": "Record one remediation row per affected deployment: asset, owner, version, reachable interface, evidence of exposure, mitigation, change time and validation result. Do not mark all installations fixed after updating a single server or container image. If a mitigation is temporary, schedule its replacement with the supported fix and retain its expiry owner. If an asset cannot be patched, the accountable owner must choose isolation, replacement or documented risk acceptance; the analyst should not silently close the finding because the patch failed."
+        },
+        {
+          "h": "Authoritative sources",
+          "p": "Known Exploited Vulnerabilities Catalog — https://www.cisa.gov/known-exploited-vulnerabilities-catalog\nCybersecurity Incident and Vulnerability Response Playbooks — https://www.cisa.gov/sites/default/files/publications/Cybersecurity_Incident_Vulnerability_Response_Playbooks_508C.pdf"
+        },
+        {
+          "h": "Scope and review",
+          "p": "Source check: 2026-09-29. Original AI-assisted guidance for small-organization IT teams; not a confirmed incident diagnosis, operational approval or exhaustive threat coverage. Adapt to your systems with the service owner. Only authorized responders should change access or infrastructure. Severity indicates potential impact, not a finding about your environment."
+        }
+      ],
+      "iocs": [],
+      "related": [
+        "PB-START-001",
+        "PB-START-005",
+        "PB-START-009"
+      ],
+      "sourceIds": [
+        "cisa-kev",
+        "cisa-response"
+      ]
+    },
+    {
+      "id": "PB-START-009",
+      "title": "Our website may be breached: web application and API compromise",
+      "category": "playbooks",
+      "severity": "critical",
+      "tags": [
+        "response-playbook",
+        "web-application",
+        "api",
+        "sql-injection",
+        "authorization",
+        "webshell",
+        "website"
+      ],
+      "source": "Sentinel response guidance",
+      "updated": "2026-09-29",
+      "author": "Sentinel editorial synthesis (AI-assisted)",
+      "confidence": "Source-informed; human review required",
+      "reads": 0,
+      "cvss": null,
+      "snippet": "Contain the affected route, preserve application evidence and fix the underlying authorization or input-handling defect.",
+      "body": [
+        {
+          "h": "When to use this playbook",
+          "p": "Use for unauthorized records, changed site content, unexpected admin accounts or suspicious application execution."
+        },
+        {
+          "h": "Questions to answer",
+          "p": "Which route, tenant and account? Were data read or changed? Is the cause authorization, injection, vulnerable software or stolen credentials?"
+        },
+        {
+          "h": "First actions",
+          "p": "1. Involve the application owner and incident lead.\n2. Apply a reversible restriction to the affected function; coordinate maintenance mode if narrow containment is insufficient.\n3. Preserve relevant application, proxy and database audit logs before deployment changes."
+        },
+        {
+          "h": "Evidence to preserve",
+          "p": "Capture request IDs, time range, affected object IDs, actor IDs, deployment versions and changed files. Redact credentials and unnecessary personal data from shared copies."
+        },
+        {
+          "h": "Containment and recovery",
+          "p": "Rebuild compromised runtime instances from trusted artifacts when needed. Correct authorization on every protected action; use parameterized database queries for injection flaws. Rotate secrets that the compromised runtime could access. Treat firewall rules as temporary mitigation."
+        },
+        {
+          "h": "Verify recovery",
+          "p": "Add a regression check using synthetic data: unauthorized users must fail and legitimate workflows must pass. Confirm affected deployments and background workers all receive the fix."
+        },
+        {
+          "h": "Prevent recurrence and escalate",
+          "p": "Keep audit logs protected and attributable. Escalate suspected data access to the breach process and suspected build compromise to the supply-chain playbook."
+        },
+        {
+          "h": "Decision checkpoint",
+          "p": "Use an explicit access test matrix with two test identities and synthetic records where possible: permitted user on its own record, unrelated user on that record and unauthenticated request. Validate both read and write paths relevant to the flaw. Keep active probing within the authorized environment and do not replay harmful requests against production data. If a runtime can access multiple tenants or databases, scope the investigation to those permissions rather than only the first reported record. Distinguish a blocked attempt from confirmed unauthorized access."
+        },
+        {
+          "h": "Authoritative sources",
+          "p": "Logging Cheat Sheet — https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html\nSQL Injection Prevention Cheat Sheet — https://cheatsheetseries.owasp.org/cheatsheets/SQL_Injection_Prevention_Cheat_Sheet.html\nAuthorization Cheat Sheet — https://cheatsheetseries.owasp.org/cheatsheets/Authorization_Cheat_Sheet.html"
+        },
+        {
+          "h": "Scope and review",
+          "p": "Source check: 2026-09-29. Original AI-assisted guidance for small-organization IT teams; not a confirmed incident diagnosis, operational approval or exhaustive threat coverage. Adapt to your systems with the service owner. Only authorized responders should change access or infrastructure. Severity indicates potential impact, not a finding about your environment."
+        }
+      ],
+      "iocs": [],
+      "related": [
+        "PB-START-007",
+        "PB-START-008",
+        "PB-START-010",
+        "PB-START-014"
+      ],
+      "sourceIds": [
+        "owasp-logging",
+        "owasp-sqli",
+        "owasp-authz"
+      ]
+    },
+    {
+      "id": "PB-START-010",
+      "title": "Sensitive data may have left: exfiltration and data breach",
+      "category": "playbooks",
+      "severity": "critical",
+      "tags": [
+        "response-playbook",
+        "data-breach",
+        "exfiltration",
+        "privacy",
+        "data-loss",
+        "dlp"
+      ],
+      "source": "Sentinel response guidance",
+      "updated": "2026-09-29",
+      "author": "Sentinel editorial synthesis (AI-assisted)",
+      "confidence": "Source-informed; human review required",
+      "reads": 0,
+      "cvss": null,
+      "snippet": "Stop ongoing exposure, establish what actually happened and support a qualified notification decision with evidence.",
+      "body": [
+        {
+          "h": "When to use this playbook",
+          "p": "Use for unexpected bulk downloads, public sensitive files, suspicious exports or credible reports of stolen data."
+        },
+        {
+          "h": "Questions to answer",
+          "p": "What data and whose records? Was it accessed, merely exposed, altered or deleted? What time window and jurisdictions may be involved?"
+        },
+        {
+          "h": "First actions",
+          "p": "1. Notify the incident lead, data owner and privacy/legal contact immediately.\n2. Restrict the specific account, share or transfer path causing ongoing exposure while preserving evidence.\n3. Keep sensitive samples out of public tools and broad incident chats."
+        },
+        {
+          "h": "Evidence to preserve",
+          "p": "Preserve access/export logs, affected object lists, sharing changes and a timeline. Record logging gaps; absence of logs is not proof that access did not occur."
+        },
+        {
+          "h": "Containment and recovery",
+          "p": "Close the exposure path, review related access and credentials, and validate the corrective change. Distinguish confirmed affected records from uncertain scope."
+        },
+        {
+          "h": "Verify recovery",
+          "p": "Test that unauthorized access fails and necessary access still works. Independently review the scope assessment, containment evidence and remaining unknowns."
+        },
+        {
+          "h": "Prevent recurrence and escalate",
+          "p": "Reduce unnecessary data access and retention. Legal/privacy owners determine applicable notification requirements and timing; do not wait for perfect certainty to involve them. Only authorized communications owners issue external statements."
+        },
+        {
+          "h": "Decision checkpoint",
+          "p": "Maintain two scope lists: confirmed affected data and potentially affected data that still needs investigation. For each, note supporting evidence, gaps and the next evidence source to request. Do not treat a screenshot or threat actor claim as a complete record count. The privacy/legal owner should receive updated facts as they develop, including when the organization first became aware. Technical containment can be complete while notification and customer-protection work remains open. This playbook supplies operational facts, not a jurisdiction-specific legal deadline."
+        },
+        {
+          "h": "Authoritative sources",
+          "p": "Data Breach Response: A Guide for Business — https://www.ftc.gov/business-guidance/resources/data-breach-response-guide-business"
+        },
+        {
+          "h": "Scope and review",
+          "p": "Source check: 2026-09-29. Original AI-assisted guidance for small-organization IT teams; not a confirmed incident diagnosis, operational approval or exhaustive threat coverage. Adapt to your systems with the service owner. Only authorized responders should change access or infrastructure. Severity indicates potential impact, not a finding about your environment."
+        }
+      ],
+      "iocs": [],
+      "related": [
+        "PB-START-001",
+        "PB-START-006",
+        "PB-START-007",
+        "PB-START-016"
+      ],
+      "sourceIds": [
+        "ftc-breach"
+      ]
+    },
+    {
+      "id": "PB-START-011",
+      "title": "Our service is overwhelmed: suspected DDoS",
+      "category": "playbooks",
+      "severity": "high",
+      "tags": [
+        "response-playbook",
+        "ddos",
+        "availability",
+        "outage",
+        "traffic",
+        "denial-of-service"
+      ],
+      "source": "Sentinel response guidance",
+      "updated": "2026-09-29",
+      "author": "Sentinel editorial synthesis (AI-assisted)",
+      "confidence": "Source-informed; human review required",
+      "reads": 0,
+      "cvss": null,
+      "snippet": "Separate traffic attacks from ordinary outages, engage the provider and verify legitimate customers can still use the service.",
+      "body": [
+        {
+          "h": "When to use this playbook",
+          "p": "Use when service latency or errors rise with unusual request or network volume. Capacity faults and legitimate demand can look similar."
+        },
+        {
+          "h": "Questions to answer",
+          "p": "Is the bottleneck bandwidth, edge, origin or a specific expensive route? Is traffic reaching the origin directly? Which customer workflows are failing?"
+        },
+        {
+          "h": "First actions",
+          "p": "1. Contact the hosting/network/CDN incident channel with the affected service and start time.\n2. Compare traffic, error and saturation metrics against normal behavior.\n3. Apply targeted provider-supported mitigation with a rollback owner; preserve access for legitimate clients."
+        },
+        {
+          "h": "Evidence to preserve",
+          "p": "Keep traffic trends, targeted routes, request samples, provider event IDs and exact mitigation changes. Avoid collecting unnecessary personal data."
+        },
+        {
+          "h": "Containment and recovery",
+          "p": "Tune rate limits and protection rules; restrict direct origin access where the architecture supports it. Use caching only where responses are safe to share. Broad challenges can break APIs and accessibility; test before widening them."
+        },
+        {
+          "h": "Verify recovery",
+          "p": "Measure successful customer transactions, latency and origin load from multiple locations. Falling traffic alone is not success if legitimate users are blocked."
+        },
+        {
+          "h": "Prevent recurrence and escalate",
+          "p": "Rehearse provider escalation and maintain capacity baselines. Escalate bandwidth saturation upstream; keep watching for unrelated account or data-access anomalies."
+        },
+        {
+          "h": "Decision checkpoint",
+          "p": "Start with a narrow rule and a known legitimate test workflow. Assign someone to monitor false positives while another responder checks whether the origin bottleneck improves. Capture the pre-change configuration and an expiry for emergency rules. Do not disable authentication, encryption or other security controls to recover throughput. If a traffic spike is legitimate demand, route it to capacity management instead of labeling users as attackers. If provider support recommends DNS or routing changes, assess propagation and rollback with the service owner."
+        },
+        {
+          "h": "Authoritative sources",
+          "p": "Under a DDoS attack? — https://developers.cloudflare.com/fundamentals/security/under-ddos-attack/\nProactive DDoS defense — https://developers.cloudflare.com/ddos-protection/best-practices/proactive-defense/\nUnder Attack mode — https://developers.cloudflare.com/fundamentals/reference/under-attack-mode/"
+        },
+        {
+          "h": "Scope and review",
+          "p": "Source check: 2026-09-29. Original AI-assisted guidance for small-organization IT teams; not a confirmed incident diagnosis, operational approval or exhaustive threat coverage. Adapt to your systems with the service owner. Only authorized responders should change access or infrastructure. Severity indicates potential impact, not a finding about your environment."
+        }
+      ],
+      "iocs": [],
+      "related": [
+        "PB-START-001",
+        "PB-START-009"
+      ],
+      "sourceIds": [
+        "cloudflare-ddos",
+        "cloudflare-defense",
+        "cloudflare-challenge"
+      ]
+    },
+    {
+      "id": "PB-START-012",
+      "title": "A work device is missing: lost or stolen laptop or phone",
+      "category": "playbooks",
+      "severity": "high",
+      "tags": [
+        "response-playbook",
+        "lost-device",
+        "stolen-device",
+        "laptop",
+        "phone",
+        "mobile",
+        "mdm"
+      ],
+      "source": "Sentinel response guidance",
+      "updated": "2026-09-29",
+      "author": "Sentinel editorial synthesis (AI-assisted)",
+      "confidence": "Source-informed; human review required",
+      "reads": 0,
+      "cvss": null,
+      "snippet": "Protect accounts and data using verified management tools, while avoiding irreversible erasure before an authorized decision.",
+      "body": [
+        {
+          "h": "When to use this playbook",
+          "p": "Use when a work device or a personal device with work access is lost or stolen."
+        },
+        {
+          "h": "Questions to answer",
+          "p": "Was it unlocked? Is disk encryption confirmed? What accounts and local data were present? Is it managed, reachable or used for MFA?"
+        },
+        {
+          "h": "First actions",
+          "p": "1. Report the loss promptly to IT and physical security; record last known location and time.\n2. Use the official device-management or lost-device service to lock it if available.\n3. Revoke work sessions and suspend device access through authorized IT procedures."
+        },
+        {
+          "h": "Evidence to preserve",
+          "p": "Record asset ID, encryption/lock status, last check-in, management actions and account activity. A queued remote command is not proof it executed."
+        },
+        {
+          "h": "Containment and recovery",
+          "p": "Replace access and authentication methods securely. Assess possible data exposure. Remote erasure requires an authorized decision considering data loss, evidence, ownership and recovery; do not remove tracking or activation protection casually."
+        },
+        {
+          "h": "Verify recovery",
+          "p": "Confirm lock or wipe status from management evidence, and verify the missing device can no longer access work services. Test the owner's replacement access."
+        },
+        {
+          "h": "Prevent recurrence and escalate",
+          "p": "Enable encryption, managed updates and screen locking. Escalate an unlocked privileged device or sensitive local data to the breach lead. Do not confront a suspected thief."
+        },
+        {
+          "h": "Decision checkpoint",
+          "p": "Separate device possession from account access. A locked device can still have valid service sessions, while revoking sessions cannot remove information already stored locally. Verify encryption using prior management records instead of assuming every company device had it enabled. If the device held recovery codes, administrator keys or access to backup administration, investigate those access paths explicitly. For personally owned devices, follow the organization's work-data management policy; a full-device erase can destroy unrelated personal information and should never be an automatic default."
+        },
+        {
+          "h": "Authoritative sources",
+          "p": "How to find your lost iPhone or iPad — https://support.apple.com/en-ie/101593\nRecovering a hacked account — https://www.ncsc.gov.uk/guidance/recovering-a-hacked-account"
+        },
+        {
+          "h": "Scope and review",
+          "p": "Source check: 2026-09-29. Original AI-assisted guidance for small-organization IT teams; not a confirmed incident diagnosis, operational approval or exhaustive threat coverage. Adapt to your systems with the service owner. Only authorized responders should change access or infrastructure. Severity indicates potential impact, not a finding about your environment."
+        }
+      ],
+      "iocs": [],
+      "related": [
+        "PB-START-006",
+        "PB-START-010"
+      ],
+      "sourceIds": [
+        "apple-lost",
+        "ncsc-account"
+      ]
+    },
+    {
+      "id": "PB-START-013",
+      "title": "An insider may be misusing access: investigate fairly",
+      "category": "playbooks",
+      "severity": "high",
+      "tags": [
+        "response-playbook",
+        "insider-risk",
+        "misuse",
+        "privileged-access",
+        "unauthorized-export"
+      ],
+      "source": "Sentinel response guidance",
+      "updated": "2026-09-29",
+      "author": "Sentinel editorial synthesis (AI-assisted)",
+      "confidence": "Source-informed; human review required",
+      "reads": 0,
+      "cvss": null,
+      "snippet": "Protect affected assets and assess observed behavior without treating a technical alert as proof of malicious intent.",
+      "body": [
+        {
+          "h": "When to use this playbook",
+          "p": "Use for unexplained exports, unauthorized privilege changes or access inconsistent with an approved task. Mistakes and compromised accounts can resemble deliberate misuse."
+        },
+        {
+          "h": "Questions to answer",
+          "p": "What verified action occurred? Was it authorized? Which assets are exposed? Could automation, approved work or an external account takeover explain it?"
+        },
+        {
+          "h": "First actions",
+          "p": "1. Involve a small authorized team spanning security, HR and legal as appropriate.\n2. Record facts and preserve relevant audit evidence; avoid accusations.\n3. Limit access proportionately where there is an immediate risk, with an accountable owner."
+        },
+        {
+          "h": "Evidence to preserve",
+          "p": "Retain access, export and privilege-change records within approved retention and privacy boundaries. Keep the case restricted and document who handled evidence."
+        },
+        {
+          "h": "Containment and recovery",
+          "p": "Compare activity with approved business needs. Coordinate access changes, offboarding or remedial training through established processes; do not improvise covert monitoring or employee searches."
+        },
+        {
+          "h": "Verify recovery",
+          "p": "Confirm risky permissions and sharing are corrected, necessary work continues, and the evidence supports each conclusion. Record alternate explanations and unresolved gaps."
+        },
+        {
+          "h": "Prevent recurrence and escalate",
+          "p": "Review privileged access regularly, separate sensitive duties and make reporting safe. Escalate threats to personal safety to the responsible safety team and appropriate authorities."
+        },
+        {
+          "h": "Decision checkpoint",
+          "p": "Write a neutral observation such as 'account exported a dataset outside its assigned task' and attach the evidence. Avoid labels such as 'malicious employee' until an authorized investigation supports them. Access logs identify credentials and actions, not necessarily the human who performed them. Coordinate any urgent access restriction with the case lead so evidence is preserved and essential services remain owned. Close the case with both technical findings and process corrections; do not use the playbook as an automated disciplinary decision."
+        },
+        {
+          "h": "Authoritative sources",
+          "p": "Insider Threat Mitigation Guide — https://www.cisa.gov/sites/default/files/2022-11/Insider%20Threat%20Mitigation%20Guide_Final_508.pdf"
+        },
+        {
+          "h": "Scope and review",
+          "p": "Source check: 2026-09-29. Original AI-assisted guidance for small-organization IT teams; not a confirmed incident diagnosis, operational approval or exhaustive threat coverage. Adapt to your systems with the service owner. Only authorized responders should change access or infrastructure. Severity indicates potential impact, not a finding about your environment."
+        }
+      ],
+      "iocs": [],
+      "related": [
+        "PB-START-006",
+        "PB-START-010"
+      ],
+      "sourceIds": [
+        "cisa-insider"
+      ]
+    },
+    {
+      "id": "PB-START-014",
+      "title": "A supplier or software update is compromised",
+      "category": "playbooks",
+      "severity": "critical",
+      "tags": [
+        "response-playbook",
+        "supply-chain",
+        "vendor",
+        "dependency",
+        "ci-cd",
+        "software-update"
+      ],
+      "source": "Sentinel response guidance",
+      "updated": "2026-09-29",
+      "author": "Sentinel editorial synthesis (AI-assisted)",
+      "confidence": "Source-informed; human review required",
+      "reads": 0,
+      "cvss": null,
+      "snippet": "Identify affected versions and access paths, pause unsafe distribution and verify replacement artifacts before restoring trust.",
+      "body": [
+        {
+          "h": "When to use this playbook",
+          "p": "Use for a credible supplier breach notice, malicious dependency, altered build artifact or unauthorized activity through a vendor account."
+        },
+        {
+          "h": "Questions to answer",
+          "p": "Which exact version, package or integration? Was it deployed or only downloaded? What privileges and secrets did it have? Is the advisory authentic?"
+        },
+        {
+          "h": "First actions",
+          "p": "1. Verify the notice through a previously trusted vendor channel.\n2. Inventory affected deployments and assign service owners.\n3. Pause affected rollouts or integration access using the smallest safe reversible change."
+        },
+        {
+          "h": "Evidence to preserve",
+          "p": "Preserve package versions, hashes, lockfiles, build logs, artifact provenance, vendor messages and integration audit events."
+        },
+        {
+          "h": "Containment and recovery",
+          "p": "Follow verified vendor guidance and independently check local exposure. For a compromised build path, restore trusted build inputs and rotate exposed credentials before rebuilding. A signed artifact can still be malicious if the signing path was compromised."
+        },
+        {
+          "h": "Verify recovery",
+          "p": "Confirm replacement provenance and deployed versions, review persistence and test business workflows. A supplier's statement of recovery does not establish your own systems are clean."
+        },
+        {
+          "h": "Prevent recurrence and escalate",
+          "p": "Maintain dependency inventories, scoped vendor access and release review. Escalate signing-key, build-system or widely deployed agent compromise to specialist responders."
+        },
+        {
+          "h": "Decision checkpoint",
+          "p": "Create a deployment map linking the affected component to each application, environment and owner. An unused package in a repository, an installed package and a package executed during a privileged build have different consequences. Ask the vendor for affected-version boundaries and recommended detection evidence, but retain your own timeline and audit records. Before reconnecting a supplier integration, confirm the replacement credentials have only the needed access and the supplier can describe the corrective action relevant to your exposure."
+        },
+        {
+          "h": "Authoritative sources",
+          "p": "Defending Against Software Supply Chain Attacks — https://www.cisa.gov/sites/default/files/publications/defending_against_software_supply_chain_attacks_508_1.pdf\nCybersecurity for Small Business — https://www.ftc.gov/business-guidance/small-businesses/cybersecurity"
+        },
+        {
+          "h": "Scope and review",
+          "p": "Source check: 2026-09-29. Original AI-assisted guidance for small-organization IT teams; not a confirmed incident diagnosis, operational approval or exhaustive threat coverage. Adapt to your systems with the service owner. Only authorized responders should change access or infrastructure. Severity indicates potential impact, not a finding about your environment."
+        }
+      ],
+      "iocs": [],
+      "related": [
+        "PB-START-007",
+        "PB-START-008",
+        "PB-START-009"
+      ],
+      "sourceIds": [
+        "cisa-supply",
+        "ftc-small"
+      ]
+    },
+    {
+      "id": "PB-START-015",
+      "title": "Restore safely: backups and recovery after an incident",
+      "category": "playbooks",
+      "severity": "high",
+      "tags": [
+        "response-playbook",
+        "backup",
+        "restore",
+        "recovery",
+        "ransomware",
+        "business-continuity"
+      ],
+      "source": "Sentinel response guidance",
+      "updated": "2026-09-29",
+      "author": "Sentinel editorial synthesis (AI-assisted)",
+      "confidence": "Source-informed; human review required",
+      "reads": 0,
+      "cvss": null,
+      "snippet": "Select a defensible restore point, validate it in isolation and reconnect only when both security and business checks pass.",
+      "body": [
+        {
+          "h": "When to use this playbook",
+          "p": "Use after containment when essential systems or data need restoration. A backup-success notification is not evidence of a usable restore."
+        },
+        {
+          "h": "Questions to answer",
+          "p": "What service comes first? What dependencies and data-loss tolerance apply? Are backup credentials trusted? Which restore point predates the suspected compromise?"
+        },
+        {
+          "h": "First actions",
+          "p": "1. Agree restoration order with business owners.\n2. Protect backup copies and administration from compromised identities.\n3. Preserve needed evidence and choose a separate isolated recovery environment before restoring."
+        },
+        {
+          "h": "Evidence to preserve",
+          "p": "Record restore-point timestamps, backup integrity checks, selected images, dependencies, approvals and any known gap between backup time and compromise time."
+        },
+        {
+          "h": "Containment and recovery",
+          "p": "Restore into clean, patched systems using trusted credentials. Scan and inspect recovered content; validate configuration and persistence risks. Do not overwrite the only surviving evidence or reconnect simply because files open."
+        },
+        {
+          "h": "Verify recovery",
+          "p": "Run an application-level restore test with the service owner: data integrity, key transactions, access controls and monitoring. Measure actual recovery time and data loss against agreed needs."
+        },
+        {
+          "h": "Prevent recurrence and escalate",
+          "p": "Test restores regularly, protect backup deletion and maintain independent recovery credentials. Escalate uncertain backup integrity or unavailable recovery keys before taking destructive steps."
+        },
+        {
+          "h": "Decision checkpoint",
+          "p": "Define pass/fail checks before restoring: which representative records must exist, which transaction must complete, which identity may access it and where alerts will appear. Record any data loss explicitly instead of calling a partial restore complete. If the selected restore point may contain the original compromise, hold reconnection until a qualified reviewer decides how to validate or replace it. Keep the old recovery copy available until the new service and a fresh protected backup have both been verified."
+        },
+        {
+          "h": "Authoritative sources",
+          "p": "Ransomware-resistant backups — https://www.ncsc.gov.uk/collection/ransomware-resistant-backups\nMitigating malware and ransomware attacks — https://www.ncsc.gov.uk/guidance/mitigating-malware-and-ransomware-attacks"
+        },
+        {
+          "h": "Scope and review",
+          "p": "Source check: 2026-09-29. Original AI-assisted guidance for small-organization IT teams; not a confirmed incident diagnosis, operational approval or exhaustive threat coverage. Adapt to your systems with the service owner. Only authorized responders should change access or infrastructure. Severity indicates potential impact, not a finding about your environment."
+        }
+      ],
+      "iocs": [],
+      "related": [
+        "PB-START-004",
+        "PB-START-005"
+      ],
+      "sourceIds": [
+        "ncsc-backups",
+        "ncsc-recovery"
+      ]
+    },
+    {
+      "id": "PB-START-016",
+      "title": "Cloud files are public: exposed storage and sharing",
+      "category": "playbooks",
+      "severity": "high",
+      "tags": [
+        "response-playbook",
+        "cloud-storage",
+        "s3",
+        "public-bucket",
+        "misconfiguration",
+        "sharing",
+        "exposure"
+      ],
+      "source": "Sentinel response guidance",
+      "updated": "2026-09-29",
+      "author": "Sentinel editorial synthesis (AI-assisted)",
+      "confidence": "Source-informed; human review required",
+      "reads": 0,
+      "cvss": null,
+      "snippet": "Remove unintended public access, preserve the exposure timeline and validate both anonymous denial and intended access.",
+      "body": [
+        {
+          "h": "When to use this playbook",
+          "p": "Use for public buckets, unintended document links, broad external shares or a scanner reporting sensitive objects accessible anonymously."
+        },
+        {
+          "h": "Questions to answer",
+          "p": "Was public access intended? Which objects, policies and links are affected? How long? Are logs available? Could authenticated outsiders also access them?"
+        },
+        {
+          "h": "First actions",
+          "p": "1. Confirm the specific exposure using authorized checks without downloading unnecessary sensitive data.\n2. Notify the data and service owners.\n3. Restrict unintended sharing or public policy; account for legitimate public-site dependencies before broad changes."
+        },
+        {
+          "h": "Evidence to preserve",
+          "p": "Record object identifiers, sharing configuration, policy-change times and available access logs. Preserve a restricted configuration snapshot before changes."
+        },
+        {
+          "h": "Containment and recovery",
+          "p": "For S3, inspect bucket, access-point and identity policies as well as Block Public Access settings. For collaboration tools, revoke unintended links and guest access. Rotate any exposed secrets and assess copied or cached data."
+        },
+        {
+          "h": "Verify recovery",
+          "p": "Test anonymous denial and intended authenticated access with non-sensitive test objects. Check for alternate links and policies; public-access blocking does not revoke every authorized principal."
+        },
+        {
+          "h": "Prevent recurrence and escalate",
+          "p": "Use private defaults, least privilege and alerts for sharing changes. Escalate sensitive data exposure to the breach process even when no downloads are recorded."
+        },
+        {
+          "h": "Decision checkpoint",
+          "p": "Check each independent sharing route. Closing a public bucket policy may leave an overly broad authenticated role; revoking a document link may leave a guest account or external group. Separate intentionally public website assets from confidential material and test both after tightening controls. If access logs were not enabled during exposure, document the blind period rather than retrospectively claiming no one accessed the data. Public-access repair resolves the configuration issue; the data owner still needs an exposure assessment."
+        },
+        {
+          "h": "Authoritative sources",
+          "p": "Blocking public access to your Amazon S3 storage — https://docs.aws.amazon.com/AmazonS3/latest/userguide/access-control-block-public-access.html\nSecrets Management Cheat Sheet — https://cheatsheetseries.owasp.org/cheatsheets/Secrets_Management_Cheat_Sheet.html"
+        },
+        {
+          "h": "Scope and review",
+          "p": "Source check: 2026-09-29. Original AI-assisted guidance for small-organization IT teams; not a confirmed incident diagnosis, operational approval or exhaustive threat coverage. Adapt to your systems with the service owner. Only authorized responders should change access or infrastructure. Severity indicates potential impact, not a finding about your environment."
+        }
+      ],
+      "iocs": [],
+      "related": [
+        "PB-START-007",
+        "PB-START-010"
+      ],
+      "sourceIds": [
+        "aws-s3",
+        "owasp-secrets"
+      ]
+    }
+  ]
+}

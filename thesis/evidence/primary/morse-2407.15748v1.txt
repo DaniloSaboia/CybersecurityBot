@@ -1,0 +1,1133 @@
+       MoRSE: Bridging the Gap in Cybersecurity
+      Expertise with Retrieval Augmented Generation
+
+
+
+
+                                                                          arXiv:2407.15748v1 [cs.CR] 22 Jul 2024
+                             Marco Simoni1 , Andrea Saracino2 , Vinod Puthuvath3,4 , and Maurco Conti3,4
+                     1
+                         Istituto di Informatica e Telematica, Consiglio Nazionale Delle Ricerche, Pisa, Italy
+                                     2
+                                       TeCIP, Scuola Universitaria Superiore Sant’Anna, Pisa, Italy
+                             3
+                               University of Padua, Italy and Delft University of Technology, Netherlands
+
+
+Abstract—In this paper, we introduce MoRSE (Mixture of               tasks, where LLMs often produce non-functioning code for
+RAGs Security Experts), the first specialised AI chatbot for         complex queries [13]. Specifically, when the model does
+cybersecurity. MoRSE aims to provide comprehensive and com-          not know the correct answer, hallucinations are inevitable
+plete knowledge about cybersecurity. MoRSE uses two RAG
+(Retrieval Augmented Generation) systems designed to retrieve        (Epistemic [14]). This can happen if the model does not have
+and organize information from multidimensional cybersecurity         enough training data or if its capacity is limited. An example of
+contexts. MoRSE differs from traditional RAGs by using parallel      hallucination in cybersecurity is shown in Example 1 (ground
+retrievers that work together to retrieve semantically related       truth) and Example 2 (the answer of GPT-4) to the question:
+information in different formats and structures. Unlike tradi-       What is CVE-2017-5162?. This shows that GPT-4 is not able
+tional Large Language Models (LLMs) that rely on Parametric
+Knowledge Bases, MoRSE retrieves relevant documents from             to provide the correct answer. To overcome these limitations, it
+Non-Parametric Knowledge Bases in response to user queries.          is crucial to build continuous learning mechanisms into LLMs
+Subsequently, MoRSE uses this information to generate accurate       that allow them to dynamically update their knowledge base
+answers. In addition, MoRSE benefits from real-time updates to       with the latest information [15]. Although retraining can be
+its knowledge bases, enabling continuous knowledge enrichment        time-consuming, updating with new information is essential
+without retraining. We have evaluated the effectiveness of MoRSE
+against other state-of-the-art LLMs, evaluating the system on        to maintain the relevance of LLM responses [16], [17]. For
+600 cybersecurity specific questions. The experimental evaluation    this reason, companies are quickly discovering the value of
+has shown that the improvement in terms of relevance and             Retrieval Augmented Generation chatbots. Although RAG
+correctness of the answer is more than 10% compared to known         systems have made significant advances on cybersecurity, re-
+solutions such as GPT-4 and Mixtral 7x8.                             searchers and practitioners often lacks comprehensive models
+                             I. I NTRODUCTION                        that unify diverse cybersecurity data and dynamic, real-time
+The increasing frequency and sophistication of new cyber             updated systems that are essential for addressing the evolving
+threats have made cybersecurity a critical priority across           cyber threat landscape. In fact, effective analysis of threats,
+all sectors, with a 15% increase in three years 1 on data            vulnerabilities and exploits requires a thorough understanding
+breaches only. In recent years, the amount of cybersecurity-         of individual entities and their broader interactions.
+related information has exploded, providing important re-                              Example 1: Ground Truth.
+sources to protect against these threats by mitigating risk
+and improving cybersecurity measures. However, this rapid               CVE: CVE-2017-5162
+proliferation of information has led to a cluttered and often           Description: An issue was discovered in BINOM3
+unstructured data landscape, complicating the task of deriving          Universal Multifunctional Electric Power Quality Meter.
+actionable insights for professionals [1], [2]. In fact, a timely,      Lack of authentication for remote service gives access
+accurate, and comprehensive understanding of vulnerabilities,           to application set up and configuration.
+exploits, and defense tactics is crucial, as the promptness
+of such information can significantly impact cybersecurity                                          Example 2: GPT-4 0125-Preview Response.
+decisions [3], [4]. Recently, large language models (LLMs)
+have become important tools for synthesizing huge amounts               CVE: CVE-2017-5162
+of information in various fields, including cybersecurity [5].          Description: CVE-2017-5162 is a vulnerability asso-
+However, their reliability varies for technical topics where            ciated with Broadcom Wi-Fi chipsets. It is one of the
+inaccuracies are critical [6], [7], [8], [9]. LLMs can produce          vulnerabilities part of the BroadPwn exploit. BroadPwn
+hallucinatory responses, meaning that they produce answers              is a critical security flaw that allows a remote attacker
+that are not true or reliable, especially struggling with the           to compromise a vulnerable device over the air, without
+dynamic and evolving nature of cyber threats [10], [11], [12].          any interaction from the user.
+This problem is particularly pronounced in code generation
+  1 https://bit.ly/3zxkf2y
+a) Contribution: In this paper, we present MoRSE (Mixture              CVE Questions. This confirms its effectiveness in specialized
+of RAGs Security Experts), a novel framework developed for             domains. We validated these results with the LLM as a
+Question and Answering tasks in the field of cybersecurity.            Judge method [24], which derives Elo ratings for each model
+Unlike other chatbots MoRSE is the first RAG framework                 and confirms MoRSE’s leading performance compared to all
+that aims to provide comprehensive coverage of cybersecurity           competitors.
+knowledge. To achieve this, MoRSE uses two RAG systems                 The main contributions of our work can be summarized as
+in cascade. These two RAGs divide the process into two                 follows:
+distinct phases: Information Retrieval phase, which is managed            • We introduce MoRSE, an open-source framework which
+                                                                                                                                 9
+by Multiple Retrievers, followed by the answer generation                    is the first attempt to integrate two RAG systems to handle
+phase, which is driven by Large Language Models. The first                   multidimensional cybersecurity contexts. This architec-
+RAG, called Structured RAG, comprises retrievers that are                    ture enables a unique synthesis of different data sources
+tailored to fast retrieval tasks, as they retrieve information               and improves the depth and relevance of security insights.
+from preprocessed, structured data. The second, Unstructured              • We introduce a three-part evaluation test suite that mea-
+RAG, is slower due to its higher complexity, but retrieves a                 sures the relevance, similarity and correctness of RAG
+larger amount of information as it enables the exploration of                systems in conjunction with LLMs. We have further
+data in its original form. The second RAG is only activated                  validated these results with two additional test suites
+if the first RAG does not find any relevant documents for a                  based on the LLM as a Judge approach. To the best of our
+specific query. Each retriever is specialized in a specific area             knowledge, we are the first to provide such contribution.
+of cybersecurity and collects data from key resources such                • We demonstrate how MoRSE can exploit its unique
+as MITRE2 , CVE repositories3 , Metasploit4 , and ExploitDB5 .               real-time cybersecurity keyword detection capability to
+The name of our system, MoRSE, is in fact inspired by                        improve the correctness of responses by 10% compared
+the Mixture of Experts (MoE) paradigm [18], reflecting the                   to GPT-4, addressing the critical need for timely and
+specialized skills of the individual retrievers. In addition,                accurate security analysis.
+MoRSE receives new knowledge through real-time updates of                 • MoRSE differs from conventional RAGs by using parallel
+its retrievers’ knowledge bases, which enables a continuous                  retrievers that work together to retrieve semantically
+expansion of knowledge. Indeed, a key advantage of non-                      related information in different formats and structures.
+parametric memory models such as RAG is the ability to                       This is particularly important in the cybersecurity domain,
+update knowledge at test time. In contrast, Parametric-only                  where different data types such as exploit code, TTP
+models require the entire model to be retrained, which can be                descriptions, CVEs and white papers often exist for a
+both time-consuming and resource-intensive.                                  particular threat but are rarely related to each other.
+Using a comprehensive set of 600 cybersecurity questions,                    MoRSE exploits these parallel retrievers and LLMs to
+consisting of 150 General Cybersecurity questions, 150 Multi-                integrate related information and provide comprehensive
+Hop (i.e., questions involving multiple entities contained in                answers to queries.
+different documents) Cybersecurity questions, and 300 CVE              b) Organisation: The rest of the article is structured as
+questions (on vulnerabilities), we evaluated MoRSE along-              follows. Section II discusses background information on LLMs
+side other commercial, well-known LLMs, including GPT-                 and RAGs. Section III describes the MoRSE architecture.
+46 , GEMINI7 , MIXTRAL [19], and HACKERGPT8 . The                      Section IV describes the experiments performed to evaluate the
+questions were classified based on the Diamond Model [20],             performance of MoRSE, including a comparative analysis with
+which we used to create questions that are representative of the       known commercial models. Section V provides an overview of
+real needs of the cybersecurity world. Two experts validated           related research work that includes various cybersecurity tools
+the ground truth of the questions, with a Cohen’s Kappa [21],          such as knowledge graphs, entity extraction tools, chatbots,
+[22] index as a measure of agreement between the two experts           and cyber threat intelligence (CTI). The conclusions and future
+equal to 0.82 out of 1.                                                work directions are presented in Section VI.
+The comparative analysis shows the superior performance
+of MoRSE for cybersecurity queries. In terms of relevance                                      II. BACKGROUND
+and correctness of answers [23], MoRSE outperforms other               This section provides an overview of the basic concepts
+models by more than 15% for General questions and by more              necessary for understanding the architecture of MoRSE.
+than 10% for Multi-Hop questions and CVE Questions. In
+terms of accuracy, MoRSE outperforms GPT-4 by 50% for                  A. Large Language Models
+                                                                       Large language models (LLMs) represent a significant ad-
+  2 https://attack.mitre.org/
+  3 https://cve.mitre.org/
+                                                                       vancement in the field of Natural Language Processing (NLP)
+  4 https://www.metasploit.com/                                        and are based on the Transformer model [25]. These models
+  5 https://www.exploit-db.com/                                        are trained on large text datasets and are able to generate coher-
+  6 https://chat.openai.com/                                           ent and contextually relevant texts based on input prompts. The
+  7 https://gemini.google.com/app
+  8 https://chat.hackerai.co/                                            9 https://github.com/Mixture-of-RAGs-Security-Experts/MoRSE
+
+
+
+
+                                                                   2
+capabilities of LLMs go beyond text generation and include                • Context refers to the relevant information or data re-
+tasks such as language translation, summarizing, answering                  trieved by the system, which surrounds and informs
+questions, etc.                                                             a particular query. The model requires this contextual
+The introduction of models such as GPT [26] and BERT [27]                   information to formulate answers that are precise, com-
+has demonstrated the potential of LLMs to revolutionize                     prehensive, and directly linked to the content found in
+language understanding and generation through unsupervised                  the knowledge base [40].
+and bidirectional training [26], [28]. With the development               • Prompt refers to the structured input that is created from
+of GPT-3 [29], the scalability of these models reached new                  the retrieved context, which is then fed into the generative
+heights, illustrating their ability to perform a wide range of              model. This prompt guides the model in generating
+NLP tasks without task-specific training.                                   a coherent, contextually relevant response that directly
+Despite their advantages, LLMs face several challenges. Ethi-               addresses the user’s request [41].
+cal considerations, such as the spread of bias and misinforma-            • Semantic Similarity evaluates how closely the content of
+tion, are a major concern [30]. In addition, the environmental              a user’s query matches the information in the knowledge
+impact of training and operating these computationally inten-               base, focusing on meaning rather than word-for-word
+sive models has raised questions about their sustainability [31].           matching. This evaluation guarantees the relevance and
+Efforts to overcome these challenges include research into                  accuracy of the retrieved data and supports the generative
+more efficient training methods and models that are able to                 model in creating appropriate answers. In MoRSE, we
+understand and generate texts with greater accuracy and less                use Cosine Similarity [42] to measure the proximity of
+bias [32].                                                                  embedding vectors because it has a high correlation with
+                                                                            human judgment [43].
+B. Retrieval Augmented Generation                                         • Multi-hop queries are defined as requests for infor-
+Retrieval-Augmented Generation (RAG) combines traditional                   mation that necessitate indirect reasoning over multiple
+language models with external databases to improve natural                  pieces of interconnected data. They typically arise in
+language processing (NLP) tasks [33], [34], [35]. RAG models                complex question-answering tasks where a single piece of
+use a retriever to retrieve relevant information and a genera-              evidence is insufficient to resolve the query, and the sys-
+tor to generate answers based on the retrieved information.                 tem must hop across different data points or documents
+This improves accuracy and relevance, especially for domain-                to piece together a response.
+specific queries [36], [16].
+RAG’s strengths lie in its ability to update knowledge bases                              III. M O RSE A RCHITECTURE
+without retraining and customise components for specific tasks          This section describes the structure of the MoRSE system in
+such as cybersecurity [33], [34].                                       detail. It explains the function of the individual components
+However, RAG struggles with latency and scalability issues,             and how they interact to process a request and generate a
+especially when processing concurrent queries [33]. Despite             response. We used the Langchain framework 10 to develop
+these limitations, RAG remains a versatile tool for a range of          the MoRSE architecture. The Table I contains the key to the
+NLP applications, from chatbots to content creation. Ongo-              symbols used in this explanation to facilitate the understanding
+ing research focuses on optimizing retrieval mechanisms and             of the following discussion. The first two symbols, (α) and
+computational power [36], [16].                                         (β), are embedding models, while the last two, (γ) and (θ),
+                                                                        are Transformer models.
+C. Definitions
+We report in the following a set of definitions which will be                      TABLE I: Mapping of Symbols to Values.
+used in the rest of the paper:                                                Symbol                   Value
+  • Retriever is a component that identifies and retrieves                      α              BAAI/bge-large-en [44]
+     relevant information or documents from a knowledge                         β       BAAI/bge-large-en-v1.5 [45], [46], [44]
+     base. This process is essential to provide the necessary                   γ          valhalla/t5-base-e2e-qg [47]
+     context and content that LLM uses to generate accurate                     θ            dslim/bert-large-NER [27]
+     and informed answers [35], [37].
+  • Knowledge Base is a repository of information that the
+     retriever accesses to find relevant data or documents.             A. MoRSE Overview
+     This is fundamental to the system’s ability to retrieve            As shown in Figure 1, MoRSE consists of two main compo-
+     contextually relevant content, essential for generating            nents: a graphical user interface (GUI) and the MoRSE core.
+     well-informed and accurate answers [38].                           The GUI enables interaction with the user by allowing the
+  • Embeddings are numerical representations of text that
+                                                                        input of queries and displaying the answers in a structured
+     assign a low dimension to a term. Within this context,             way11 .
+     embedding vectors of analogous terms exhibit proximity,
+     encapsulating semantic meaning. This facilitates the com-            10 https://www.langchain.com/
+
+     parison between queries and the knowledge base [39].                 11 https://github.com/Mixture-of-RAGs-Security-Experts/MoRSE
+
+
+
+
+                                                                    3
+The MoRSE core consists of three key components, which in               top k documents that S considers most relevant for the query
+turn manage the user query and compose the answer:                      based on a similarity score. If D is not empty (|D| > 0), this
+   • Query Handling Module: This module performs the                    means that a relevant context has been found. The workflow
+     pre-processing of user queries and specializes in the              then proceeds to use this context and moves on to the next
+     management of multi-hop queries and complex questions,             phase, where the retrieved information (D) is wrapped in a
+     especially in the context of Common Vulnerability and              Prompt, which is used by LLM to generate a response.
+     Exposures (CVEs) and Common Weakness Enumerations                  If the Structured Retrievers do not yield relevant documents
+     (CWEs).                                                            (|D| = 0), the workflow moves to the unstructured path and
+   • Structured RAG: The first of the two RAGs is composed              calls the Unstructured Retrievers, denoted as U. At this stage,
+     by retrievers that retrieve information from pre-processed,        E = top-k(U(x∗ )) represents the set of documents retrieved by
+     structured data. The pre-processing phase involves con-            U, which are designed to process complex queries that are not
+     verting chunks of text from various sources that are               readily covered by structured data patterns. After a successful
+     part of the knowledge base, such as academic papers                retrieval of relevant information in one of the two ways —
+     and cybersecurity websites, into well-defined structures.          indicated by |D| > 0 for structured retrieval or |E| > 0
+     These structures are designed to contain generated ques-           for unstructured retrieval —the Wrapper module integrates
+     tions and contextualized entity descriptions that facilitate       the acquired context and generates a prompt for the Large
+     the precise retrieval of information in response to user           Language Model (LLM). The LLM then performs Answer
+     queries.                                                           Generation, creating a detailed response to the user’s question.
+   • Unstructured RAG: This RAG is used if the structured               b) RAG Architecture: The RAG architecture of the MoRSE
+     RAG could not find a suitable answer. It searches for              system, which is used in both the Structured (III-D) and
+     information in unstructured and unprocessed raw text that          Unstructured RAG (III-E), follows the same underlying logic
+     belongs to its knowledge base. Accessing unstructured              shown in Figure 3. This architecture is divided into two parts:
+     data allows the exploration of data in its original form              1) The Retrieval part, which consists of Parallel Retrievers
+     without the limitations imposed by preprocessing, thus                    used to collect relevant information for the query.
+     providing a wider range of search options in exchange                 2) The Generation part, in which the Large Language
+     for a higher response time. This type enables the explo-                  Model (LLM) uses the context provided in the Prompt
+     ration of data in its original form without the restrictions              to generate responses. After the retrieval phase, the
+     imposed by preprocessing.                                                 collected information (info 1 to info N ) is merged into
+                                                                               a Context, which is Wrapped, along with the user query,
+                                                                               in a Prompt used by LLM to generate the Answer. The
+                                                                               logic of the architecture is formalized in the Algorithm 1.
+                                                                        C. Query Handling
+                                                                        This component improves the intelligence of the MoRSE
+                                                                        system by managing complex query types and enriching the
+                                                                        context. Below are the specific functions and the composition
+                  Fig. 1: MoRSE Overview.                               of this component:
+                                                                        1) Functionalities:
+                                                                          • Multi-Hop Question Handling: Deals with queries in-
+The RAGs will compose the answer to each query and return
+it to the GUI for structured visualization. In the following we              volving multiple related entities and allows the system to
+will detail the components of the MoRSE Core.                                handle and answer complex multi-hop questions. Existing
+                                                                             Retrieval Augmented Generation systems struggle with
+B. MoRSE Core                                                                multi-hop queries due to their design limitations and the
+a) MoRSE Core Workflow: Figure 2 shows the first stage                       lack of a dedicated benchmark dataset for this type of
+of MoRSE Core process, starting with the Query Handling                      query [48], [49].
+model. This module converts the original query x into an opti-            • Context Enriching: Generates additional questions from
+
+mized version x∗ (see subsection III-C). First, x∗ is forwarded              each identified entity, expanding and enriching the con-
+to the Structured RAG module for processing. The structured                  text available for generating informed answers.
+RAG path, denoted as S, begins with the Structured Retrievers,            • Solving the CVE-CWE Conundrum: Effectively han-
+
+focused on high accuracy and fast responses to efficiently                   dles queries related to Common Vulnerabilities and Ex-
+process most queries. Their primary function, S(x∗ ), is to                  posures (CVE) and Common Weakness Enumerations
+identify and retrieve information pertinent to the query.                    (CWE), which are challenging for generative models due
+When activated, the structured retrieval process, which is                   to their technical complexity [50], [51].
+executed via S(x∗ ), assigns a set of potentially relevant              2) Components:
+documents from a predefined Knowledge Base to the query x∗ .              • User Query: Initiates the process when a user submits a
+In particular, D = top-k(S(x∗ )) represents the selection of the             query via the graphical user interface.
+
+
+
+                                                                    4
+                                                   Fig. 2: MoRSE Core Workflow.
+
+
+                                                                            •   Get CWE Description: Retrieves descriptions of CWEs
+                                                                                that provide information about the type of software vul-
+                                                                                nerabilities, potential impact and mitigation strategies.
+                                                                                                                                          12
+                                                                             • Entity Extractor: Utilizes the Haystack framework
+                                                                                with the θ model to identify and extract relevant entities
+                                                                                (people or concepts) from user queries, improving the
+                                                                                system’s ability to handle Multi-Hop queries.
+                                                                          The complete workflow is outlined in Algorithm 2, demon-
+             Fig. 3: RAG Architecture Overview.                           strating the mechanism of Query Handling within the MoRSE
+                                                                          system.
+Algorithm 1 RAG with N Parallel Retrievers
+                                                                          D. Structured RAG
+Require: User query Q
+Ensure: Answer A                                                          As illustrated in Figure 4, the Structured RAG module works
+ 1: Predefined: Retrievers r1 , r2 , . . . , rN                           post-Query Handling by forwarding refined queries to seven
+ 2: procedure E XECUTE RAG(Q)                                             Parallel Retrievers, called Structured Retrievers, each of which
+ 3:     Initialize context set C ← ∅                                      specializes in specific cybersecurity topics. Given a query, the
+ 4:     for i ← 1 to N do ▷ In parallel for each i-th retriever           information contained in the knowledge base of a Retriever
+ 5:         Ii ← ri (Q)       ▷ Retrieve information using i-th           is inserted into the Context if its similarity to the query
+    retriever                                                             is above a predefined threshold. In order to establish the
+ 6:         Sort Ii by relevance scores to find the most perti-           threshold for each retriever, we conducted an analysis on
+    nent documents                                                        the scores of top 50 results from a series of test queries.
+ 7:         Itop ← topk (Ii ) ▷ Select the top-k documents to             Thresholds were then determined by assessing the distribution
+    form a new set Itop                                                   of scores 13 . In particular, we used the median value of the
+ 8:         if not empty(Itop ) then                                      test distributions as threshold for the MITRE Retriever and the
+ 9:              C ← C ∪ {Itop }            ▷ Incorporate the top-k       Malware Retriever, as these typically retrieve shorter texts.
+    documents into the context C                                          For Question Retrieval System, CWE Retriever, Metasploit
+10:         end if                                                        Retriever and Entity Retriever, we chose the third quartile
+11:     end for                                                           (Q3) of the test distributions as threshold, as they generally
+12:     if C = ∅ then                                                     retrieve longer texts. The ExploitDB Retriever works without
+13:         return ”No relevant information found.”                       a threshold and uses the TF-IDF algorithm [52]. To mitigate
+14:     end if                                                            embedding biases [53], we used two different embeddings for
+15:     P ← wrap(C, Q)           ▷ Construct a prompt from the            the retrievers, (α) and (β). The following paragraphs delineate
+    aggregated context C and the User query Q.                            each retriever’s functionalities.
+16:     A ← LLM (P ) ▷ Use the Large Language Model to                    a) Mitre Retriever: The knowledge base of this retriever
+    generate an answer.                                                   comes from the website of the MITRE Corporation14 . It is
+17:     return A                                                          structured as a graph database containing two primary node
+18: end procedure                                                         categories: Malware and Techniques. Each Malware node in
+                                                                          the database contains a name and a description of MITRE.
+                                                                          We create Technique nodes, which consist of technique names
+  • CVE-CWE Keyword Extraction: Extracts keywords                         and descriptions, by collecting and analysing technique-related
+    related to CVEs and CWEs when a query is received.                      12 https://haystack.deepset.ai/
+  • Get CVE Description: Retrieves detailed descriptions                    13 https://github.com/Mixture-of-RAGs-Security-
+    of CVEs, including information about vulnerabilities,                 Experts/MoRSE/tree/main/Retriever-Threshold-Scores
+    affected software and finders.                                          14 https://attack.mitre.org/software/
+
+
+
+
+                                                                      5
+Algorithm 2 Query Handling Process                                   b) Metasploit Retriever: We have developed the Metasploit
+Input: A user query q on a specific cybersecurity topic.             Retriever so that it can be effectively integrated into the
+Output: A series of refined queries Q′ for in-depth analysis.        Metasploit Framework. Its knowledge base includes over 4900
+ 1: procedure V ULNERABILITY E XTRACTOR (q)                          cybersecurity elements, including exploits, encoders, payloads,
+ 2:      Extract keywords K related to CVE and CWE from              and various modules. To increase the retrieval speed, we only
+    q.                                                               index salient parts of codes such as code descriptions and
+ 3:      Retrieve detailed descriptions D for each keyword in        exploit information. It performs a semantic search using a
+    K from relevant databases.                                       similarity value of 0.75 (Q3 of the test distribution) with (α)
+ 4:      Update q by substituting each keyword in K with its         embedding, along with a keyword search supported by the
+    corresponding description from D, yielding q ′ .                 TF-IDF algorithm [52].
+ 5:      return q ′                                                  c) ExploitDB Retriever: The knowledge base of this retriever
+ 6: end procedure                                                    is made up of exploits from the ExploitDB framework. These
+ 7: procedure E NTITY E XTRACTOR (q ′ )                              codes often lack descriptions, so we use a keyword search with
+ 8:      Utilize the Haystack framework with ”dslim/bert-base-       the TF-IDF algorithm [52] to focus only on important data
+    NER” to detect entities E in q ′ .                               such as CVE identifiers and author names, which are usually
+ 9:      Start with an empty Queries_List Q and include              at the beginning of the scripts. To increase the retrieval speed,
+    q′ .                                                             we only index the first 600 characters of each script, as this
+10:      for each detected entity e ∈ E do                           information is often contained in the first sections of the code.
+11:          if e refers to a person (PER) then                      d) Question Retrieval System: This system acts as a knowl-
+12:              Append a question about e to Q: "Who is             edge base containing questions extracted from chunks of the
+    e?"                                                              original documents to better select the most important parts
+13:          else if e pertains to an object or concept              of the document and the explanations contained therein. A
+    (OBJ/CON) then                                                   user query is compared with these questions and if there is
+14:              Append a question about e to Q: "What is            a match, the chunk from which the matching question was
+    e?"                                                              extracted is retrieved. During preprocessing, documents are
+15:          end if                                                  divided into 2000-character chunks. Model (γ) generates about
+16:      end for                                                     seven questions per chunk, which are refined with Mistral-
+17:      return Q                                                    7B-Instruct-v0.2 [54] for better alignment. The system uses
+18: end procedure                                                    (β) embeddings and deploys four retrievers in sequence, each
+19: procedure Q UERY H ANDLING (q)                                   selecting the ten most relevant documents. The results are
+20:      qvuln ← V ULNERABILITY E XTRACTOR(q)                        merged, filtered with a similarity threshold of 0.6 (Q3 of the
+21:      Q′ ← E NTITY E XTRACTOR(qvuln )                             test distribution) and reordered based on the Lost In the Middle
+22:      return Q′                                                   Principle [55], by placing key information at the beginning or
+23: end procedure                                                    end of the context. Redundant questions targeting the same
+                                                                     document chunk are removed to streamline the context.
+                                                                     e) Entity Retriever: This retriever contains entities from
+                                                                     document chunks together with their descriptions extracted
+                                                                     from the context of the chunk. During the pre-processing
+                                                                     phase, we segment the documents into 500-word chunks. This
+                                                                     segmentation enables the model (θ) to identify and classify
+                                                                     relevant entities more precisely. The contextual descriptions
+                                                                     for each entity are then created using the mistralai/Mistral-7B-
+                                                                     Instruct-v0.2 model and converted by (β) embeddings into a
+                                                                     searchable format that is retrievable with a similarity threshold
+                                                                     of 0.5 (Q3 of the test distribution).
+                                                                     f) Malware Retriever: This retriever contains more than
+                                                                     1000 malware source codes originating from GitHub pages.
+                                                                     The Malware Retriever uses a semantic search with (α)
+                                                                     embeddings and a threshold value of 0.7 (median of the test
+             Fig. 4: Structured RAG Workflow.                        distribution) to match search queries with malware names. In
+                                                                     case of matches, all related files are displayed on the graphical
+                                                                     interface.
+links from the MITRE website. This retriever utilizes embed-         g) CWE Retriever: The CWE Retriever uses a semantic
+dings (α). To ensure accurate matches, the system exclusively        search with (α) embeddings to match user queries with CWE
+evaluates malware with a similarity score exceeding 0.7,             descriptions, as described in Section III-C. Operating with a
+corresponding to the Test distribution’s median.                     threshold of 0.7 (Q3 of the test distribution), it showcases the
+
+
+
+                                                                 6
+10 most relevant CWEs. When a query closely aligns with                    •  Metasploit Buffers: five buffers containing entire codes
+a CWE, the retriever presents detailed information, including                 from the Metasploit framework that uses the (α) embed-
+code examples.                                                                ding for effective processing.
+h) Context Construction: When creating the final context for                • Code Buffers: A single buffer processes code snippets
+the prompt, inputs from two main sources (code snippets and                   from Exploit DB and also uses (α) embedding for optimal
+contextual information) are organized to ensure visibility and                analysis.
+impact during the Generation Phase:                                         • Paper Buffers: Academic papers are managed by three
+
+   • Code Snippets: Following the Lost In the Middle prin-                    buffers that use the (β) embedding to better handle the
+     ciple [55], code snippets from Metasploit and ExploitDB                  complex language typical of academic content [57]. This
+     are prioritized at the beginning of the prompt so that they              choice is based on the higher performance values of
+     are immediately visible.                                                 embedding, which indicate better retrieval capabilities.
+   • Contextual Information: To ensure that essential and                The process Context Transformation refines information
+     concise information is presented to the LLM, the content            from buffers through four phases:
+     from the queries Mitre, CWE and Entity retrievers is                   • Splitting Stage: Document are split into 300-character
+     placed at the end of the prompt. The more comprehensive                  chunks, improving relevance selection and reducing noise
+     outputs of the Question Retriever, which is equipped with                from larger chunks.
+     a reordering function that respects the Lost In the Middle             • Redundant Content Removal: In this phase, β embed-
+     principle [55], are placed in the middle.                                dings are used to remove redundant content from the
+                                                                              segmented chunks and improve the clarity and uniqueness
+E. Unstructured RAG                                                           of the output.
+                                                                            • Filtration Stage: Relevant data chunks are selected using
+The unstructured RAG, shown in Figure 5, plays a crucial
+                                                                              (β) embeddings with a threshold of 0.6 set to the third
+role in the MoRSE system by handling cybersecurity queries
+                                                                              quartile (Q3) of similarity results from tests with 156
+that the structured RAG cannot solve. The module utilizes
+                                                                              queries to ensure relevance from the knowledge base.
+retrievers, called buffers, to store documents in chunks of
+                                                                            • Reordering Phase: Finally, the data is ordered according
+2000 characters while maintaining the integrity of the original
+                                                                              to the (Lost in the Middle) principle to prioritize the
+information. All buffers work as hybrid retrievers that use
+                                                                              visibility of important information in the response.
+both semantic search and keyword search with the BM25
+algorithm [56]. Unlike other configurations, these retrievers
+                                                                                 IV. EXPERIMENTS AND EVALUATION
+do not have a fixed threshold for semantic search; instead,
+they are configured to return the top five documents regardless          The evaluation of Retrieval Augmented Generation systems
+of similarity scores. This decision enables further Context              and Large Language Models in the field of cybersecurity is
+Transformation process to apply semantic thresholds, ensuring            particularly challenging due to their dual role in information
+the flexibility and comprehensiveness of the retrieval process.          retrieval and content generation. The lack of standardized
+                                                                         benchmarks covering a wide range of real-world operational
+                                                                         cyber tasks complicates the evaluation of LLMs for cyberse-
+                                                                         curity [23], [58], [59].
+                                                                         Key evaluation challenges include verifying the accuracy of
+                                                                         the retrieved information, the effectiveness of its use by LLM,
+                                                                         and the overall quality of the content generated. Traditional
+                                                                         methods that focus on language comprehension may not
+                                                                         adequately reflect real-world performance [60].
+                                                                         To effectively address these challenges, we developed a three-
+                                                                         part evaluation strategy for MoRSE and compared its per-
+                                                                         formance with other known LLMs and RAG systems in
+                                                                         answering cybersecurity questions. MoRSE was compared to
+                                                                         competing models such as GPT-4 0125-Preview, MIXTRAL,
+                                                                         HACKERGPT, and GEMINI 1.0 Pro. The three different
+             Fig. 5: Unstructured RAG Workflow
+                                                                         evaluation test suites are:
+                                                                            • Using the RAGAS framework [23], we evaluate MoRSE’s
+a) Classification of Buffers: Buffers are categorized accord-                  responses against a ground truth using a set of metrics.
+ing to the type of data they process, and there are four different          • Using a method proposed by Zheng et al. [24], we
+types of buffers:                                                              computed Elo Ratings for MoRSE and competing models
+  • Text Buffers: Process content from websites and blogs                      by reference-guided pairwise comparison using GPT-4
+     with five separate buffers, each analyzing data using the                 0125-Preview as a judge. This provides a quantitative
+     (α) embedding.                                                            measure of relative performance.
+
+
+
+                                                                     7
+      TABLE II: Comparative Assessment of RAG Models on 156 General and 150 Multi-Hop Cybersecurity Questions
+                                                 General Cybersecurity Questions               Multi-Hop Cybersecurity Questions
+                  Model                    Relevance       Similarity         Correctness    Relevance       Similarity    Correctness
+                                           µ      σ        µ       σ           µ      σ      µ      σ        µ       σ      µ      σ
+                  MoRSE                   0.90      0.05   0.95   0.02        0.71   0.08   0.93   0.05     0.93   0.03    0.70   0.09
+                  GPT-4 0125-Preview      0.74      0.35   0.93   0.03        0.59   0.07   0.75   0.33     0.92   0.03    0.62   0.10
+                  MIXTRAL 7X8             0.77      0.43   0.92   0.03        0.58   0.08   0.60   0.42     0.92   0.04    0.61   0.09
+                  HACKERGPT               0.66      0.33   0.92   0.04        0.58   0.08   0.73   0.18     0.79   0.05    0.47   0.03
+                  GEMINI 1.0 Pro          0.61      0.43   0.91   0.05        0.58   0.08   0.70   0.37     0.90   0.07    0.58   0.10
+
+
+
+  •   Following Zheng et al. [24], GPT-4 0125-Preview also                        where Eig and Eo are the β-embeddings of the generated
+      rates the responses on a scale of 1 to 5 based on their                     and original questions, respectively, and N equal to 3, is the
+      comparison with the ground truth references, which have                     number of generated questions.
+      5 as the highest default score.                                             Answer Similarity, shown in Equation 2, evaluates semantic
+We conducted the assessment using three different types of                        congruence between model-generated responses and prede-
+cybersecurity questions. The first category, General Cyberse-                     fined correct answers, calculated as:
+curity Questions, includes 150 simple one-liners that address                                                    Vground truth · Vgenerated
+                                                                                         Answer Similarity =                                 , (2)
+a wide range of cybersecurity topics. The second category,                                                     ∥Vground truth ∥∥Vgenerated ∥
+Multi-Hop Cybersecurity Questions, includes 150 complex
+                                                                                  where Vground truth and Vgenerated represent vector representa-
+queries that require a thorough, multi-layered understanding.
+                                                                                  tions of the ground truth and generated answers, respectively.
+The third category focuses on 300 Common Vulnerability
+                                                                                  Answer Correctness, shown in Equation 3 and 4, evaluates
+Exposure (CVE) questions that address specific security vul-
+                                                                                  the factual accuracy of generated answers against ground truth.
+nerabilities. The questions were classified based on the Dia-
+                                                                                  It combines semantic similarities and factual correctness:
+mond Model [20], which we used to create questions repre-
+sentative of real cybersecurity world needs, and the sample                                        AC = wF C · F C + wSS · SS,                 (3)
+size was statistically selected based on standard methods 15 .
+                                                                                  where F C is the factual correctness, quantified using the
+Two experts with 12 and 2 years of experience validated the
+                                                                                  F1 score that considers True Positives (T P ), False Positives
+ground truth. We used Cohen’s Kappa [21], [22] as a metric
+                                                                                  (F P ), and False Negatives (F N ):
+to evaluate the agreement between the two experts. They
+categorized the answers as [Correct], [Incorrect] or                                                                  |T P |
+                                                                                              FC =                                        ,    (4)
+[Partially_Correct] depending on the context of the                                                      |T P | + 0.5 · (|F P | + |F N |)
+questions. The experts agreed well (Cohen’s Kappa = 0.82),                        and SS is the semantic similarity between the generated and
+indicating an Almost Perfect agreement [61].                                      ground truth answers. wF C and wSS are the weights assigned
+For all three evaluation test suites, we generated the an-                        to F C and SS, respectively 0.75 and 0.25. In order to calculate
+swers from MoRSE using the mistralai/Mistral-7B-Instruct-                         TP, FP and FN, RAGAS framework uses the following prompt
+v0.2 model, operating on an NVIDIA A100 80GB GPU.                                 instruction: Extract the following from the given question and
+                                                                                  ground truth: “TP”: statements that are present in both the
+A. First Test Suite: Ground Truth Assessing alignment using                       answer and the ground truth, “FP”: statements present in
+the RAGAS framework                                                               the answer but not found in the ground truth, “FN”: relevant
+                                                                                  statements found in the ground truth but omitted in the answer.
+Using the RAGAS framework [23], we focused on three
+                                                                                  Each of these three metrics requires an embedding model to
+metrics: answer relevance, answer similarity, and answer
+                                                                                  compute distances between sentences and a large language
+correctness. To calculate these metrics, we used GPT-4 0125-
+                                                                                  model (LLM) for evaluating answer relevance and correctness.
+Preview as the underlying model for all calculations.
+                                                                                  We chose GPT-4 0125-Preview as the LLM and (β) as the
+Answer Relevance, shown in Equation 1, measures how
+                                                                                  embedding model.
+pertinent the generated answer is to the given prompt. It is
+                                                                                  a) Performance Analysis on General and Multi-Hop Ques-
+calculated by generating related questions from the model’s
+                                                                                  tions: Table II shows the results of MoRSE and the other
+answer and comparing their embeddings to the original ques-
+                                                                                  models for General Cybersecurity Questions and Multi-Hop
+tion using cosine similarity:
+                                                                                  Cybersecurity Questions. The metrics for each model are
+                                         N                                        expressed as mean (µ) and standard deviation (σ), which
+                                     1 X
+           Answer Relevance =              cos(Eig , Eo ),              (1)       indicate the average performance and variability, respectively.
+                                     N i=1                                        Insights from General Cybersecurity Questions: For the
+                                                                                  general cybersecurity questions, MoRSE showed superior per-
+ 15 https://github.com/Mixture-of-RAGs-Security-Experts/MoRSE/tree/               formance in all metrics, with a mean relevance score of 0.90,
+main/CohensKappaEvaluation                                                        a similarity score of 0.95, and a correctness score of 0.71,
+
+
+
+                                                                              8
+indicating a high degree of agreement between the answers and           the frequency with which each retriever was able to suc-
+the query prompts, as well as factual accuracy. In comparison,          cessfully retrieve relevant information within these contexts.
+all other models showed lower consistency and effectiveness,            The frequency of successful retrievals for each retriever was
+especially in terms of correctness.                                     then calculated as a percentage of the total questions in
+Insights Multi-Hop Cybersecurity Questions: When eval-                  each category. In this way, we were able to quantify the
+uating complex multi-hop cybersecurity queries, the MoRSE               performance and impact of each retriever in both general
+model outperforms its competitors and proves that it is ca-             and multi-hop question scenarios. Figures 6a, 6b and 6c
+pable of answering complicated questions. The data shows                show the impact of the different retrievers for each question
+that MoRSE scores consistently high on all metrics, with                category. For general questions, the Question Retrieval System
+average scores of 0.93 for relevance and similarity and 0.70            has the highest impact at 56.3%, followed by the Entity
+for correctness. Other models show significant performance              Retriever with 21.7%. Other retrievers, such as MITRE, CWE,
+degradation, particularly in correctness, with GPT-4 0125-              ExploitDB, Metasploit and Malware Retriever, have an impact
+Preview achieving a mean score of 0.62 and MIXTRAL 0.61,                of between 6.1% and 9.0%. For multi-hop questions, the
+indicating a lower capacity to handle multi-hop questions.              Question Retrieval System significantly influences results with
+b) Performance Analysis on CVE Questions: Table III shows               a 35.4% contribution, and the Entity Retriever also plays an
+how MoRSE and GPT-4 0125 preview approach 300 CVE                       important role with a 28.3% contribution. The Metasploit Re-
+queries. We chose GPT-4 0125 preview because it performed               triever has an increased influence of 12%. The other retrievers
+best as the second model in both general and multi-hop                  (Malware, CWE, ExploitDB and MITRE) have an influence
+contexts (see Table II). We focus on answer similarity and              of between 5% and 7%. Figure 6c shows the impact on CVE
+correctness metrics for scoring answers because they are                questions, where the ExploitDB and Metasploit Retrievers
+strictly based on ground truth and answer relevance does not            have the highest impact at 18% and 31% respectively. The
+measure factuality. Moreover, we compute Accuracy metric,               other retrievers (Malware, CWE, MITRE, Entity, and Question
+calculated by checking whether the models correctly identified          Ret. Sys.) have an impact ranging from 1% to 14%.
+the vulnerability in the given queries. Regarding Correctness,
+                                                                        C. Second Test Suite with LLM as Judge: Reference-Guided
+the MoRSE model scored 0.64 because its responses often
+                                                                        Pairwise Comparison
+include explanation of related exploit codes, which are not
+present in the ground truth that only describes the vulnerability       Prompt 1: The prompt for reference-guided pairwise com-
+specifics. This extra information, while useful, lowers the             parison.
+correctness score as it deviates from the expected response.
+                                                                          Please act as an impartial judge and evaluate the quality
+GPT-4 0125-Preview lags behind in this domain-specific chal-
+                                                                          of the responses provided by two AI assistants to the
+lenge. MoRSE achieved an accuracy of 84%, surpassing the
+                                                                          user question displayed below. Your evaluation should
+GPT-4 0125-Preview model, which had an accuracy of 34%.
+                                                                          consider correctness and helpfulness. You will be given
+Our comparison reveals that MoRSE significantly outperforms
+                                                                          a reference answer, assistant A’s answer, and assistant
+GPT-4 0125-Preview in accurately identifying vulnerabilities.
+                                                                          B’s answer. Your job is to evaluate which assistant’s
+TABLE III: Performance comparison of models on 300 CVE                    answer is better. Begin your evaluation by comparing
+Queries.                                                                  both assistants’ answers with the reference answer. Iden-
+                                                                          tify and correct any mistakes. Avoid any position biases
+ Model                 Similarity      Correctness    Accuracy            and ensure that the order in which the responses were
+                       µ       σ       µ       σ                          presented does not influence your decision. Do not allow
+ MoRSE                0.903   0.028   0.640   0.111     84%               the length of the responses to influence your evaluation.
+ GPT-4 0125-Preview   0.852   0.004   0.558   0.107     34%               Do not favor certain names of the assistants. Be as
+                                                                          objective as possible. After providing your explanation,
+We cannot calculate the accuracy metric for general and                   output your final verdict by strictly following this format:
+multi-hop queries because, unlike CVE queries, they lack                  “[A]” if assistant A is better, “[B]” if assistant B is better,
+strictly factual data points, such as a specific vulnerability            and “[C]” for a tie.
+to identify. For CVEs, accuracy is straightforward: we check              [User Question] Insert user question here.
+if the model identified the correct vulnerability. In contrast,           [The Start of Reference Answer]
+general and multi-hop questions often lack such clear data                Insert reference answer here.
+and require assessment based on multiple aspects depending                [The End of Reference Answer]
+on the question type.                                                     [The Start of Assistant A’s Answer]
+B. Retrievers Impact analysis                                             Insert Assistant A’s answer here.
+                                                                          [The End of Assistant A’s Answer]
+To calculate the impact of each retriever on 600 questions,
+                                                                          [The Start of Assistant B’s Answer]
+we applied a systematic methodology. First, we collected
+                                                                          Insert Assistant B’s answer here.
+all contexts generated for 150 general questions, 150 multi-
+                                                                          [The End of Assistant B’s Answer]
+hop questions and 300 CVE questions. We then analyzed
+
+
+
+                                                                    9
+                                                                                            Estimation:
+               60                                                               56.3
+                                                                                              •   Elo Ratings: it quantifies the comparative skill levels
+
+
+  Impact (%)
+               40                                                                                 across entities in competitive scenarios, making it apt for
+                                                                     21.7                         evaluating models based on their head-to-head outcomes.
+               20                                                                                 This approach involves initial computation using a linear
+                        6.1    8.6     7         7          9
+                                                                                                  update algorithm, opting for a conservative K-factor to
+                0                                                                                 ensure stability in ratings, minimizing bias from recent
+                        al                                                                        encounters. Equation 5 shows the Elo rating formula used
+                    M are w                  E         RE        tit y   et.S
+                      etas pl               CW   M              En           ys                   in our context:
+                M   Expl     oi t                 IT                           .
+                         oitD B                                      .R
+                                                                 Q                                             Rnew = Rold + K × (S − E),                 (5)
+                    (a) Impact of Retrievers on General Questions                                 where Rnew and Rold represent the new and old Elo
+               40                                                                                 ratings, respectively. The constant K, set equal to 4,
+                                                                                35.4
+                                                                     28.3
+                                                                                                  controls the volatility of the rating, S denotes the actual
+
+
+  Impact (%)
+                                                                                                  match outcome (1 for a win, 0.5 for a tie, and 0 for a
+               20                                                                                 loss), and E is the expected outcome, as calculated in
+                                12
+                        6.3            6                    7                                     Equation 6:
+                                                 5
+                                                                                                                                  1
+                0                                                                                                  E=            Rnew −Rold .             (6)
+                                                                                                                          1 + 10     400
+                        al w                 E         RE        tit y        ys.
+                    M are
+                      et                    CW                  En        .S                  •   Maximum Likelihood Estimation: Utilizing logistic re-
+                    Ex
+                         as ploi                 MIT                     et
+                M      pl        t                                                                gression for MLE, we further analyzed the pairwise com-
+                          oi tD B                                    .R
+                                                                 Q                                parisons, deducing each model’s probability of outper-
+                                                                                                  forming another, thereby enriching our evaluative scope
+                    (b) Impact of Retrievers on MultiHop Questions
+                                                                                                  with probabilistic insights. The logistic regression model
+               40
+                                31
+                                                                                                  used for MLE can be formalized in Equation 7:
+
+
+
+  Impact (%)
+                                                                                                                    
+                                                                                                                 p
+               20                      18                                                                log            = β0 + β1 X1 + · · · + βp Xp ,   (7)
+                                                                                14                             1−p
+                                                 10                   10
+                                                            5                                   where p is the probability of model A winning over
+                         1
+                0                                                                               model B, Xi represents the feature vector indicating the
+                                                                                                participation of models in each match, and βi are the
+                        alw                  E         RE            y        ys.
+                    M are
+                      etas                  CW        IT
+                                                                 tit
+                                                                En       et                     coefficients learned by the regression, correlating with the
+                    Ex     pl oi t               M                         .S                   Elo scores. The computed coefficients βi are then scaled
+                M      ploitD                                        .R
+                               B                                 Q                              and adjusted to derive the final Elo scores for each model.
+                                                                                              • Bootstrap-enhanced Elo Ratings: To address potential
+                      (c) Impact of Retrievers on CVE Questions                                 biases related to battle sequencing, we employed a Boot-
+Fig. 6: Impact of Retrievers on General, MultiHop and CVE                                       strap approach, enhancing the robustness of Elo ratings
+Questions                                                                                       and facilitating confidence interval estimations for a more
+                                                                                                reliable assessment. The Bootstrap method involves: sam-
+                                                                                                pling battles, calculating Elo ratings, forming a rating
+In our evaluation, we used GPT-4 0125-Preview as a judge                                        distribution across rounds, and determining confidence
+to evaluate and compare the performance of MoRSE, GPT-4                                         intervals (median, 2.5%, and 97.5% percentiles).
+0125-Preview, MIXTRAL 7X8, GEMINI 1.0 Pro and HACK-                                         a) Performances on General Cybersecurity Question: As
+ERGPT. This method is based on the research proposed                                        shown in Table V, MoRSE leads with the highest Elo score
+by Zheng et al. [24], which shows that GPT-4 has a high                                     of 1244 and an MLE Elo of 1252.43, indicating superior
+agreement with human judgment with an 80% agreement rate.                                   performance in general cybersecurity knowledge. It has a
+As shown in Prompt 1, given a query and the corresponding                                   strong bootstrap score of 1225.54, indicating consistent results
+reference response, we ask GPT-4 0125-Preview to choose the                                 within the 1275-1175 confidence interval. It is followed by
+best response between Model A and Model B. After GPT-4                                      GPT-4 with an Elo of 1083 and MLE Elo of 1107.07, also
+0125-Preview completed its evaluation of all possible battles                               showing reliable performance. GEMINI and MIXTRAL show
+among the competing models, documented in Table IV, we                                      moderate performance, with Elo ratings of 926 and 885,
+derived three different metrics for each model: Elo Rating,                                 respectively. HACKERGPT performs the worst with the lowest
+Bootstrap-enhanced Elo Ratings and Maximum Likelihood                                       Elo score.
+
+
+
+                                                                                       10
+b) Performances on Multi-Hop Cybersecurity Questions: As              These scores are based on a comparison with a reference
+shown in Table V, in Multi-Hop queries, MoRSE again excels            answer, which is given a perfect score of 5. The procedure for
+with an Elo of 1280 and an MLE Elo of 1323.67. Its bootstrap          this scoring corresponds to the methodology described in 16 .
+score of 1170.62 with a narrow interval indicates a high              As can be seen from Table VI, MoRSE outperforms in all
+stability of performance. GPT-4 remains a competitive second          question categories (General questions, Multi-Hop questions,
+with an Elo of 1157. MIXTRAL, despite its lower performance           and CVE questions). GPT-4 0125-Preview follows MoRSE as
+on general questions, performs better on Multi-Hop questions          the second most competent model and shows strong versatility
+with a better Elo of 921, while GEMINI struggles, as reflected        in all categories, but with a significantly lower performance
+in its Elo of 907. HACKERGPT continues to show less                   than MoRSE. Other models, GEMINI, HACKERGPT and
+stability in this area as well.                                       MIXTRAL, show different levels of performance, with none
+c) Complete Questions Insights: Considering 156 General               reaching the effectiveness of MoRSE or GPT-4 0125-Preview
+Questions and 150 Multi-Hop Questions, MoRSE stands out               in terms of general cybersecurity knowledge or the more
+with an Elo of 1267 and an MLE Elo of 1294.66, com-                   targeted questions on Multi-Hop and CVE.
+plemented by a solid bootstrap score within a trustworthy
+interval, proving its robustness. GPT-4’s performance is also         E. Test Case Analysis for MoRSE RAG Retrievers
+solid with an Elo of over 1100. The performances of GEMINI            This section reports the evaluation on the performance of both
+and MIXTRAL are very similar, with Elo Ratings between 900            the structured and unstructured RAG components within the
+and 950. HACKERGPT remains less consistent overall.                   MoRSE system, as shown in Table VII. We evaluated each
+                                                                      retriever against a customized set of 100 test questions based
+D. Third Test Suite: LLM as Judge with Five-Level Judgment            on their specialized knowledge in cybersecurity, focusing on
+Criteria Based on Top-Scoring References                              processing time efficiency, dense retriever size, denoted by
+                                                                      Size and number of documents (No. Doc). We also test
+Prompt 2: The prompt for Five-Level Judgment Criteria                 the reliability of the structured Retrievers using test queries
+Referencing the Top-Scoring Reference.                                with error rate analysis to estimate future reliability using a
+  Task Description: A Question, a response to evaluate, a             confidence interval.
+  reference answer that gets a score of 5, and a score rubric         a) Analysis of the performance of Structured Retrievers:
+  representing a evaluation criteria are given. 1. Write a            Table VII shows the performance metrics for Structured RAG
+  detailed feedback that assess the quality of the response           Retrievers within the MoRSE system. The ExploitDB Retriever
+  strictly based on the given score rubric, not evaluating in         Size is not listed as it uses TF-IDF for retrieval. The Malware
+  general. 2. After writing a feedback, write a score that            Retriever processes queries with average times of 0.061 sec-
+  is an integer between 1 and 5. You should refer to the              onds on GPU and 0.110 seconds on CPU. The CWE Retriever
+  score rubric. 3. The output format should look as follows:          and the MITRE Retriever have average processing times of
+  ”Feedback: {{write a feedback for criteria}} [RESULT]               0.083 and 0.057 seconds on GPU and 0.108 and 0.13 seconds
+  {{an integer number between 1 and 5}}” 4. Please do not             on CPU.
+  generate any other opening, closing, and explanations. Be           For the ExploitDB Retriever, the average processing times
+  sure to include [RESULT] in your output.                            are 1.254 seconds on GPU and 2.377 seconds on CPU. The
+  Score Rubrics: Is the response correct, accurate, and               Metasploit Retriever shows average times of 0.995 seconds on
+  factual based on the reference answer?                              GPU and 1.367 seconds on CPU when processing a 40MB
+                                                                      dense retriever. In addition, Question Retrieval System and
+     • Score 1: The response is completely incorrect, inac-
+                                                                      Entity Retriever are noteworthy as they have the largest dense
+        curate, and/or not factual.
+                                                                      retrievers within the Structured RAG components at 3.863 GB
+     • Score 2: The response is mostly incorrect, inaccu-
+                                                                      and 554 MB respectively. The Question Retrieval System has
+        rate, and/or not factual.
+                                                                      an average processing time of 2.536 seconds on the CPU and
+     • Score 3: The response is somewhat correct, accurate,
+                                                                      2.492 seconds on the GPU. The Entity Retriever achieves a
+        and/or factual.
+                                                                      moderate processing time of 0.250 seconds on the GPU and
+     • Score 4: The response is mostly correct, accurate,
+                                                                      0.268 seconds on the CPU due to its relatively high density.
+        and factual.
+                                                                      b) Analysis of the Performances of Unstructured RAG Com-
+     • Score 5: The response is completely correct, accu-
+                                                                      ponents: As shown in Table VII, GPU processing significantly
+        rate, and factual.
+                                                                      increases performance, especially for components that work
+  The Question: [Question]                                            with large data sets. The T EXT B UFFERS saw significant
+  Response to evaluate: [Response to Evaluate]                        performance gains when transitioning to the GPU, likely due
+  Reference Answer (Score 5): [Reference Answer]                      to their large data size of 185 MB, which is reflected in a
+                                                                      reduction in average time from 85.22 seconds on the CPU to
+As illustrated in Prompt 2, our methodology involves utilizing        1.789 seconds on the GPU. The C ODE B UFFER also benefited
+GPT-4 0125-Preview to assign scores ranging from 1 to 5 to
+each model answers based on a Top-Scoring Reference.                   16 https://huggingface.co/learn/cookbook/rag evaluation
+
+
+
+
+                                                                 11
+TABLE IV: Fraction of Wins (No Ties) of Each Combination of Models for General Cybersecurity Questions and Multi-Hop
+Cybersecurity Questions.
+                                   GPT-4 0125-Preview           GEMINI 1.0 Pro                   MIXTRAL 7X8                 HACKERGPT
+        Model
+                                  General Qs Mul.Hop Qs      General Qs Mul.Hop Qs           General Qs Mul.Hop Qs       General Qs Mul.Hop Qs
+        MoRSE                       70%            64%            84%             90%          88%            86%           91%          95%
+        GPT-4 0125-Preview            -              -            67%             83%          88%             77%          91%          92%
+        GEMINI 1.0 Pro                -              -              -               -          55%             40%          70%          70%
+        MIXTRAL 7X8                   -              -              -               -            -               -          70%          78%
+
+                  TABLE V: Elo Ratings, MLE Ratings, and Bootstrap Ratings for each competing Models.
+                           General Cyber. Questions                      Multi-Hop Cyber. Questions                  Complete Cyber. Questions
+     Model          Elo     MLE Elo           Bootstrap           Elo     MLE Elo           Bootstrap          Elo    MLE Elo         Bootstrap
+     MoRSE          1244     1252.43      1225.54 (1275-1175)     1280     1323.67      1170.62 (1178-1163)   1267     1294.66    1183.81(1192-1175)
+     GPT-4 0125     1083     1107.07      1096.08 (1105-1063)     1157     1201.19      1086.08 (1116-1048)   1184     1151.37     1041.05(1050-932)
+     GEMINI          926      955.67       994.53 (1003-984)      907      860.86        948.16 (981-917)     918      935.27       986.81(996-978)
+     MIXTRAL         885      882.53        891.73 (900-884)      921      941.46        929.75 (930-927)     905      907.12       945.65(954-935)
+     HACKERGPT       863      802.30        875.52 (925-850)      734      672.34        846.32 (852-838)     727      711.70       841.59(849-833)
+
+
+
+TABLE VI: Scores Across All Cybersecurity Questions types.                        assessing reliability, we used a 95% confidence interval [62],
+       Model         General Qs        Multi-Hop Qs      CVE Qs
+                                                                                  the empirical rate, a z-score of 1.96, and the Failure Rates
+                                                                                  (Fail.Rate) from Table VII. This analysis shows that the
+       MoRSE               4.54             4.65          4.024
+       GPT-4 0125          3.14             3.54          2.193                   maximum failure rate under the tested conditions does not
+       GEMINI              2.91             2.43            -                     exceed 0.46%, which confirms the robustness of the system
+       HACKERGPT           2.65             3.05            -                     when processing text-based queries.
+       MIXTRAL             2.58             1.40            -
+
+                                                                                                         V. R ELATED W ORK
+from GPU acceleration, but to a lesser extent, demonstrating                      We now overview recent developments in Named Entity
+that its tasks is less demanding on processing power. For                         Recognition (NER), Knowledge Graphs (KGs), and Large
+M ETASPLOIT B UFFER, the GPU significantly improved ef-                           Language Models (LLMs) that have contributed to more
+ficiency by managing the 186 MB dataset more effectively                          sophisticated, automated, and adaptive cybersecurity systems.
+and reducing the average time. M ETASPLOIT B UFFER size                           a) Named Entity Recognition in Cybersecurity: Significant
+is different the Structured Metasploit Retriever Size because                     progress has been made in the evolving landscape of Named
+the first contains the entire codes. The C ONTEXT T RANSFOR -                     Entity Recognition (NER) for cybersecurity. In particular, the
+MATION with the highest computational requirements showed                         use of BERT and its Whole Word Masking variant with
+the GPU’s advantage in processing large amounts of data,                          a BiLSTM-CRF framework has shown remarkable improve-
+a critical aspect of tasks that require fast data analysis and                    ments in entity recognition metrics [63]. Similarly, by fusing
+processing, highlighting the adaptability of the MoRSE system                     rule-based, dictionary-based methods and CRF, the RDF-
+to hardware improvements.                                                         CRF model has significantly improved entity recognition in
+Unstructured RAG components show a significant perfor-                            the cybersecurity domain [64]. In addition, a hybrid model
+mance increase when running on GPUs, so they are preferred                        that combines deep learning with dictionary-based methods
+to run on GPU architectures, but only when the structured                         has significantly improved precision and recognition in the
+RAG fails. This is to ensure that the considerable memory re-                     identification of complex entities [65]. A study by Srivastava
+sources required for the large buffers of unstructured RAG are                    et al. [66] highlighted the differential effectiveness of word
+utilized and sufficient memory is retained for the generation                     embeddings such as fastText, GloVe and BERT, with fine-
+task.                                                                             tuned BERT embeddings with a feed forward network achiev-
+c) Structured Retrievers Failure Rate Analysis: The aim is                        ing an F1 score of 0.974, highlighting the importance of model
+to estimate the probability of the Structured Retrievers not                      adaptation to specific domains. In addition, the introduction
+finding relevant text data in response to a user query, so that                   of the JCLB model, which combines contrastive learning
+a switch to the Unstructured RAG is necessary to continue                         with a Belief Rule Base [67], showed improved accuracy
+the search for relevant information. To this end, we have                         through semantic expansion and optimized BRB parameters.
+focused on looking only at the Contextual Information part                        Li et al. developed NEDetector [68], which improves NER by
+of the final Context (see Figure 4). We have individually                         identifying cybersecurity neologisms with 89.11% accuracy,
+multiplied the retrievers’ failure rates listed in Table VII,                     outperforming traditional trending tools in detecting threats
+determining a collective probability of failure at approximately                  on platforms like Twitter. Extractor distills attack behavior
+0.2569%, equal to an empirical rate (p̂) of 0.0026. When                          from CTI reports into clear, actionable insights and leverages
+
+
+
+                                                                             12
+TABLE VII: Performance summary of Structured and Unstructured RAG components tested on CPU and GPU (NVIDIA A100
+80GB). Fail. Qs. states for Failed Test Queries, while Tot. Qs. states for Total Test Queries
+         Component              Mean Time (s)     Time Std.      Fail. Qs     Tot. Qs   Fail. Rate    Size     Embed.   Thres.   No. Doc.
+                                GPU     CPU      GPU     CPU
+                                                Structured RAG Retrievers
+         Malware Retriever      0.061   0.110    0.009   0.013      6           100        6%         3.9MB      α       0.7     ∼ 1000
+         Metasploit Retriever   0.995   1.367    0.592   1.307      5           100        5%          40MB      α       0.75    ∼ 4900
+         ExploitDB Retriever    1.254   2.377    0.998   1.198      8           100        8%            -       -         -     ∼ 13000
+         CWE Retriever          0.083   0.108    0.056   0.019     28           100       28%        5.86MB      α       0.73    ∼ 1000
+         MITRE Retriever        0.057    0.13     0.07   0.029     19           100       19%         3.2MB      α       0.7      ∼ 800
+         Entity Retriever       0.250   0.268    0.078   0.018     23           100       23%         554MB      β       0.5     ∼ 7000
+         Question Ret. Sys.     2.492   2.536    0.298   0.338     21           100       21%        3.863GB     β       0.6     ∼ 7000
+                                            Unstructured RAG Components
+         PAPER B UFFERS         0.838    39.8    0.139 2.94         1           100        1%        86.4MB      β      Top 5    ∼ 380
+         T EXT B UFFERS         1.789   85.22    0.298 6.29         1           100        1%        185MB       α      Top 5    ∼ 6000
+         C ODE B UFFERS         0.416   19.81    0.069 1.46         8           100        8%        43.0MB      α      Top 5    ∼ 1000
+         M ETASPLOIT B UFFERS   1.799   85.68    0.299 6.32         5           100        5%        186MB       α      Top 5    ∼ 4900
+         C ONTEXT T RANSF.      4.84    230.5    0.805 17.01        -           100         -           -        α       0.6        -
+
+
+
+provenance graphs to improve cyber analytics in threat hunting               generating Cybersecurity Knowledge Graphs (CKGs) from Af-
+with real-world effectiveness [69]. Koloveas et al. [70] created             ter Action Reports (AARs) using a ‘Malware Entity Extractor’
+the inTIME framework, which leverages machine learning                       and neural networks that improves security analysis through
+to transform web data into actionable CTI, streamlining the                  refined query responses. Gao et al. [78] use of a heteroge-
+intelligence lifecycle with a unified platform for intelligence              neous information network (HIN) and meta-path approach
+collection, analysis and sharing. At the same time, a new                    within a graph convolutional network is characterized by its
+threat modeling language has been developed by Xiong et                      sophisticated threat type identification capabilities validated
+al. [71] based on the MITRE Enterprise ATT&CK Matrix                         by real-world data. Sikos et al. [79] discuss how knowledge
+that integrates key elements of enterprise security to improve               graphs help in cybersecurity threat intelligence and automated
+defense strategies through simulations. Husari et al. [72]                   reasoning, and highlights their importance in analyzing cyber
+further refines CTI analysis by automating the extraction of                 data. Ren et al. [80] present a knowledge graph for APT attack
+threat actions from unstructured texts, employing NLP and                    mapping that combines deep learning with network defense
+IR for semantic extraction and aligning attack patterns with                 expertise. Mitra et al. [81] augment CKGs with provenance
+standards like STIX 2.1, achieving significant precision and                 information to combat fake cybersecurity information and
+recall in its evaluations.                                                   ensure data reliability.
+MoRSE goes beyond current NER technologies by providing                      In comparison, MoRSE addresses the limitations of Knowl-
+dynamic entity recognition and response generation. It identi-               edge Graphs (KGs) in cybersecurity by providing dynamic
+fies named entities in user queries in real time and uses this               updates with real-time adjustments as opposed to the manual
+information to generate precise, contextualised responses.                   revisions of KGs. It also provides interactive query capabilities
+b) Knowledge Graphs for Cybersecurity: Knowledge graphs                      that are real-time and interactive as opposed to the static
+(KGs) are revolutionizing cybersecurity, from threat intelli-                KGs. In addition, MoRSE offers improved customizability
+gence to education. Agrawal et al. [73] have shown how KGs                   and modularity, which allows for greater adaptability and
+from unstructured text enhance cybersecurity learning, with                  easier expansion of the knowledge base compared to the fixed
+student feedback highlighting improved understanding and                     structures of KGs.
+engagement. Sewak et al. developed CRUSH [74], which inte-                   c) LLMs and Chatbots in Cybersecurity Landscape: Re-
+grates Large Language Models (LLMs) such as GPT-3.5/GPT-                     search into chatbots in cybersecurity highlights their role in
+4/ChatGPT with Enterprise Knowledge Graphs (EKGs) to                         education, ethics and regulation. Yoo et al. (2024) and Abu-
+create Threat Intelligence Graphs (TIG) that achieve up to                   Amara et al. (2024) explore the impact of GDPR and the
+99% recall in identifying malicious scripts. Li et al. devel-                use of gamified chatbots in education, while Pieterse (2024)
+oped AttacKG [75], which automates the extraction of attack                  evaluates the utility of ChatGPT in guiding students through
+techniques from CTI reports into structured knowledge graphs,                cybersecurity CTF challenges, noting that it reaches its limits
+which greatly improves the analysis of attack patterns with                  in providing direct solutions [82], [83], [84]. Mitra et al. [85]
+high accuracy and supports advanced threat detection efforts.                developed LOCALINTEL, which presents an automated sys-
+Liu et al. [76] use NLP to convert over 29k cybersecurity                    tem that uses LLMs to create organisation-specific threat
+reports into 113,543 actionable Cyber Threat Intelligence                    intelligence from global and local databases to improve the
+(CTI) points by highlighting campaign triggers for better                    efficiency of SoC operations. Juttner et al. [86] use ChatGPT
+classification accuracy. Piplay et al. [77] describes a system for           to make IDS alerts understandable to non-experts, improving
+
+
+
+                                                                        13
+network security in the home and home office environment.                 menting parallel retrievers to quickly and effectively find the
+However, concerns about trust, privacy and ethics highlight               relevant document in response to a user query. Unstructured
+the need for further research before widespread adoption. Yoo             RAG, on the other hand, is designed to answer even the
+et al. [87] use CNN classifiers and AI chatbot to detect and              most complicated cybersecurity queries. We have implemented
+combat SNS phishing attacks before they can occur. This is                an evaluation suite to assess the relevance, similarity, and
+more promising than traditional methods because it provides               correctness of the answers generated by our system compared
+real-time support and actions on Telegram, with validated                 to ground truth. The performance of our system was com-
+effectiveness against LSTM models. Iqbal et al. [88] explore              pared to other renowned commercial Large Language Models
+the dual utility of ChatGPT in cybersecurity, highlighting its            (LLMs) using two additional test suites that adhere to the
+benefits for defense strategies and the risks of its misuse in            LLM as a Judge paradigm. The results show that our system
+cyberattacks, and call for more research on its offensive capa-           outperforms competing models by more than 10% in terms
+bilities. Chamberlain and Casey [89] examine the application              of the correctness and relevance of the given answers and by
+of ChatGPT in penetration testing and CTF exercises, pointing             50% in terms of accuracy against GPT-4 for questions related
+to its potential to create dynamic scenarios and enhance the              to vulnerabilities.
+learning process. Aghaei et al. [90] developed SecureBERT,                In order to make the framework publicly available, our goal is
+which automates critical cybersecurity tasks by introducing               to improve MoRSE with a Prefix-aware Greedy replacement
+a specialized language model for Cyber Threat Intelligence                policy (PAGRP) [96] for the semantic cache. This takes into
+(CTI) that uses a customized tokenizer and pre-trained weights            account the initial segments of queries or data to make more
+for improved performance on NLP tasks. Ameri et al. [91]                  informed decisions about what data to store in the cache.
+use BERT for feature classification and achieves improved                 The PAGRP prioritizes the cache items based on their access
+accuracy from 76% to 94.4% by optimizing the hyperparam-                  frequency and size, ensuring that the system stores the most
+eters. It demonstrated robustness with a standard deviation of            useful data and minimizes the likelihood of cache misses.
+±0.6% across all validations and outperformed models such                 In addition, we plan to replace the MITRE retriever with
+as GPT2, ULMFiT, ELMo, CNN, LSTM and BiLSTM on                            a comprehensive Knowledge Graph. This Knowledge Graph
+cybersecurity tasks. Voros et al. [92] use knowledge distillation         will include mitigation and detection approaches and aggre-
+from LLMs to efficiently categorize URLs, reduce the number               gate real malware reports associated with the corresponding
+of parameters and improve inline scanning. Happe et al. [93]              MITRE software. This solution enables better threat insights
+use GPT-3.5 to extend penetration testing and demonstrates                by allowing the computation of community analysis, centrality
+LLMs as AI sparring partners in security testing. Lu et al. [94]          algorithms, and threat similarities quickly and in real-time.
+integrate graph structural information and in-context learning
+into LLM-based software vulnerability detection, significantly                                          R EFERENCES
+outperforming conventional models. Yu et al. [95] use GPT-
+                                                                          [1] B. Shin and P. B. Lowry, “A review and theoretical explanation of
+3 to generate semantic honeywords containing users’ PII,                      the ‘cyberthreat-intelligence (cti) capability’that needs to be fostered in
+which improves their indistinguishability and increases de-                   information security practitioners and how this can be accomplished,”
+fenses against security breaches.                                             Computers & Security, vol. 92, p. 101761, 2020.
+                                                                          [2] F. B. Kokulu, A. Soneji, T. Bao, Y. Shoshitaishvili, Z. Zhao, A. Doupé,
+Unlike traditional LLMs and chatbots, MoRSE stands out by                     and G.-J. Ahn, “Matched and mismatched socs: A qualitative study on
+providing instant access to a constantly updating cybersecurity               security operations center issues,” in Proceedings of the 2019 ACM
+knowledge base, quickly integrating the latest threats and                    SIGSAC conference on computer and communications security, 2019,
+                                                                              pp. 1955–1970.
+solutions, and enabling extensive customization for various               [3] N. Sun, M. Ding, J. Jiang, W. Xu, X. Mo, Y. Tai, and J. Zhang, “Cyber
+cybersecurity needs. MoRSE does not focus on niche cy-                        threat intelligence mining for proactive cybersecurity defense: a survey
+bersecurity topics; instead, it aims to provide comprehensive                 and new perspectives,” IEEE Communications Surveys & Tutorials,
+                                                                              2023.
+coverage of cybersecurity knowledge. In addition, MoRSE                   [4] R. Kaur, D. Gabrijelčič, and T. Klobučar, “Artificial intelligence for
+enhances the user experience by providing user-friendly access                cybersecurity: Literature review and future research directions,” Infor-
+to complex cybersecurity information, increasing flexibility                  mation Fusion, p. 101804, 2023.
+                                                                          [5] I. H. Sarker, “Llm potentiality and awareness: A position paper from
+and expanding accessibility.                                                  the perspective of trustworthy and responsible ai modeling,” Authorea
+                                                                              Preprints, 2024.
+          VI. C ONCLUSIONS AND F UTURE W ORK                              [6] N. Kandpal, H. Deng, A. Roberts, E. Wallace, and C. Raffel, “Large
+                                                                              language models struggle to learn long-tail knowledge,” in International
+With cyber threats on the rise, effective cybersecurity strategies            Conference on Machine Learning. PMLR, 2023, pp. 15 696–15 707.
+are becoming increasingly important. Integrating continuous               [7] Y. Yao, J. Duan, K. Xu, Y. Cai, Z. Sun, and Y. Zhang, “A survey on
+learning and Retrieval Augmented Generation (RAG) into                        large language model (llm) security and privacy: The good, the bad, and
+large language models (LLMs) improves their accuracy and                      the ugly,” High-Confidence Computing, p. 100211, 2024.
+                                                                          [8] J. Kocoń, I. Cichecki, O. Kaszyca, M. Kochanek, D. Szydło, J. Baran,
+timeliness in responding to these threats. In this paper, we have             J. Bielaniewicz, M. Gruza, A. Janz, K. Kanclerz et al., “Chatgpt: Jack
+investigated the use of two Retrieval Augmented Generation                    of all trades, master of none,” Information Fusion, vol. 99, p. 101861,
+(RAG) systems, namely Structured RAG and Unstructured                         2023.
+                                                                          [9] P. P. Ray, “Chatgpt: A comprehensive review on background, applica-
+RAG, to provide precise and structured answers to cyberse-                    tions, key challenges, bias, ethics, limitations and future scope,” Internet
+curity queries. In Structured RAG, we have focused on imple-                  of Things and Cyber-Physical Systems, 2023.
+
+
+
+
+                                                                     14
+[10] Z. Ji, N. Lee, R. Frieske, T. Yu, D. Su, Y. Xu, E. Ishii, Y. J. Bang,             [26] A. Radford et al., “Improving language understanding by generative
+     A. Madotto, and P. Fung, “Survey of hallucination in natural language                  pre-training,” OpenAI Blog, 2018.
+     generation,” ACM Computing Surveys, vol. 55, no. 12, pp. 1–38, 2023.              [27] J. Devlin, M.-W. Chang, K. Lee, and K. Toutanova, “Bert: Pre-training
+[11] J. Kasai, K. Sakaguchi, R. Le Bras, A. Asai, X. Yu, D. Radev, N. A.                    of deep bidirectional transformers for language understanding,” arXiv
+     Smith, Y. Choi, K. Inui et al., “Realtime qa: What’s the answer right                  preprint arXiv:1810.04805, 2018.
+     now?” Advances in Neural Information Processing Systems, vol. 36,                 [28] J. Devlin et al., “Bert: Pre-training of deep bidirectional transformers
+     2024.                                                                                  for language understanding,” in Proceedings of the 2019 Conference
+[12] A. Mallen, A. Asai, V. Zhong, R. Das, D. Khashabi, and H. Hajishirzi,                  of the North American Chapter of the Association for Computational
+     “When not to trust language models: Investigating effectiveness                        Linguistics: Human Language Technologies, 2019.
+     of parametric and non-parametric memories,” in Proceedings of                     [29] T. B. Brown et al., “Language models are few-shot learners,” in
+     the 61st Annual Meeting of the Association for Computational                           Advances in Neural Information Processing Systems, 2020.
+     Linguistics (Volume 1: Long Papers), A. Rogers, J. Boyd-Graber, and               [30] E. M. Bender et al., “On the dangers of stochastic parrots: Can language
+     N. Okazaki, Eds. Toronto, Canada: Association for Computational                        models be too big?” in Proceedings of the 2021 ACM Conference on
+     Linguistics, Jul. 2023, pp. 9802–9822. [Online]. Available: https:                     Fairness, Accountability, and Transparency, 2021.
+     //aclanthology.org/2023.acl-long.546                                              [31] E. Strubell et al., “Energy and policy considerations for deep learning
+[13] J. Liu, C. S. Xia, Y. Wang, and L. Zhang, “Is your code generated by                   in nlp,” in Proceedings of the 57th Annual Meeting of the Association
+     chatgpt really correct? rigorous evaluation of large language models for               for Computational Linguistics, 2019.
+     code generation,” Advances in Neural Information Processing Systems,              [32] A. Wang et al., “Efficient training of large language models: A survey
+     vol. 36, 2024.                                                                         of techniques and practices,” arXiv preprint arXiv:2006.04962, 2020.
+[14] Y. A. Yadkori, I. Kuzborskij, A. György, and C. Szepesvári, “To                 [33] P. Lewis, E. Perez, A. Piktus, F. Petroni, V. Karpukhin, N. Goyal,
+     believe or not to believe your llm,” 2024. [Online]. Available:                        H. Küttler, M. Lewis, W.-t. Yih, T. Rocktäschel et al., “Retrieval-
+     https://arxiv.org/abs/2406.02543                                                       augmented generation for knowledge-intensive nlp tasks,” Advances in
+[15] K. Shuster, S. Poff, M. Chen, D. Kiela, and J. Weston, “Retrieval                      Neural Information Processing Systems, vol. 33, pp. 9459–9474, 2020.
+     augmentation reduces hallucination in conversation,” in Findings                  [34] K. Guu, K. Lee, Z. Tung, P. Pasupat, and M. Chang, “Retrieval
+     of the Association for Computational Linguistics: EMNLP 2021,                          augmented language model pre-training,” in Proceedings of the 37th
+     M.-F. Moens, X. Huang, L. Specia, and S. W.-t. Yih, Eds.                               International Conference on Machine Learning, ser. Proceedings of
+     Punta Cana, Dominican Republic: Association for Computational                          Machine Learning Research, H. D. III and A. Singh, Eds., vol.
+     Linguistics, Nov. 2021, pp. 3784–3803. [Online]. Available: https:                     119. PMLR, 13–18 Jul 2020, pp. 3929–3938. [Online]. Available:
+     //aclanthology.org/2021.findings-emnlp.320                                             https://proceedings.mlr.press/v119/guu20a.html
+[16] G. Izacard and E. Grave, “Leveraging passage retrieval with generative            [35] V. Karpukhin, B. Oğuz, S. Min, P. Lewis, L. Wu, S. Edunov, D. Chen,
+     models for open domain question answering,” in Proceedings of the 2020                 and W.-t. Yih, “Dense passage retrieval for open-domain question
+     Conference on Empirical Methods in Natural Language Processing,                        answering,” arXiv preprint arXiv:2004.04906, 2020.
+     2020.                                                                             [36] S. Borgeaud et al., “Improving lexical choice in neural machine trans-
+[17] S. Borgeaud, A. Mensch, J. Hoffmann, T. Cai, E. Rutherford,                            lation,” in Proceedings of the 2021 Conference on Empirical Methods
+     K. Millican, G. B. Van Den Driessche, J.-B. Lespiau, B. Damoc,                         in Natural Language Processing, 2021.
+     A. Clark, D. De Las Casas, A. Guy, J. Menick, R. Ring, T. Hennigan,               [37] G. Zhou, T. He, J. Zhao, and P. Hu, “Learning continuous word
+     S. Huang, L. Maggiore, C. Jones, A. Cassirer, A. Brock, M. Paganini,                   embedding with metadata for question retrieval in community question
+     G. Irving, O. Vinyals, S. Osindero, K. Simonyan, J. Rae, E. Elsen,                     answering,” in Proceedings of the 53rd Annual Meeting of the Asso-
+     and L. Sifre, “Improving language models by retrieving from trillions                  ciation for Computational Linguistics and the 7th International Joint
+     of tokens,” in Proceedings of the 39th International Conference on                     Conference on Natural Language Processing (Volume 1: Long Papers),
+     Machine Learning, ser. Proceedings of Machine Learning Research,                       2015, pp. 250–259.
+     K. Chaudhuri, S. Jegelka, L. Song, C. Szepesvari, G. Niu, and S. Sabato,          [38] K. Li, H. Zhou, Z. Tu, and B. Feng, “Cskb: A cyber security knowledge
+     Eds., vol. 162. PMLR, 17–23 Jul 2022, pp. 2206–2240. [Online].                         base based on knowledge graph,” in Security and Privacy in Digital
+     Available: https://proceedings.mlr.press/v162/borgeaud22a.html                         Economy: First International Conference, SPDE 2020, Quzhou, China,
+[18] S. Masoudnia and R. Ebrahimpour, “Mixture of experts: a literature                     October 30–November 1, 2020, Proceedings 1. Springer, 2020, pp.
+     survey,” Artificial Intelligence Review, vol. 42, pp. 275–293, 2014.                   100–113.
+[19] A. Q. Jiang, A. Sablayrolles, A. Roux, A. Mensch, B. Savary, C. Bam-              [39] N. Muennighoff, N. Tazi, L. Magne, and N. Reimers, “Mteb: Massive
+     ford, D. S. Chaplot, D. d. l. Casas, E. B. Hanna, F. Bressand et al.,                  text embedding benchmark,” arXiv preprint arXiv:2210.07316, 2022.
+     “Mixtral of experts,” arXiv preprint arXiv:2401.04088, 2024.                      [40] O. Ram, Y. Levine, I. Dalmedigos, D. Muhlgay, A. Shashua, K. Leyton-
+[20] S. Caltagirone, A. D. Pendergast, and C. Betz, “The diamond                            Brown, and Y. Shoham, “In-context retrieval-augmented language mod-
+     model of intrusion analysis,” 2013. [Online]. Available: https:                        els,” Transactions of the Association for Computational Linguistics,
+     //api.semanticscholar.org/CorpusID:108270876                                           vol. 11, pp. 1316–1331, 2023.
+[21] J. Wang and B. Xia, “Relationships of cohen’s kappa, sensitivity,                 [41] P. Liu, W. Yuan, J. Fu, Z. Jiang, H. Hayashi, and G. Neubig, “Pre-
+     and specificity for unbiased annotations,” in Proceedings of the 4th                   train, prompt, and predict: A systematic survey of prompting methods
+     International Conference on Biomedical Signal and Image Processing,                    in natural language processing,” ACM Computing Surveys, vol. 55, no. 9,
+     ICBIP 2019, Chengdu, China, August 13-15, 2019. ACM, 2019, pp.                         pp. 1–35, 2023.
+     98–101. [Online]. Available: https://doi.org/10.1145/3354031.3354040              [42] D. Chandrasekaran and V. Mago, “Evolution of semantic similarity—a
+[22] M. McHugh, “Interrater reliability: The kappa statistic,” Biochemia                    survey,” ACM Computing Surveys (CSUR), vol. 54, no. 2, pp. 1–37,
+     medica : časopis Hrvatskoga društva medicinskih biokemičara / HDMB,                 2021.
+     vol. 22, pp. 276–82, 10 2012.                                                     [43] A. Aynetdinov and A. Akbik, “Semscore: Automated evaluation of
+[23] S. Es, J. James, L. Espinosa Anke, and S. Schockaert, “RAGAs:                          instruction-tuned llms based on semantic textual similarity,” CoRR, vol.
+     Automated evaluation of retrieval augmented generation,” in                            abs/2401.17072, 2024. [Online]. Available: https://doi.org/10.48550/
+     Proceedings of the 18th Conference of the European Chapter of                          arXiv.2401.17072
+     the Association for Computational Linguistics: System Demonstrations,             [44] P. Zhang, S. Xiao, Z. Liu, Z. Dou, and J.-Y. Nie, “Retrieve anything
+     N. Aletras and O. De Clercq, Eds. St. Julians, Malta: Association                      to augment large language models,” arXiv preprint arXiv:2310.07554,
+     for Computational Linguistics, Mar. 2024, pp. 150–158. [Online].                       2023.
+     Available: https://aclanthology.org/2024.eacl-demo.16                             [45] P. Zhang, Z. Liu, S. Xiao, N. Shao, Q. Ye, and Z. Dou, “Soaring from 4k
+[24] L. Zheng, W.-L. Chiang, Y. Sheng, S. Zhuang, Z. Wu, Y. Zhuang, Z. Lin,                 to 400k: Extending llm’s context with activation beacon,” arXiv preprint
+     Z. Li, D. Li, E. Xing et al., “Judging llm-as-a-judge with mt-bench                    arXiv:2401.03462, 2024.
+     and chatbot arena,” Advances in Neural Information Processing Systems,            [46] C. Li, Z. Liu, S. Xiao, and Y. Shao, “Making large language models a
+     vol. 36, 2024.                                                                         better foundation for dense retrieval,” arXiv preprint arXiv:2312.15503,
+[25] A. Vaswani et al., “Attention is all you need,” in Proceedings of the 31st             2023.
+     International Conference on Neural Information Processing Systems,                [47] C. Raffel, N. Shazeer, A. Roberts, K. Lee, S. Narang, M. Matena,
+     2017.                                                                                  Y. Zhou, W. Li, and P. J. Liu, “Exploring the limits of transfer learning
+
+
+
+
+                                                                                  15
+     with a unified text-to-text transformer,” Journal of machine learning              [69] K. Satvat, R. Gjomemo, and V. Venkatakrishnan, “Extractor: Extracting
+     research, vol. 21, no. 140, pp. 1–67, 2020.                                             attack behavior from threat reports,” in 2021 IEEE European Symposium
+[48] Y. Tang and Y. Yang, “Multihop-rag: Benchmarking retrieval-augmented                    on Security and Privacy (EuroS&P). IEEE, 2021, pp. 598–615.
+     generation for multi-hop queries,” 2024.                                           [70] P. Koloveas, T. Chantzios, S. Alevizopoulou, S. Skiadopoulos, and
+[49] W. Xiong, X. L. Li, S. Iyer, J. Du, P. Lewis, W. Y. Wang, Y. Mehdad, W.-                C. Tryfonopoulos, “intime: A machine learning-based framework for
+     t. Yih, S. Riedel, D. Kiela et al., “Answering complex open-domain ques-                gathering and leveraging web data to cyber-threat intelligence,” Elec-
+     tions with multi-hop dense retrieval,” arXiv preprint arXiv:2009.12756,                 tronics, vol. 10, no. 7, p. 818, 2021.
+     2020.                                                                              [71] W. Xiong, E. Legrand, O. Åberg, and R. Lagerström, “Cyber security
+[50] A. Abdallah and A. Jatowt, “Generator-retriever-generator: A novel                      threat modeling based on the mitre enterprise att&ck matrix,” Software
+     approach to open-domain question answering,” arXiv preprint                             and Systems Modeling, vol. 21, no. 1, pp. 157–177, 2022.
+     arXiv:2307.11278, 2023.                                                            [72] G. Husari, E. Al-Shaer, M. Ahmed, B. Chu, and X. Niu, “Ttpdrill:
+[51] L. Gao, X. Ma, J. Lin, and J. Callan, “Precise zero-shot dense retrieval                Automatic and accurate extraction of threat actions from unstructured
+     without relevance labels,” in Proceedings of the 61st Annual Meeting of                 text of cti sources,” in Proceedings of the 33rd annual computer security
+     the Association for Computational Linguistics (Volume 1: Long Papers),                  applications conference, 2017, pp. 103–115.
+     A. Rogers, J. Boyd-Graber, and N. Okazaki, Eds. Toronto, Canada:                   [73] G. Agrawal, Y. Deng, J. Park, H. Liu, and Y. Chen, “Building knowledge
+     Association for Computational Linguistics, Jul. 2023, pp. 1762–1777.                    graphs from unstructured texts: Applications and impact analyses in
+     [Online]. Available: https://aclanthology.org/2023.acl-long.99                          cybersecurity education,” Inf., vol. 13, no. 1, p. 52, 2022.
+[52] J. Ramos et al., “Using tf-idf to determine word relevance in document             [74] M. Sewak, V. Emani, and A. Naresh, “Crush: Cybersecurity research
+     queries,” in Proceedings of the first instructional conference on machine               using universal llms and semantic hypernetworks,” 2023.
+     learning, vol. 242, no. 1. Citeseer, 2003, pp. 29–48.                              [75] Z. Li, J. Zeng, Y. Chen, and Z. Liang, “Attackg: Constructing technique
+[53] M.-E. Brunet, C. Alkalay-Houlihan, A. Anderson, and R. Zemel, “Un-                      knowledge graph from cyber threat intelligence reports,” in European
+     derstanding the origins of bias in word embeddings,” in International                   Symposium on Research in Computer Security. Springer, 2022, pp.
+     conference on machine learning. PMLR, 2019, pp. 803–811.                                589–609.
+[54] A. Q. Jiang, A. Sablayrolles, A. Mensch, C. Bamford, D. S. Chaplot,                [76] J. Liu, J. Yan, J. Jiang, Y. He, X. Wang, Z. Jiang, P. Yang, and N. Li,
+     D. d. l. Casas, F. Bressand, G. Lengyel, G. Lample, L. Saulnier et al.,                 “Tricti: an actionable cyber threat intelligence discovery system via
+     “Mistral 7b,” arXiv preprint arXiv:2310.06825, 2023.                                    trigger-enhanced neural network,” Cybersecurity, vol. 5, no. 1, p. 8,
+[55] N. F. Liu, K. Lin, J. Hewitt, A. Paranjape, M. Bevilacqua, F. Petroni, and              2022.
+     P. Liang, “Lost in the middle: How language models use long contexts,”             [77] A. Piplai, S. Mittal, A. Joshi, T. Finin, J. Holt, and R. Zak, “Creating
+     Transactions of the Association for Computational Linguistics, vol. 12,                 cybersecurity knowledge graphs from malware after action reports,”
+     pp. 157–173, 2024.                                                                      IEEE Access, vol. 8, pp. 211 691–211 703, 2020.
+[56] S. Wang, S. Zhuang, and G. Zuccon, “Bert-based dense retrievers                    [78] Y. Gao, X. Li, H. Peng, B. Fang, and S. Y. Philip, “Hincti: A cyber threat
+     require interpolation with bm25 for effective passage retrieval,” in                    intelligence modeling and identification system based on heterogeneous
+     Proceedings of the 2021 ACM SIGIR international conference on theory                    information network,” IEEE Transactions on Knowledge and Data
+     of information retrieval, 2021, pp. 317–324.                                            Engineering, vol. 34, no. 2, pp. 708–722, 2020.
+[57] S. Xiao, Z. Liu, P. Zhang, and N. Muennighoff, “C-pack: Packaged                   [79] L. Sikos, “Cybersecurity knowledge graphs,” Knowledge and Informa-
+     resources to advance general chinese embedding,” 2023.                                  tion Systems, 2023.
+[58] J. Gennari, S.-h. Lau, S. Perl, J. Parish, and G. Sastry, “Considerations          [80] Y. Ren, Y. Xiao, Y. Zhou, Z. Zhang, and Z. Tian, “Cskg4apt: A cy-
+     for evaluating large language models for cybersecurity tasks,” 2024.                    bersecurity knowledge graph for advanced persistent threat organization
+[59] M. Sultana, A. Taylor, L. Li, and S. Majumdar, “Towards evaluation and                  attribution,” IEEE Transactions on Knowledge and Data Engineering,
+     understanding of large language models for cyber operation automation,”                 2022.
+     in 2023 IEEE Conference on Communications and Network Security                     [81] S. Mitra, A. Piplai, S. Mittal, and A. Joshi, “Combating fake cyber threat
+     (CNS). IEEE, 2023, pp. 1–6.                                                             intelligence using provenance in cybersecurity knowledge graphs,” in
+[60] S. Wang, Y. Song, A. Drozdov, A. Garimella, V. Manjunatha,                              2021 IEEE International Conference on Big Data (Big Data). IEEE,
+     and M. Iyyer, “kNN-LM does not improve open-ended text                                  2021, pp. 3316–3323.
+     generation,” in Proceedings of the 2023 Conference on Empirical                    [82] C. Yoo, J. Wolff, and W. Lehr, “Lessons from gdpr for ai policymaking,”
+     Methods in Natural Language Processing, H. Bouamor, J. Pino,                            Virginia Journal of Law & Technology, 2024, https://scholarship.law.
+     and K. Bali, Eds. Singapore: Association for Computational                              upenn.edu/cgi/viewcontent.cgi?article=1376&context=faculty articles.
+     Linguistics, Dec. 2023, pp. 15 023–15 037. [Online]. Available:                    [83] F. Abu-Amara, R. Hosani, H. Tamimi et al., “Spreading cybersecurity
+     https://aclanthology.org/2023.emnlp-main.929                                            awareness via gamification: zero-day game,” International Journal of
+[61] J. R. Landis and G. G. Koch, “The measurement of observer agreement                     Information Technology, 2024, https://link.springer.com/article/10.1007/
+     for categorical data,” Biometrics, vol. 33, no. 1, pp. 159–174, 1977.                   s41870-024-01810-4.
+     [Online]. Available: http://www.jstor.org/stable/2529310                           [84] H. Pieterse, “Friend or foe–the impact of chatgpt on capture the
+[62] D. S. Moore, G. P. McCabe, and B. A. Craig, Introduction to the Practice                flag competitions,” in International Conference on Cyber Warfare and
+     of Statistics. W. H. Freeman and Company, 2019.                                         Security, vol. 19, no. 1, 2024, pp. 268–276.
+[63] S. Zhou, J. Liu, X. Zhong, and W. Zhao, “Named entity recognition                  [85] S. Mitra, S. Neupane, T. Chakraborty, S. Mittal, A. Piplai, M. Gaur,
+     using bert with whole world masking in cybersecurity domain,” in 2021                   and S. Rahimi, “Localintel: Generating organizational threat intel-
+     IEEE 6th International Conference on Big Data Analytics (ICBDA).                        ligence from global and local cyber knowledge,” arXiv preprint
+     IEEE, 2021, pp. 316–320.                                                                arXiv:2401.10036, 2024.
+[64] F. Yi, B. Jiang, L. Wang, and J. Wu, “Cybersecurity named entity                   [86] V. Jüttner, M. Grimmer, and E. Buchmann, “Chatids: Explainable
+     recognition using multi-modal ensemble learning,” IEEE Access, vol. 8,                  cybersecurity using generative ai,” arXiv preprint arXiv:2306.14504,
+     pp. 63 214–63 224, 2020.                                                                2023.
+[65] C. Gao, X. Zhang, and H. Liu, “Data and knowledge-driven named                     [87] J. Yoo and Y. Cho, “Icsa: Intelligent chatbot security assistant using
+     entity recognition for cyber security,” Cybersecurity, vol. 4, no. 1, p. 9,             text-cnn and multi-phase real-time defense against sns phishing attacks,”
+     2021.                                                                                   Expert Systems with Applications, vol. 207, p. 117893, 2022.
+[66] S. Srivastava, B. Paul, and D. Gupta, “Study of word embeddings for                [88] F. Iqbal, F. Samsom, F. Kamoun, and Áine MacDermott, “When chatgpt
+     enhanced cyber security named entity recognition,” Procedia Computer                    goes rogue: exploring the potential cybersecurity threats of ai-powered
+     Science, vol. 218, pp. 449–460, 2023.                                                   conversational chatbots,” Frontiers in Communications and Networks,
+[67] C. Hu, T. Wu, C. Liu, and C. Chang, “Joint contrastive learning                         2023.
+     and belief rule base for named entity recognition in cybersecurity,”               [89] D. Chamberlain and E. Casey, “Capture the flag with chatgpt: Security
+     Cybersecurity, vol. 7, no. 1, p. 19, 2024.                                              testing with ai chatbots,” in International Conference on Cyber Warfare
+[68] Y. Li, J. Cheng, C. Huang, Z. Chen, and W. Niu, “Nedetector: Automat-                   and Security, vol. 19, no. 1, 2024, pp. 43–54.
+     ically extracting cybersecurity neologisms from hacker forums,” Journal            [90] E. Aghaei, X. Niu, W. Shadid, and E. Al-Shaer, “Securebert: A domain-
+     of Information Security and Applications, vol. 58, p. 102784, 2021.                     specific language model for cybersecurity,” in International Conference
+
+
+
+
+                                                                                   16
+     on Security and Privacy in Communication Systems. Springer, 2022,
+     pp. 39–56.
+[91] K. Ameri, M. Hempel, H. Sharif, J. Lopez Jr, and K. Perumalla, “Cybert:
+     Cybersecurity claim classification by fine-tuning the bert language
+     model,” Journal of Cybersecurity and Privacy, vol. 1, no. 4, pp. 615–
+     637, 2021.
+[92] T. Vörös, S. P. Bergeron, and K. Berlin, “Web content filtering through
+     knowledge distillation of large language models,” in 2023 IEEE Interna-
+     tional Conference on Web Intelligence and Intelligent Agent Technology
+     (WI-IAT). IEEE, 2023, pp. 357–361.
+[93] A. Happe and J. Cito, “Getting pwn’d by ai: Penetration testing with
+     large language models,” in Proceedings of the 31st ACM Joint European
+     Software Engineering Conference and Symposium on the Foundations
+     of Software Engineering, 2023, pp. 2082–2086.
+[94] G. Lu, X. Ju, X. Chen, W. Pei, and Z. Cai, “Grace: Empowering
+     llm-based software vulnerability detection with graph structure and in-
+     context learning,” Journal of Systems and Software, p. 112031, 2024.
+[95] F. Yu and M. V. Martin, “Honey, i chunked the passwords: Generating
+     semantic honeywords resistant to targeted attacks using pre-trained lan-
+     guage models,” in International Conference on Detection of Intrusions
+     and Malware, and Vulnerability Assessment. Springer, 2023, pp. 89–
+     108.
+[96] C. Jin, Z. Zhang, X. Jiang, F. Liu, X. Liu, X. Liu, and
+     X. Jin, “Ragcache: Efficient knowledge caching for retrieval-augmented
+     generation,” CoRR, vol. abs/2404.12457, 2024. [Online]. Available:
+     https://doi.org/10.48550/arXiv.2404.12457
+
+
+
+
+                                                                                 17
+

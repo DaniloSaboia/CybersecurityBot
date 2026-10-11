@@ -99,9 +99,41 @@ For local Ollama without Docker, set `SPRING_PROFILES_ACTIVE=local`, pull `llama
 - API docs (Swagger): **http://localhost:8080/swagger-ui.html**
 - Supabase Studio: open it from your hosted project dashboard
 
-On first boot the backend seeds the knowledge base from `backend/src/main/resources/seed/seed.json` (8 security articles, categories, connectors, demo jobs) and embeds the articles into pgvector — so the KB is populated and the Assistant is genuinely grounded out of the box.
+On startup the backend installs the sourced response playbooks and provisions the
+connector catalog. The eight original demonstration articles and simulated jobs
+are disabled by default; enable `DEMO_SEED_ENABLED=true` only for a demonstration workspace.
 
 ---
+
+## Practical security help
+
+The bundled response library adds practical playbooks for common incidents, including
+phishing, business email compromise, ransomware, account takeover, leaked credentials,
+vulnerability exploitation, and recovery. Each playbook explains what to check, safe
+initial actions, evidence to preserve, recovery checks, and when to involve an incident
+responder. It links to public guidance from the relevant authorities and vendors.
+
+Use **Knowledge Base → Browse all playbooks** to browse procedures, or describe the affected
+systems and what happened in the Assistant's response-plan form. The Assistant uses
+retrieved evidence for its advice and should distinguish suspected compromise from
+confirmed facts; it cannot inspect or repair your systems itself.
+
+If AI generation fails, the Assistant displays complete first-action, triage-question,
+and evidence-preservation sections from a matching authorized playbook when available.
+These are clearly labeled as existing knowledge-base guidance, not a personalized
+AI response. Each section retains an exact revision and passage citation. If no
+suitable playbook is available, it offers authorized source links instead.
+The playbook library can also be read directly without waiting for the model.
+
+The library is installed on startup in both new and existing databases through the
+governed article and indexing pipeline. Existing documents and edited playbooks are
+preserved. These are source-backed starting points, not exhaustive threat coverage or
+organization-approved incident procedures. See [library scope, sources, and maintenance](docs/security-playbooks.md).
+
+Administrators with an existing sample database can use **Settings → Retrieval → Retire sample knowledge**
+to retire unchanged demonstration articles. The action checks original seed content
+and provenance, preserves revision history, and skips edited articles. Retired samples
+are excluded from active knowledge and assistant evidence.
 
 ## API surface
 

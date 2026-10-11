@@ -1,0 +1,166 @@
+{
+  "recorded_at_utc": "2026-10-06T21:47:25.413925+00:00",
+  "archive": "Sentinel_KMS_Overleaf.zip",
+  "archive_sha256": "6404ae1dc16396c64d9d4eb64b90740c8ce4b31a5d0802a7e65af19430fd2d6b",
+  "archive_bytes": 465689,
+  "files": [
+    {
+      "path": "acronyms.tex",
+      "bytes": 756,
+      "sha256": "1cf8b0a0ab43844b1f6e5ddacd37d81c272d963c1e98b81cb5bd6c0a69b00c3e"
+    },
+    {
+      "path": "appendices.tex",
+      "bytes": 16256,
+      "sha256": "af7117ab1f5cc3f54e92befd480deb3a011051ede2a5c15f147f1ac2cc0feca9"
+    },
+    {
+      "path": "chapters/01-introduction.tex",
+      "bytes": 11175,
+      "sha256": "245b354b00e0d9b136550a7273252cced5d3431632e9f397879aaac1714a5e45"
+    },
+    {
+      "path": "chapters/02-literature.tex",
+      "bytes": 22492,
+      "sha256": "0b7f594182c3e59ae8167e3e1938341ff749a8ba646fd3b80492bbf4ede4ac3f"
+    },
+    {
+      "path": "chapters/03-system.tex",
+      "bytes": 29499,
+      "sha256": "8fcafb5ddbc5630079cfd968a1f2258fa2b52dc6910d0df7ff58025895914f22"
+    },
+    {
+      "path": "chapters/04-evaluation.tex",
+      "bytes": 20027,
+      "sha256": "622b3f017a9af6947e9ff939a0182900b587996f41ea9649ba978a8e7ea4c226"
+    },
+    {
+      "path": "chapters/05-conclusion.tex",
+      "bytes": 7917,
+      "sha256": "9bc4336071d1b1031c656d9903164ca64bc4e01a5c5f78b7a72fd2ef9f629951"
+    },
+    {
+      "path": "figures/architecture.pdf",
+      "bytes": 4448,
+      "sha256": "d154294aae478320775e04fb947a5081a7419987c461ffd4be5113b0b5c81151"
+    },
+    {
+      "path": "figures/evidence-path.pdf",
+      "bytes": 3352,
+      "sha256": "0cb3fddcac785fe723e7837147f2b49056118bdcb28896af4f899feef3d593c1"
+    },
+    {
+      "path": "figures/iscte-department-logo.png",
+      "bytes": 54912,
+      "sha256": "835d400d0ca80e70e5031db510df376176a37eae407638b10822e3afbc710847"
+    },
+    {
+      "path": "figures/iscte-university-logo.png",
+      "bytes": 34636,
+      "sha256": "aa1b97b34f3dcdd1d41a86b2be35b3d2df91a9373fcdc58c8d9e80b18a0bb31d"
+    },
+    {
+      "path": "figures/main-cited-answer-mocked.png",
+      "bytes": 93374,
+      "sha256": "77cc1c5a3976ce8308af3d954efe8ea544d40846765d39db382466415e7b8c8a"
+    },
+    {
+      "path": "figures/main-evidence-detail-mocked.png",
+      "bytes": 29588,
+      "sha256": "6144e9d2b66322ceb69e1fd267f1c279c93291c27eb63f694218a84c2c38d112"
+    },
+    {
+      "path": "figures/main-ingestion-mocked.png",
+      "bytes": 123326,
+      "sha256": "35acac4d3483d1518b960b0a3ede93d20fe22a9d6f1a96cbead373c070892eae"
+    },
+    {
+      "path": "figures/main-knowledge-base-mocked.png",
+      "bytes": 93445,
+      "sha256": "0e97f7bf37a7a96e63793bd6d0bf42d71ca0972fbbc694648b08fe3078dfec44"
+    },
+    {
+      "path": "frontmatter.tex",
+      "bytes": 4812,
+      "sha256": "3744304754bdb7d7ed939def730d7c7b425a4d3ea4fd9c6365a0c0e48363a4e4"
+    },
+    {
+      "path": "main.tex",
+      "bytes": 2666,
+      "sha256": "3600c9251ff9d5e28f3360036b53540e4cd152b245dd472c7230e49fbb7ea31b"
+    },
+    {
+      "path": "metadata.tex",
+      "bytes": 831,
+      "sha256": "282ed23a8f6120277a0b4ed358f59ff18b6caebddde07113faddb4d6ebe5be36"
+    },
+    {
+      "path": "references.bib",
+      "bytes": 46112,
+      "sha256": "599f16ace0cac380d47bba23722f47a978004b08a2ade1d23a811f483463c0d7"
+    },
+    {
+      "path": "supplementary.bib",
+      "bytes": 2674,
+      "sha256": "8344667ec5f4c0cb266d802cb9b41061631de18fe8aa539a5430fa4846e50a26"
+    },
+    {
+      "path": "README.txt",
+      "bytes": 2682,
+      "sha256": "5625951f9a7a5d5525c1521356178bf089bba11d5c810d8c36c312f3f21f8025"
+    }
+  ],
+  "main_document": "main.tex",
+  "overleaf_compiler": "XeLaTeX",
+  "validation_method": "Clean ZIP extraction; offline Tectonic XeTeX/BibTeX build; existing thesis validator; PDF text comparison with canonical reading copy",
+  "build_command": "tectonic --only-cached --untrusted -k --keep-logs --outdir build main.tex",
+  "compiler_version": "Tectonic 0.17.0",
+  "overleaf_server_build_tested": false,
+  "validation_passed": true,
+  "errors": [],
+  "bibliography_matches_citations": true,
+  "unique_cited_references": 21,
+  "underfull_box_warnings": 0,
+  "pdf_text_matches_canonical_reading_copy": true,
+  "preview": "Sentinel_KMS_Overleaf_Preview.pdf",
+  "preview_sha256": "eb112bceb7c174ab9af8cfa712cb6ccfc8d531c9ee146a6f8775fedbc3a8bf1f",
+  "unconfirmed_frontmatter_fields": [
+    {
+      "file": "frontmatter.tex",
+      "line": 50,
+      "field": "Acknowledgements"
+    }
+  ],
+  "limitations": [
+    "Structural/citation-link validation is not semantic entailment review",
+    "The researcher confirms completed model and human studies; their records await integration",
+    "Unconfirmed front-matter fields: Acknowledgements"
+  ],
+  "page_count": 65,
+  "render_comparison": {
+    "pages_compared": 65,
+    "dpi": 36,
+    "all_pixels_match_canonical_pdf": true
+  },
+  "visual_review": {
+    "pages": [
+      1,
+      3,
+      7,
+      27,
+      33,
+      35,
+      40,
+      41,
+      42,
+      43,
+      44,
+      47,
+      48,
+      61,
+      62,
+      63
+    ],
+    "result": "Covers, prose, diagrams, all four screenshots, tables and bibliography checked; no clipping or overlap found."
+  }
+}

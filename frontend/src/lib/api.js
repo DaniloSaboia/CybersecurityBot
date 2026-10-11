@@ -120,6 +120,14 @@ export function getArticle(id) {
   return request('/kb/articles/' + encodeURIComponent(id));
 }
 
+export function getDemoContent({ signal } = {}) {
+  return request('/kb/demo-content', { signal });
+}
+
+export function retireDemoContent() {
+  return request('/kb/demo-content/retire', { method: 'POST' });
+}
+
 // Exact evidence is an immutable snapshot capability, not an article lookup.
 // Keep its accepted identity deliberately narrow: response-only metadata such
 // as sourceUri, sourceVersion, and revisionStatus must never become request

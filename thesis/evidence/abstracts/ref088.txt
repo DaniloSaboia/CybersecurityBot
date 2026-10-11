@@ -1,0 +1,5 @@
+Source: https://doi.org/10.1007/s10115-025-02382-w
+Evidence: publisher-deposited abstract retrieved via Crossref/DOI metadata; no full-text appraisal.
+
+Abstract
+          The aim of this work is to provide a systematic literature review of techniques for taxonomy generation across the cybersecurity domain. Cybersecurity taxonomies can be classified into manual and dynamic, each one of which focuses on different characteristics and tails different goals. Under this premise, we investigate the current state of the art in both categories with respect to their characteristics, applications and methods. To this end, we perform a systematic literature review in accordance with an extensive analysis of the tremendous need for dynamic taxonomies in the cybersecurity landscape. This analysis provides key insights into the advantages and limitations of both techniques, and it discusses the datasets which are most commonly used to generate cybersecurity taxonomies.

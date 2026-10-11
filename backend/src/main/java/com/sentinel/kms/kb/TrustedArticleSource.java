@@ -3,6 +3,7 @@ package com.sentinel.kms.kb;
 /** Server-controlled producers permitted to initialize a public shared-feed policy. */
 public enum TrustedArticleSource {
     SEED("system:seed", null),
+    CURATED("system:knowledge-pack:sentinel-response-starter", "Sentinel response guidance"),
     NVD("system:connector:nvd", "NVD API"),
     KEV("system:connector:kev", "CISA KEV"),
     ATTACK("system:connector:attack", "MITRE ATT&CK"),
@@ -26,6 +27,9 @@ public enum TrustedArticleSource {
         }
         if (expectedSource != null && !expectedSource.equals(article.getSource())) {
             throw new IllegalArgumentException("trusted source does not match the server connector");
+        }
+        if (this == CURATED && !article.getId().matches("PB-START-[0-9]{3}")) {
+            throw new IllegalArgumentException("curated guidance requires a reserved pack identity");
         }
     }
 }

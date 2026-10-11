@@ -1,0 +1,268 @@
+{
+  "recorded_at_utc": "2026-09-30T00:15:29.699883+00:00",
+  "branch": "main",
+  "head": "8d259eb8c46735681666bff6042fd99129651d97",
+  "scope": "Current main working-tree source identities; not a deployment or research outcome",
+  "files": [
+    {
+      "path": ".github/workflows/ci.yml",
+      "sha256": "a730e6ca05ce6076dbc14ab694a9a07d4ba866affd6ec9c412aa33342b87658c"
+    },
+    {
+      "path": ".github/workflows/eval.yml",
+      "sha256": "b384583cfbcb5a3987ee4fcc8ffa5bb3ddb651edba085b7fb750ab3b68da1caf"
+    },
+    {
+      "path": "README.md",
+      "sha256": "b51443dc0c00486cd49109316c0808f2e22b92ee4211d1d4503391c78bc877c7"
+    },
+    {
+      "path": "backend/src/main/java/com/sentinel/kms/assistant/CitationResolver.java",
+      "sha256": "7f23861e0e69633d609f27d9c24b846ac5c1220fcfb46729ca115958441f4312"
+    },
+    {
+      "path": "backend/src/main/java/com/sentinel/kms/assistant/PlaybookGuidanceService.java",
+      "sha256": "cd1b4c8b27abcc4d8344acdd3934db346d4c79ad7daa34e51a5ab944e91da102"
+    },
+    {
+      "path": "backend/src/main/java/com/sentinel/kms/assistant/PromptBuilder.java",
+      "sha256": "15203621d302d0d49347feac171cb9af42ed24bda4d39cc5f17aa431a43e5fa6"
+    },
+    {
+      "path": "backend/src/main/java/com/sentinel/kms/assistant/RagService.java",
+      "sha256": "bff3c24920340283f133d968f913df95792c8ca9d7c0637dbe29f7fa04dd1835"
+    },
+    {
+      "path": "backend/src/main/java/com/sentinel/kms/common/KnowledgeAuditService.java",
+      "sha256": "91fd917435e090ee3fa90ae9ec244fa05e8de84ceda6019d7eb53eba82c68f77"
+    },
+    {
+      "path": "backend/src/main/java/com/sentinel/kms/common/KnowledgePolicy.java",
+      "sha256": "6a51d351f5e2e0bf539d2428c611354392664de165494d08897b8d6e175bf3b8"
+    },
+    {
+      "path": "backend/src/main/java/com/sentinel/kms/config/SecurityConfig.java",
+      "sha256": "8af1da2a4f355edabfc1d16fac87586167538b89642dc801fc4893ef74d6f1ca"
+    },
+    {
+      "path": "backend/src/main/java/com/sentinel/kms/eval/AnswerEvaluationService.java",
+      "sha256": "97b091a61183c6747115b0bd93654e2482efa73aec67726043a6838cec42b09f"
+    },
+    {
+      "path": "backend/src/main/java/com/sentinel/kms/eval/BaselineComparisonHarness.java",
+      "sha256": "2812d0588e675892cafd3f1d0cdd95cd8ca53f9721a4e6065cc882ac8b9b92ad"
+    },
+    {
+      "path": "backend/src/main/java/com/sentinel/kms/eval/EvalController.java",
+      "sha256": "69bf68097e7054c4ab5991c61f26409254cc8f8e48b184fcfa75b29ee579e0d0"
+    },
+    {
+      "path": "backend/src/main/java/com/sentinel/kms/eval/EvalService.java",
+      "sha256": "a0db470542cf096fb555c88de49d2cb105516afd418e04e3347b403f3a21e060"
+    },
+    {
+      "path": "backend/src/main/java/com/sentinel/kms/eval/HttpProviderAnswerSource.java",
+      "sha256": "1db45f845bf42db4eefb3bc63b070490f71238697d1046836d30cc8fd158dd40"
+    },
+    {
+      "path": "backend/src/main/java/com/sentinel/kms/eval/OfflineBaselineEvaluationCli.java",
+      "sha256": "eabdfea833dd2dbb9e093cd4e5e5565ac4c726bcccded5321cb4e846ae869c44"
+    },
+    {
+      "path": "backend/src/main/java/com/sentinel/kms/eval/ProviderEvaluationCli.java",
+      "sha256": "12f27f530a1c66fcff1ebb8a1fcaddff602eef578531a4be26d72501a05a3e5c"
+    },
+    {
+      "path": "backend/src/main/java/com/sentinel/kms/eval/ProviderEvaluationHarness.java",
+      "sha256": "dea300e201ff1636c9b9c2306b586f7d09149d58a5c843132388a70376616090"
+    },
+    {
+      "path": "backend/src/main/java/com/sentinel/kms/eval/RetrievalMetrics.java",
+      "sha256": "279d340b82a2d099cdf8e01e8897866639a08f0b4115906e58b36f12d0d26476"
+    },
+    {
+      "path": "backend/src/main/java/com/sentinel/kms/eval/ScientificCompletenessGate.java",
+      "sha256": "d6a8708efdbffef2ce09c3cbb1af07c4ae6202cd3eb3a93307332abadd1ce452"
+    },
+    {
+      "path": "backend/src/main/java/com/sentinel/kms/graph/GraphController.java",
+      "sha256": "da694c624311d2d292bfd7fb8f307edd225362dd3de299292a55d2c94e4c407c"
+    },
+    {
+      "path": "backend/src/main/java/com/sentinel/kms/graph/GraphService.java",
+      "sha256": "d21db55755187d7f4f5f47ecafc032e78640d5ccf48342fc6e99c1776922ba23"
+    },
+    {
+      "path": "backend/src/main/java/com/sentinel/kms/ingest/Chunker.java",
+      "sha256": "65f880877135134f1a9ead577bbe1ae91311db9b85da8b675bae16c20a71ef65"
+    },
+    {
+      "path": "backend/src/main/java/com/sentinel/kms/ingest/DurableIngestQueue.java",
+      "sha256": "fef13c7201ff07bdd0cda0c7186d0cba1b69f5f5f0ba2dbfd40af0b18c78727b"
+    },
+    {
+      "path": "backend/src/main/java/com/sentinel/kms/ingest/FeedSyncService.java",
+      "sha256": "83fe1885c4784dbc0fb1166cc5f15a8ce43e918365d522df73b2547ca64d789b"
+    },
+    {
+      "path": "backend/src/main/java/com/sentinel/kms/ingest/IngestService.java",
+      "sha256": "31f3ddfcf2872ab50636012ed3fbd0e8a8d9b602d7d99c5c98a2066de0a24205"
+    },
+    {
+      "path": "backend/src/main/java/com/sentinel/kms/ingest/JobProcessor.java",
+      "sha256": "49ddff37d721ef3317c023d42b6aa8d990a318978602ee2ff0e254039ecb5f12"
+    },
+    {
+      "path": "backend/src/main/java/com/sentinel/kms/ingest/NvdConnectorService.java",
+      "sha256": "aa6ecd1308e65e01baf42c6cea2ffa45b59c91a4097a61f5afecc02c2cb4b68c"
+    },
+    {
+      "path": "backend/src/main/java/com/sentinel/kms/ingest/TextExtractor.java",
+      "sha256": "3670108a1073c5b07a103be3774b8a99dc90038957241c28c1ff3f91d23ec5d6"
+    },
+    {
+      "path": "backend/src/main/java/com/sentinel/kms/ingest/UrlGuard.java",
+      "sha256": "a4d4bff3c6f5a35b2efdc8281d7f82f576b1d9d99318f9fd729bb6465e584792"
+    },
+    {
+      "path": "backend/src/main/java/com/sentinel/kms/kb/EvidenceViewService.java",
+      "sha256": "c0687030bce72bcfc490c7f3a5149169376bd85aab60b5ace3be63f271fb7500"
+    },
+    {
+      "path": "backend/src/main/java/com/sentinel/kms/kb/IocLookupService.java",
+      "sha256": "376101b63bb97ef2887a516020ed2b242f0894edc3c4e5a0485cd71085c21b8b"
+    },
+    {
+      "path": "backend/src/main/java/com/sentinel/kms/kb/KnowledgeAccessService.java",
+      "sha256": "fcfc2c482302e78cd2bbcfac130e85c35a12ac01fcc550ae0f721f340e4e0887"
+    },
+    {
+      "path": "backend/src/main/java/com/sentinel/kms/kb/KnowledgeArticleReindexWorker.java",
+      "sha256": "bd32d1475e62e78a3d3d2164bb2147999e64fa3337a3b13b0cad5deea2ab2f53"
+    },
+    {
+      "path": "backend/src/main/java/com/sentinel/kms/kb/KnowledgeLifecycleController.java",
+      "sha256": "6cd237d947a52d9ff9f501ec3351e0d361d35d1afae5f2f6a0efce1dbd2b401c"
+    },
+    {
+      "path": "backend/src/main/java/com/sentinel/kms/kb/KnowledgeLifecycleService.java",
+      "sha256": "d71fb92661da90c76ed69c8734fab478c4512aec19190fa36783bd564e7a9ccd"
+    },
+    {
+      "path": "backend/src/main/java/com/sentinel/kms/kb/TrustedArticleRegistrationService.java",
+      "sha256": "28e0d554c53ffc364b6ab185f4e8cd921a44ded41b51d89956cd71a20960bde5"
+    },
+    {
+      "path": "backend/src/main/java/com/sentinel/kms/seed/CuratedKnowledgePackLoader.java",
+      "sha256": "c411634ff239c9c4525ab2a11d5b47a377db574a5453fd9ee3b957f728020046"
+    },
+    {
+      "path": "backend/src/main/java/com/sentinel/kms/vectorstore/HybridRanker.java",
+      "sha256": "202d7b106c35347786b3ffdf69c4c42c82eef9ca848f1f2830d3803018ccd297"
+    },
+    {
+      "path": "backend/src/main/java/com/sentinel/kms/vectorstore/SpringAiEmbeddingIndexService.java",
+      "sha256": "e4fd877946edddfb8cdb2f6d98caa0b9ac59a3b8fec544fe68da4fd586968240"
+    },
+    {
+      "path": "backend/src/main/resources/application-local.yml",
+      "sha256": "a92e5cfbafe5d39f132ad107375a532178ce0bad928070b51e69fd72ce6b7eb4"
+    },
+    {
+      "path": "backend/src/main/resources/application.yml",
+      "sha256": "35fbbc13bba46e15020579a6cee952afb704fcda921d8fd9d0b69ab133461c51"
+    },
+    {
+      "path": "backend/src/main/resources/eval/README.md",
+      "sha256": "a5647933f3a4604c527a12ebd79ddc8d8d1891c7d50033e15c4b16219eff0d33"
+    },
+    {
+      "path": "backend/src/main/resources/eval/answer-eval-v1.json",
+      "sha256": "b98936580891a70228c312bbf70b7d3c1f98f8839e12f8ab50a76bcb808d71af"
+    },
+    {
+      "path": "backend/src/main/resources/eval/goldenset.json",
+      "sha256": "86e94414a7c1bc907a02e2f98a7fe11f7503b324c430eac4c4b0e2b5682b46ec"
+    },
+    {
+      "path": "backend/src/main/resources/knowledge/security-playbooks.json",
+      "sha256": "ce27cac923467423ab1c57689d6d957b6ac84191588267aadec2571b7254c6a1"
+    },
+    {
+      "path": "backend/src/test/java/com/sentinel/kms/vectorstore/GovernedHybridSearchSqlTest.java",
+      "sha256": "439c872cc0ba4a38b8d1d5f327035fb480ca6ce9ac89ae6d4f93e8c2c6a50481"
+    },
+    {
+      "path": "docker-compose.yml",
+      "sha256": "0e159c5125f97156cc463295abf86108009ef0bf0b00bbb95ab0ebbbc5d5be2d"
+    },
+    {
+      "path": "docs/evaluation-protocol.md",
+      "sha256": "c4428d2b979be7f867ae1680e6fc73f924a9fdb19013e8a4bc06a06ad94afb01"
+    },
+    {
+      "path": "frontend/e2e/fixtures/mocked-contract.js",
+      "sha256": "57e8d4f5d50e03ccb8899825e16aee9f290e4c048b54469c3ca5575bd578c3e4"
+    },
+    {
+      "path": "frontend/e2e/thesis-current-main.spec.js",
+      "sha256": "fafa7b639f54ca09fdc5b93bbbf6fae3db8b93467ee56f526fcd3b6ba7273c25"
+    },
+    {
+      "path": "frontend/src/App.jsx",
+      "sha256": "ca6a0cbffa7593a952893af99268007b3d07139111b5a92b57e7d3ea33910184"
+    },
+    {
+      "path": "frontend/src/lib/queries.js",
+      "sha256": "52b93dfab06f4c6da165fb54449a0764a6d2ca7ca17be2f891fb4560082ba857"
+    },
+    {
+      "path": "frontend/src/views/Assistant.jsx",
+      "sha256": "465de63c9e9387d83dab8986e78641b078cfd6956667ae6705197ba49e7985f7"
+    },
+    {
+      "path": "frontend/src/views/EvidenceDialog.jsx",
+      "sha256": "b33fc7fafd07a6e68163036480cb709a90177af357101266ae5868065e52d66a"
+    },
+    {
+      "path": "frontend/src/views/Ingest.jsx",
+      "sha256": "ab8df05fbf42eddd6061cd9eef1785ece11b8fa81cda39af36eac8de2abcb651"
+    },
+    {
+      "path": "frontend/src/views/KnowledgeBase.jsx",
+      "sha256": "ce8d46640c97f114c2bcdd4e02dd784ec4245d4a5d341cddaadb8559cdfd5b0e"
+    },
+    {
+      "path": "scripts/ci/quality_gate.py",
+      "sha256": "fb71c27d2586bdeb3cf9bc4780230a9436dff1d2a5f78461bb1d9cfdb1576265"
+    },
+    {
+      "path": "scripts/ci/smoke_db_bootstrap.py",
+      "sha256": "7b69efdddb3b0853df2ee9ac62e0d0896d6530502f7eca1a23952673146f6760"
+    },
+    {
+      "path": "scripts/ci/test_quality_gate.py",
+      "sha256": "923e21900f9c1a14bf957f0465a9cb121a2575081c3bd795404efae6410ea7f9"
+    },
+    {
+      "path": "supabase/migrations/20260905015000_ingest_request_idempotency.sql",
+      "sha256": "d81f462138375746ca6a7b817d0db27153d1d8416507ff9ef99f220c74acfbea"
+    },
+    {
+      "path": "supabase/migrations/20260905020000_knowledge_governance.sql",
+      "sha256": "c62ea083a3be571fa07b8e2aca70e895c86c333cb076039e14d12f007aff4aac"
+    },
+    {
+      "path": "supabase/migrations/20260905050000_audit_hardening.sql",
+      "sha256": "d5a3dec4e730ae0e3b173995ccf10f5b4ee6916068ce260cef84fbe88df7a996"
+    },
+    {
+      "path": "supabase/migrations/20260905060000_knowledge_graph.sql",
+      "sha256": "6855ed8908da6da7f98a556cab9b22f0eedd553caa350fb254fc7b86fdf2f114"
+    },
+    {
+      "path": "supabase/migrations/20260905070000_eval_authorization.sql",
+      "sha256": "c24ffb9025340914c487c112420fcab4e4bd4f31a9d1f8bfbfcc35d1ac5d90c3"
+    }
+  ]
+}

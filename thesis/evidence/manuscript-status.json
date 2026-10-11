@@ -1,0 +1,23 @@
+{
+  "manuscript_stage": "narrative_revision_verified",
+  "submission_ready": false,
+  "reading_copy": "KMS_Machine_Learning_Incident_Response_Revised_Draft.pdf",
+  "pdf_sha256": "da143f5e3c7d59e9884b09b26f1a3c6e80cdf966b31efa6571c7dfa4949eadae",
+  "page_count": 65,
+  "independent_review": "Prior narrative draft passed; all four minor corrections resolved and rechecked. The subsequent cover update is verified separately in cover-update-verification.md.",
+  "final_document_validation_passed": true,
+  "author_confirms_completed_model_comparison": true,
+  "author_confirms_completed_human_evaluation": true,
+  "empirical_records_imported": false,
+  "institutional_metadata_confirmed": true,
+  "personal_metadata_confirmed": true,
+  "acknowledgements_complete": false,
+  "cover_update_verified": true,
+  "confirmed_title": "Sistema inteligente de gestão de conhecimento para resposta a incidentes de Cyber segurança com integração de machine learning",
+  "remaining_dependencies": [
+    "Import the completed study's actual model-comparison and participant records.",
+    "Reconcile actual study methods, results, abstract findings and effectiveness conclusions.",
+    "Supply personal acknowledgements."
+  ],
+  "interpretation": "Structural validation concerns document integrity, not empirical completeness. Missing transferred records do not imply that a study was unperformed."
+}

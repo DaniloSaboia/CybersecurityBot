@@ -1,0 +1,4 @@
+Source: https://doi.org/10.1177/1534484303257985
+Evidence: publisher-deposited abstract retrieved via Crossref/DOI metadata; no full-text appraisal.
+
+Knowledge is now being seen as the most important strategic resource in organizations, and the management of this knowledge is considered critical to organizational success. If organizations have to capitalize on the knowledge they possess, they have to understand how knowledge is created, shared, and used within the organization. Knowledge exists and is shared at different levels in organizations. This article examines knowledge sharing at the most basic level; namely, between individuals in organizations. Based on a review of existing literature in this area, this article presents a model that identifies factors that most significantly influence knowledge sharing at this level.

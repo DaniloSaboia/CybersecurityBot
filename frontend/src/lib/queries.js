@@ -43,6 +43,17 @@ export function useArticle(id) {
   });
 }
 
+// A successful preview also confirms the server's workspace-admin capability.
+// /me's display role is not an authorization source for this maintenance action.
+export function useDemoContent(userId, enabled = false) {
+  return useQuery({
+    queryKey: ['demo-content', userId],
+    queryFn: ({ signal }) => api.getDemoContent({ signal }),
+    enabled: enabled && !!userId,
+    retry: false,
+  });
+}
+
 // Loads every article once and exposes a Map id->article for resolving
 // citation titles (used by SourceChip / inline [ID] tokens across views).
 export function useArticleIndex() {

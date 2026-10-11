@@ -1,0 +1,402 @@
+[
+  {
+    "key": "ref001",
+    "url": "https://doi.org/10.1145/3672608.3707898"
+  },
+  {
+    "key": "ref002",
+    "url": "https://doi.org/10.26342/2025-75-15"
+  },
+  {
+    "key": "ref003",
+    "url": "https://doi.org/10.1007/s11280-025-01393-5"
+  },
+  {
+    "key": "ref004",
+    "url": "https://doi.org/10.1145/3746252.3761478"
+  },
+  {
+    "key": "ref005",
+    "url": "https://doi.org/10.1109/BigData59044.2023.10386611"
+  },
+  {
+    "key": "ref006",
+    "url": "https://doi.org/10.1109/EuroSPW61312.2024.00018"
+  },
+  {
+    "key": "ref007",
+    "url": "https://doi.org/10.1145/3701716.3715469"
+  },
+  {
+    "key": "ref008",
+    "url": "https://doi.org/10.1109/EuroSP63326.2025.00057"
+  },
+  {
+    "key": "ref009",
+    "url": "https://doi.org/10.1109/ISDFS65363.2025.11012055"
+  },
+  {
+    "key": "ref010",
+    "url": "https://www.mendeley.com/catalogue/e79a950e-f69e-3fe8-b9fb-4c21e80e36e4"
+  },
+  {
+    "key": "ref011",
+    "url": "https://doi.org/10.3390/computers14020067"
+  },
+  {
+    "key": "ref012",
+    "url": "https://doi.org/10.1609/aaai.v38i21.30362"
+  },
+  {
+    "key": "ref013",
+    "url": "https://doi.org/10.1007/978-3-031-56583-0_20"
+  },
+  {
+    "key": "ref014",
+    "url": "https://doi.org/10.1109/JIOT.2025.3586658"
+  },
+  {
+    "key": "ref015",
+    "url": "https://doi.org/10.1109/ACCESS.2025.3627277"
+  },
+  {
+    "key": "ref016",
+    "url": "https://doi.org/10.1016/j.csbj.2025.07.012"
+  },
+  {
+    "key": "ref017",
+    "url": "https://doi.org/10.1109/MNET.2025.3619162"
+  },
+  {
+    "key": "ref018",
+    "url": "https://doi.org/10.1109/ACCESS.2025.3603580"
+  },
+  {
+    "key": "ref019",
+    "url": "https://doi.org/10.1016/j.comnet.2025.111162"
+  },
+  {
+    "key": "ref020",
+    "url": "https://doi.org/10.1109/ACSACW65225.2024.00036"
+  },
+  {
+    "key": "ref021",
+    "url": "https://doi.org/10.1109/CICN63059.2024.10847404"
+  },
+  {
+    "key": "ref022",
+    "url": "https://doi.org/10.1109/ICDSCA63855.2024.10859408"
+  },
+  {
+    "key": "ref023",
+    "url": "https://doi.org/10.1145/3756681.3757042"
+  },
+  {
+    "key": "ref024",
+    "url": "https://doi.org/10.1109/CSCWD64889.2025.11033478"
+  },
+  {
+    "key": "ref025",
+    "url": "https://doi.org/10.1145/3719027.3744855"
+  },
+  {
+    "key": "ref026",
+    "url": "https://doi.org/10.1109/AIxDKE63520.2024.00033"
+  },
+  {
+    "key": "ref027",
+    "url": "https://doi.org/10.1109/ICMLA61862.2024.00133"
+  },
+  {
+    "key": "ref028",
+    "url": "https://doi.org/10.1109/ACCESS.2025.3586203"
+  },
+  {
+    "key": "ref029",
+    "url": "https://doi.org/10.1007/978-3-031-87496-3_5"
+  },
+  {
+    "key": "ref030",
+    "url": "https://doi.org/10.1016/j.fsidi.2025.301872"
+  },
+  {
+    "key": "ref031",
+    "url": "https://doi.org/10.1016/j.fsidi.2025.301981"
+  },
+  {
+    "key": "ref032",
+    "url": "https://doi.org/10.1016/j.procs.2025.08.299"
+  },
+  {
+    "key": "ref033",
+    "url": "https://doi.org/10.7717/peerj-cs.3371"
+  },
+  {
+    "key": "ref034",
+    "url": "https://doi.org/10.1145/3780095"
+  },
+  {
+    "key": "ref035",
+    "url": "https://doi.org/10.1109/SCSE65633.2025.11031059"
+  },
+  {
+    "key": "ref036",
+    "url": "https://doi.org/10.3390/math13050856"
+  },
+  {
+    "key": "ref037",
+    "url": "https://doi.org/10.1145/3703155"
+  },
+  {
+    "key": "ref038",
+    "url": "https://doi.org/10.1609/aaai.v38i16.29728"
+  },
+  {
+    "key": "ref039",
+    "url": "https://doi.org/10.18653/v1/2024.eacl-demo.16"
+  },
+  {
+    "key": "ref040",
+    "url": "https://doi.org/10.18653/v1/2024.naacl-long.20"
+  },
+  {
+    "key": "ref041",
+    "url": "https://doi.org/10.18653/v1/2024.acl-long.585"
+  },
+  {
+    "key": "ref042",
+    "url": "https://doi.org/10.1145/3701228"
+  },
+  {
+    "key": "ref043",
+    "url": "https://doi.org/10.52202/079017-0692"
+  },
+  {
+    "key": "ref044",
+    "url": "https://doi.org/10.1371/journal.pdig.0000877"
+  },
+  {
+    "key": "ref045",
+    "url": "https://doi.org/10.1145/3605764.3623985"
+  },
+  {
+    "key": "ref046",
+    "url": "https://doi.org/10.1109/ICSE55347.2025.00007"
+  },
+  {
+    "key": "ref047",
+    "url": "https://doi.org/10.34190/iccws.20.1.3292"
+  },
+  {
+    "key": "ref048",
+    "url": "https://doi.org/10.52202/079017-2636"
+  },
+  {
+    "key": "ref049",
+    "url": "https://www.mendeley.com/catalogue/81ac6092-600c-3c3d-8c29-329b2c67fdbf"
+  },
+  {
+    "key": "ref050",
+    "url": "https://www.mendeley.com/catalogue/eb1c701d-3b4a-3414-a79c-4ca6d69f7e41"
+  },
+  {
+    "key": "ref051",
+    "url": "https://www.mendeley.com/catalogue/aa2446f0-62ac-3d01-bbcd-c6094cc7fb6d"
+  },
+  {
+    "key": "ref052",
+    "url": "https://doi.org/10.1016/j.inffus.2025.103900"
+  },
+  {
+    "key": "ref053",
+    "url": "https://doi.org/10.1145/3719027.3765095"
+  },
+  {
+    "key": "ref054",
+    "url": "https://doi.org/10.5220/0013108300003899"
+  },
+  {
+    "key": "ref055",
+    "url": "https://doi.org/10.1145/3696410.3714771"
+  },
+  {
+    "key": "ref056",
+    "url": "https://doi.org/10.1145/3719027.3744840"
+  },
+  {
+    "key": "ref057",
+    "url": "https://www.mendeley.com/catalogue/447e8b29-dbd9-3346-b4de-8e890eb798f5"
+  },
+  {
+    "key": "ref058",
+    "url": "https://doi.org/10.1109/SP46215.2023.10179300"
+  },
+  {
+    "key": "ref059",
+    "url": "https://www.mendeley.com/catalogue/13a00f07-d300-3d37-a43e-f8b68e3c1260"
+  },
+  {
+    "key": "ref060",
+    "url": "https://doi.org/10.1162/tacl_a_00459"
+  },
+  {
+    "key": "ref061",
+    "url": "https://doi.org/10.1109/SP46214.2022.9833571"
+  },
+  {
+    "key": "ref062",
+    "url": "https://doi.org/10.1145/3576915.3623157"
+  },
+  {
+    "key": "ref063",
+    "url": "https://www.mendeley.com/catalogue/704c30ea-a5be-30ad-a5bd-ccd0db0803de"
+  },
+  {
+    "key": "ref064",
+    "url": "https://www.mendeley.com/catalogue/8305ced0-04be-3620-ae63-73af06c0ea7e"
+  },
+  {
+    "key": "ref065",
+    "url": "https://www.mendeley.com/catalogue/1bc65c1a-0c34-3449-b2e7-331be5a26832"
+  },
+  {
+    "key": "ref066",
+    "url": "https://doi.org/10.1016/j.procs.2021.08.104"
+  },
+  {
+    "key": "ref067",
+    "url": "https://doi.org/10.1007/s10270-022-01013-0"
+  },
+  {
+    "key": "ref068",
+    "url": "https://doi.org/10.1016/j.cose.2023.103524"
+  },
+  {
+    "key": "ref069",
+    "url": "https://doi.org/10.1016/j.procs.2022.09.031"
+  },
+  {
+    "key": "ref070",
+    "url": "https://doi.org/10.3390/fi16030069"
+  },
+  {
+    "key": "ref071",
+    "url": "https://doi.org/10.1109/MNET.2025.3562901"
+  },
+  {
+    "key": "ref072",
+    "url": "https://www.mendeley.com/catalogue/169f44f0-7df5-38c8-beaf-d1fa4ca0b47b"
+  },
+  {
+    "key": "ref073",
+    "url": "https://doi.org/10.1016/j.procs.2025.09.485"
+  },
+  {
+    "key": "ref074",
+    "url": "https://doi.org/10.1093/comjnl/bxu101"
+  },
+  {
+    "key": "ref075",
+    "url": "https://doi.org/10.1007/s10115-023-01860-3"
+  },
+  {
+    "key": "ref076",
+    "url": "https://doi.org/10.1007/s40747-023-01205-1"
+  },
+  {
+    "key": "ref077",
+    "url": "https://doi.org/10.3390/app122412947"
+  },
+  {
+    "key": "ref078",
+    "url": "https://doi.org/10.1109/TKDE.2022.3175719"
+  },
+  {
+    "key": "ref079",
+    "url": "https://doi.org/10.3390/electronics11152287"
+  },
+  {
+    "key": "ref080",
+    "url": "https://doi.org/10.3390/electronics14142878"
+  },
+  {
+    "key": "ref081",
+    "url": "https://doi.org/10.7717/peerj-cs.2768"
+  },
+  {
+    "key": "ref082",
+    "url": "https://doi.org/10.1016/j.cose.2024.103848"
+  },
+  {
+    "key": "ref083",
+    "url": "https://doi.org/10.1155/2020/8883696"
+  },
+  {
+    "key": "ref084",
+    "url": "https://doi.org/10.1109/EISIC.2017.20"
+  },
+  {
+    "key": "ref085",
+    "url": "https://doi.org/10.3390/jcp4030025"
+  },
+  {
+    "key": "ref086",
+    "url": "https://doi.org/10.1109/COMST.2023.3273282"
+  },
+  {
+    "key": "ref087",
+    "url": "https://doi.org/10.1016/j.jisa.2024.103786"
+  },
+  {
+    "key": "ref088",
+    "url": "https://doi.org/10.1007/s10115-025-02382-w"
+  },
+  {
+    "key": "ref089",
+    "url": "https://doi.org/10.1016/j.cose.2023.103170"
+  },
+  {
+    "key": "ref090",
+    "url": "https://doi.org/10.1109/CSR61664.2024.10679346"
+  },
+  {
+    "key": "ref091",
+    "url": "https://doi.org/10.1007/s10586-024-04899-1"
+  },
+  {
+    "key": "ref092",
+    "url": "https://doi.org/10.1007/978-3-319-69341-5_13"
+  },
+  {
+    "key": "ref093",
+    "url": "https://doi.org/10.1080/23311975.2023.2195027"
+  },
+  {
+    "key": "ref094",
+    "url": "https://doi.org/10.1109/ACCESS.2022.3163758"
+  },
+  {
+    "key": "ref095",
+    "url": "https://doi.org/10.1177/1534484303257985"
+  },
+  {
+    "key": "ref096",
+    "url": "https://doi.org/10.3390/s23167273"
+  },
+  {
+    "key": "ref097",
+    "url": "https://doi.org/10.1016/j.cose.2019.101589"
+  },
+  {
+    "key": "ref098",
+    "url": "https://doi.org/10.1093/cybsec/tyaf016"
+  },
+  {
+    "key": "ref099",
+    "url": "https://doi.org/10.1109/TDSC.2022.3151148"
+  },
+  {
+    "key": "ref100",
+    "url": "https://doi.org/10.1145/3637211"
+  }
+]
