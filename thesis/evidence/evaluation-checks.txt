@@ -1,0 +1,51 @@
+Offline evaluation evidence
+UTC: 2026-09-06T13:45:18.528443+00:00
+Repository: /Users/danilopalaciosaboia/Documents/GitHub/.maestri/floors/CybersecurityBot--escrita
+Git HEAD: a66c615369db1f7c4eb19ccab0d51613ed6a3b75
+Python: 3.9.6 (default, May 22 2026, 11:13:45) 
+[Clang 21.0.0 (clang-2100.1.1.101)]
+Command (JSON argv): ["/Library/Developer/CommandLineTools/usr/bin/python3", "-B", "-m", "unittest", "discover", "-s", "scripts/ci", "-p", "test_*.py", "-v"]
+Environment: PATH=/usr/bin:/bin:/usr/sbin:/sbin; PYTHONDONTWRITEBYTECODE=1 (no inherited provider credentials; no .env loading)
+Scope: stdlib fixture gate tests only; no application, Docker, database, or provider execution.
+SHA-256 inputs:
+c4428d2b979be7f867ae1680e6fc73f924a9fdb19013e8a4bc06a06ad94afb01  docs/evaluation-protocol.md
+fb71c27d2586bdeb3cf9bc4780230a9436dff1d2a5f78461bb1d9cfdb1576265  scripts/ci/quality_gate.py
+923e21900f9c1a14bf957f0465a9cb121a2575081c3bd795404efae6410ea7f9  scripts/ci/test_quality_gate.py
+a5647933f3a4604c527a12ebd79ddc8d8d1891c7d50033e15c4b16219eff0d33  backend/src/main/resources/eval/README.md
+b98936580891a70228c312bbf70b7d3c1f98f8839e12f8ab50a76bcb808d71af  backend/src/main/resources/eval/answer-eval-v1.json
+86e94414a7c1bc907a02e2f98a7fe11f7503b324c430eac4c4b0e2b5682b46ec  backend/src/main/resources/eval/goldenset.json
+
+Combined stdout/stderr (verbatim):
+test_accepts_executed_integration_report (test_quality_gate.QualityGateTest) ... ok
+test_accepts_healthy_retrieval (test_quality_gate.QualityGateTest) ... ok
+test_rejects_duplicate_case_ids (test_quality_gate.QualityGateTest) ... ok
+test_rejects_empty_junit_report (test_quality_gate.QualityGateTest) ... ok
+test_rejects_empty_report (test_quality_gate.QualityGateTest) ... ok
+test_rejects_false_case_even_with_claimed_pass_total (test_quality_gate.QualityGateTest) ... ok
+test_rejects_inconsistent_totals (test_quality_gate.QualityGateTest) ... ok
+test_rejects_junit_failure_even_if_summary_is_wrong (test_quality_gate.QualityGateTest) ... ok
+test_rejects_nan (test_quality_gate.QualityGateTest) ... ok
+test_rejects_regression (test_quality_gate.QualityGateTest) ... ok
+test_rejects_skipped_integration_report (test_quality_gate.QualityGateTest) ... ok
+test_requires_every_named_integration_suite (test_quality_gate.QualityGateTest) ... ok
+
+----------------------------------------------------------------------
+Ran 12 tests in 1.182s
+
+OK
+
+Exit code: 0
+
+Isolated chapter LaTeX validation (not thesis-wide):
+Command JSON argv: ["/opt/homebrew/bin/tectonic", "--only-cached", "--untrusted", "--outdir", "/var/folders/0l/y8658bbx6r1c1z1rlxsvf0xh0000gn/T/evaluation-latex-tzo48f6f", "-"]
+Input: report-class wrapper with declared thesis packages, chapter counter 3, chapter source, and appendix label placeholder; supplied on stdin.
+Network: --only-cached; insecure features: --untrusted.
+Combined stdout/stderr (verbatim):
+note: reading from standard input; outputs will appear under the base name "texput"
+note: using only cached resource files
+note: generating format "latex"
+error: failed to open input file "tectonic-format-latex.tex"
+
+Exit code: 1
+Temporary PDF count: 0
+Temporary compile artifacts removed after validation.

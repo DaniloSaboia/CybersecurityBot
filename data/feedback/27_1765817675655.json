@@ -1,8 +1,0 @@
-{
-  "questionId": "27",
-  "userQuery": "I need to open an email from an unkwon source what should i do ?",
-  "botResponse": "If you receive an email from an unknown source, it's best to exercise caution. Here are some steps to follow:\n\n1. **Don't click on links or download attachments**: These can be malicious and may install malware or viruses on your device.\n2. **Verify the sender's email address**: Check if the email address is legitimate and matches the one you expect from a known sender. Be wary of generic greetings like \"Dear customer\" or \"Hello user\".\n3. **Hover over links to check the actual URL**: This can help you identify if the link is legitimate or not.\n4. **Check for spelling and grammar mistakes**: Legitimate companies usually have professional email templates with no typos or grammatical errors.\n5. **Report as phishing (if necessary)**: If you suspect the email is a phishing attempt, report it to your email provider's spam filter or forward the email to their abuse department.\n6. **Delete the email**: If you're unsure about the legitimacy of the email, delete it immediately.\n\nRemember, it's always better to err on the side of caution when dealing with unknown emails.\n\n👍 Let me know if you need more information.",
-  "feedback": "helpful",
-  "timestamp": "2025-12-15T16:54:35.655Z",
-  "category": "user_feedback"
-}

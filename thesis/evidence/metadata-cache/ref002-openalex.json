@@ -1,0 +1,5 @@
+{
+  "request_url": "https://api.openalex.org/works/https://doi.org/10.26342/2025-75-15",
+  "retrieved_at": "2026-09-06T13:46:26.529842+00:00",
+  "error": "HTTP Error 404: Not Found"
+}

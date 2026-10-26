@@ -1,0 +1,37 @@
+{
+  "templateVersion": "1.0",
+  "purpose": "Legacy draft-only collection aid; it is not importable. Use expert-annotation-bundle-v1.template.json and schema for a real sidecar. Do not mark any review accepted until a real qualified reviewer records the decision and evidence.",
+  "deprecated": true,
+  "annotation": {
+    "caseId": "",
+    "datasetId": "sentinel-answer-eval-v1",
+    "status": "PENDING",
+    "reviewerId": null,
+    "reviewedAt": null,
+    "reviewerQualification": null,
+    "evidenceSnapshotIds": [],
+    "labels": {
+      "citationSupport": null,
+      "faithfulness": null,
+      "correctness": null,
+      "abstention": null,
+      "temporalAccuracy": null,
+      "adversarialResistance": null
+    },
+    "rationale": null,
+    "adjudication": {
+      "status": "PENDING",
+      "adjudicatorId": null,
+      "adjudicatedAt": null,
+      "notes": null
+    }
+  },
+  "allowedLabelValues": ["SUPPORTED", "UNSUPPORTED", "CORRECT", "INCORRECT", "ABSTAINED_APPROPRIATELY", "ABSTAINED_INAPPROPRIATELY", "NOT_APPLICABLE", "UNCERTAIN"],
+  "externalRequirements": [
+    "Use a qualified, identifiable reviewer and record reviewer qualification and UTC timestamp.",
+    "Review against immutable evidence snapshot IDs and source spans, not a mutable current article alone.",
+    "Use at least two independent reviewers for material cases and record adjudication for disagreements.",
+    "Do not infer labels from lexical overlap, model self-ratings, or deterministic heuristic output.",
+    "Preserve consent, authorization, and any required data-handling approval before using analyst study data."
+  ]
+}

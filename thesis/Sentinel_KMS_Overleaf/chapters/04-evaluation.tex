@@ -1,0 +1,170 @@
+\chapter{Evaluation and Results}\label{ch:evaluation}
+
+\section{Evaluation approach}
+
+The evaluation examines whether Sentinel connects maintained knowledge to useful support for incident-response decisions. Following Chapter~\ref{ch:introduction}, we interpret optimisation as reducing the time and effort needed to locate applicable knowledge while supporting correct, well-founded decisions. A faster answer is therefore not sufficient: the retrieved material must address the situation, the explanation must preserve its meaning, and the analyst must be able to assess its applicability.
+
+We completed model comparisons and human evaluation as part of the research, alongside engineering verification. We distinguish these activities by their object of assessment. Software checks examine specified application behaviour. Live provider calls establish compatibility with particular services. Comparative model results concern retrieval and generated responses, while human evaluation connects the assistance to its use and interpretation. These perspectives contribute to the same research objective without sharing a common unit of observation.
+
+We use retrieval quality, response quality, task efficiency, and usability as analytical dimensions. Access restrictions and provenance apply across them: useful knowledge must be available to the intended reader, and the basis of advice must remain inspectable. The following definitions establish the meaning of these dimensions before the technical results and their relationship to RQ1--RQ3 are discussed.
+
+% EDITORIAL: The controlled model comparison and human evaluation were completed
+% personally by the researcher. Their numerical records are awaiting transfer.
+% Integrate their actual methods and findings at the marked locations below;
+% absence of transferred records does not mean absence of measurement or study.
+
+\section{Evaluation dimensions}
+
+\subsection{Retrieval quality}
+
+Retrieval quality concerns whether the returned knowledge helps answer the incident question. Topical similarity is only one part of relevance. A passage about account compromise may describe the correct threat but omit the recovery procedure or the conditions governing its use. Article-level relevance identifies a useful document; passage-level relevance asks whether the selected text contains the information needed for the decision. We distinguish these units because an appropriate article can still yield an incomplete context for generation.
+
+Precision describes the proportion of retrieved items judged relevant, whereas recall describes the proportion of the relevant set recovered. A ranking cutoff limits the results considered. Mean reciprocal rank summarises the position of the first relevant result, and normalised discounted cumulative gain assesses the ordering of relevant material against an ideal ranking. These measures distinguish finding some useful evidence from recovering the evidence needed to address the whole question.
+
+The reference set also depends on access and temporal scope. Material outside the requesting identity's permissions is not an eligible target, and superseded guidance may be relevant to a historical question without being appropriate for current advice. Questions with no relevant accessible evidence form a distinct category; recall has no meaningful denominator for an empty reference set. Returning unrelated material in that situation is different from failing to retrieve an available answer.
+
+\subsection{Response quality and traceability}
+
+Response quality concerns how the assistant uses knowledge, not merely whether it produces fluent text. RAGAs distinguishes retrieval of useful context, faithful use of that context, and generation quality. ARES similarly separates context relevance, answer faithfulness, and answer relevance~\cite{ref039,ref040}. We adopt this separation as an analytical basis for examining guidance without treating any one dimension as a complete measure of correctness.
+
+Relevance concerns whether the response addresses the question. Faithfulness concerns whether its claims are supported by the supplied material. Correctness additionally concerns whether the advice is accurate and applicable to the stated situation. Completeness concerns the information necessary to make the decision, including important qualifications and dependencies. For example, quoting a recovery action faithfully does not make the advice complete if the source also requires evidence preservation before that action. A response can thus be well grounded and still omit something consequential.
+
+Traceability makes the supporting material available for examination. Citation resolution establishes that a reference identifies an inspectable source and passage. Citation support concerns whether that passage justifies the associated statement; citation coverage concerns how much of the evidence-requiring advice has adequate support. Sentinel's retained passage identities address the first problem, while the meaning of a claim--passage relationship remains a quality question.
+
+Uncertainty is part of this assessment. A useful response distinguishes observed facts from hypotheses and recognises insufficient evidence. Appropriate abstention avoids unsupported guidance; unnecessary abstention withholds assistance despite adequate evidence. Likewise, error severity matters: an imprecise explanation and a recommendation that risks destroying incident evidence have different consequences. These distinctions connect language quality to the decisions the KMS is intended to support.
+
+\subsection{Task efficiency and usability}
+
+Task efficiency concerns the effort needed to reach a justified response decision. It includes finding sources, reading them, checking the explanation, and deciding what applies. Model latency measures only part of this work. Time to first visible output and time to a complete answer also describe different experiences, particularly because Sentinel checks the grounding before releasing a generated response.
+
+We interpret efficiency together with decision quality. Rapid acceptance of unsupported advice is not an improvement in incident response. Conversely, additional time spent checking a critical passage may support a better decision. The relevant comparison is therefore between task outcomes and the effort associated with them, rather than between response times alone.
+
+Usability concerns how readily people can navigate the knowledge, express their question, understand the response, and inspect its basis. Perceived usefulness and confidence describe the experience of using the system; they do not establish correctness. The ability to recognise an unavailable source or challenge a recommendation is also relevant to usability because successful interaction includes knowing when further investigation is necessary.
+
+\section{Engineering results}
+
+Software verification on 29 September 2026 covered report validation, backend behaviour, frontend components, scripted browser interactions, and production frontend packaging. Table~\ref{tab:executed-checks} presents the observed results as separate layers. The backend total was obtained from 88 test reports, with no failures, errors, or skipped tests. Selected backend checks used isolated PostgreSQL instances alongside mocked dependencies.
+
+\begin{table}[htbp]
+\centering\small
+\caption{Engineering checks completed on 29 September 2026.}
+\label{tab:executed-checks}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{0.24\textwidth}>{\raggedright\arraybackslash}p{0.23\textwidth}>{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{TableNavy}
+\color{white}\bfseries Check & \color{white}\bfseries Observed result & \color{white}\bfseries Scope \\
+\midrule
+\rowcolor{TableStripe}
+Report validator & 12 tests passed & Acceptance and rejection of synthetic evaluation and test reports. \\
+Backend tests & 408 tests passed & Application rules and selected isolated database interactions. \\
+\rowcolor{TableStripe}
+Frontend unit tests & 91 tests passed & Component behaviour in a simulated browser document. \\
+Chromium tests & 17 tests passed & Scripted navigation and intercepted application-response contracts. \\
+\rowcolor{TableStripe}
+Production frontend build & Succeeded; 133 modules transformed & Packaging of the interface for production use. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+The report validator checks the consistency and acceptability of declared results, including invalid metrics and misleading pass declarations. Its synthetic inputs exercise reporting logic rather than retrieval effectiveness. The application suites address a different object: whether selected operations behave as expected under the tested conditions. The production build completed with a non-fatal bundle-size warning, establishing successful packaging rather than a deployed service.
+
+The interface illustrations in Chapter~\ref{ch:system} use deterministic mocked authentication and application responses; their displayed answers, passages, and counters are demonstration data, not human-evaluation observations. The browser checks support the operation of those interface interactions. Together, the engineering results establish a functioning basis for knowledge access and evidence inspection, but their test counts are neither incident samples nor measures of decision quality.
+
+\section{Live provider compatibility}
+
+Live compatibility observations on 6 September 2026 examined embedding services through OpenRouter using a requested dimension of 1024, matching Sentinel's vector storage. The endpoints \nolinkurl{nvidia/llama-nemotron-embed-vl-1b-v2:free} and \nolinkurl{liquid/lfm-2.5-embedding-350m:free} returned 1024-dimensional vectors, each with a reported cost of zero. In contrast, \nolinkurl{nvidia/nemotron-3-embed-1b:free} returned HTTP~400 with a requirement for 2048 dimensions.
+
+The same dated record describes a completed live chat request, a batch of two 1024-dimensional embeddings, and a synthetic vector inserted into PostgreSQL with pgvector, queried using cosine distance, and subsequently rolled back. These observations demonstrate provider connectivity and the vector write/query path. They do not constitute a model-quality comparison or a complete authenticated ingestion-to-answer trial. The available account does not include repetition counts or raw response logs from which reliability or latency distributions could be estimated.
+
+The dimensionality difference has a direct engineering consequence. A model requiring 2048 dimensions cannot populate the existing 1024-dimensional representation without a storage change. Matching dimensions, however, does not make different models' representations interchangeable: replacing the embedding model also requires reindexing the knowledge with the selected representation. We therefore interpret successful responses as compatibility observations for the named services on the recorded date. Reported zero cost describes those responses, not a standing guarantee of availability, pricing, or the absence of infrastructure costs.
+
+\section{Model comparisons and human evaluation}
+
+\subsection{Interpreting model comparisons}
+
+A model comparison describes performance under particular knowledge and configuration conditions. The embedding model affects which material is retrieved, while the generation model affects how the supplied material is expressed. Corpus coverage, passage boundaries, context limits, and access permissions also shape the available evidence. A difference between complete configurations therefore cannot automatically be attributed to one model or to retrieval alone.
+
+We distinguish retrieval outcomes from answer outcomes when interpreting comparative performance. An improved ranking can make supporting knowledge easier to find without ensuring that the answer uses it correctly. Similarly, a convincing answer may rely on general model knowledge rather than the maintained collection. The relationship between the question, retrieved passages, response, and quality judgement is consequently more informative than a single aggregate score. Failed requests also belong to the interpretation of a configuration's practical usefulness, alongside the quality of its successful responses.
+
+% EDITORIAL -- completed controlled comparison, method integration:
+% Insert the actual study dates, evaluated system configuration, model/provider
+% identifiers, corpus composition and size with units, case-selection process,
+% comparison conditions, repetitions, prompts, retrieval settings, generation
+% settings, access context, and scoring method from the original records.
+% Describe only conditions actually used; do not infer search-only, no-RAG, RAG,
+% paired allocation, held-out splits, reviewer independence, or randomisation.
+% EDITORIAL -- completed controlled comparison, results integration:
+% Incorporate original per-case rankings, responses, relevance judgements,
+% quality labels, timing units and measurement boundaries, failed attempts,
+% usage/cost observations, and their denominators, or labelled aggregate records
+% stating those details. Add result tables only when values and provenance are
+% available. Reconcile any contract-example metrics with the primary records
+% before treating them as observations. Calculate uncertainty only when the
+% actual sampling and repetition structure support the chosen analysis.
+
+\subsection{Interpreting human evaluation}
+
+Human evaluation connects the system's outputs to how people understand and use knowledge. We distinguish assessments of an answer from assessments of interaction with the KMS. Judging the clarity of a displayed recommendation concerns the response; locating its source, checking applicability, and reaching a decision concern a broader task. This distinction determines how far an observation can support a claim about incident-response work.
+
+Quantitative outcomes and qualitative feedback also answer different questions. A task-time observation describes elapsed work under defined conditions, while a comment about saving time expresses perceived value. Feedback can explain difficulties with terminology, source navigation, or the amount of detail without establishing their frequency across other users. Evidence consultation is similarly interpretable only in context: opening a passage demonstrates access to it, not necessarily understanding or appropriate reliance.
+
+% EDITORIAL -- completed human evaluation, method integration:
+% Insert documented dates, participant count and relevant experience in
+% anonymised form, recruitment, materials, tasks or review activity, conditions
+% actually encountered, task order/allocation if recorded, and instruments with
+% their exact scales and scoring. Distinguish answer review from interactive
+% task performance. Describe consent, approval and data handling only from
+% supporting records; do not infer approval, randomisation or blinding.
+% EDITORIAL -- completed human evaluation, results integration:
+% Incorporate recorded task outcomes and times, questionnaire item responses or
+% labelled aggregates, and attributable anonymised qualitative evidence, as
+% available. Preserve participants, task attempts and model outputs as distinct
+% denominators; identify missing responses, exclusions and failures. State the
+% qualitative analysis actually performed. Do not infer a usability instrument,
+% participant benefit, significance, themes or quotations from demonstrations.
+
+\section{Requirement validation and discussion}
+
+Table~\ref{tab:evaluation-status} relates the requirements in Chapter~\ref{ch:system} to the scope of the documented technical evidence. Functional requirements connect knowledge maintenance to guidance; the non-functional requirements concern the conditions under which that guidance remains usable and reviewable. This relationship prevents successful software checks from being treated as acceptance of every research objective.
+
+\begin{table}[htbp]
+\centering\small
+\caption{Requirements and the scope of the documented technical evidence.}
+\label{tab:evaluation-status}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{0.23\textwidth}>{\raggedright\arraybackslash}p{0.30\textwidth}>{\raggedright\arraybackslash}X@{}}
+\toprule
+\rowcolor{TableNavy}
+\color{white}\bfseries Requirement & \color{white}\bfseries Assessment focus & \color{white}\bfseries Evidence and interpretation \\
+\midrule
+\rowcolor{TableStripe}
+F1 Governed knowledge & Currency and controlled publication. & Lifecycle checks support the maintenance mechanisms, not the suitability of every article. \\
+F2 Recoverable ingestion & Continuity from retained source to index. & Backend recovery checks include isolated database interactions. \\
+\rowcolor{TableStripe}
+F3 Contextual retrieval & Relevant, accessible knowledge. & Search behaviour is technically checked; relevance belongs to comparative quality assessment. \\
+F4 Traceable incident guidance & Advice linked to inspectable evidence. & Citation resolution and viewing are checked separately from semantic support. \\
+\rowcolor{TableStripe}
+N1 Access and disclosure safety & Permissions across retrieval and disclosure. & Selected authorisation checks support defined boundaries, not a general security guarantee. \\
+N2 Reviewable operations & Examination of changes and failures. & Retained histories support inspection; best-effort audit persistence limits completeness. \\
+\rowcolor{TableStripe}
+N3 Deployment flexibility & Separation of hosting and model choices. & Successful packaging and dated provider compatibility observations. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+For RQ1, the design and requirements analysis identify procedures, applicability conditions, and the rationale for decisions as reusable knowledge, accompanied by provenance and maintenance responsibility. The lifecycle mechanisms make that organisation actionable through review, publication, and revision. RQ2 connects this maintained collection to guidance through semantic and lexical retrieval, source-conditioned generation, and exact-passage inspection. The technical evidence supports the operation of selected parts of this chain; the quality dimensions distinguish relevant retrieval from a justified recommendation.
+
+RQ3 brings those dimensions together with task efficiency and usability. Its interpretation depends on the model and human findings rather than on a combined software-test total. The principal issue is whether reduced effort accompanies sounder use of knowledge, including appropriate recognition of uncertainty and access limits.
+
+\subsection{Limitations of interpretation}
+
+The engineering suites cover selected inputs and environments. They establish application behaviour under those conditions, rather than whether a security recommendation is appropriate or a cited source is correct.
+
+The compatibility observations and engineering checks concern different dates and activities. Neither identifies the configuration used in the model comparison or human evaluation. Provider selection, knowledge revisions and permissions can change the evidence available to a question; comparative findings therefore concern the documented configuration.
+
+Human findings likewise concern the documented participants, tasks and setting. Experience, familiarity with the interface and repeated exposure to cases can affect performance. Their relevance depends on the actual study conditions, alongside the distinction between technical operation and its contribution to response decisions.
+
+% EDITORIAL -- final synthesis: After integrating the completed empirical work,
+% connect its actual findings to RQ1--RQ3 and the requirement matrix. State the
+% supported magnitude and scope of any retrieval, response-quality, efficiency
+% or usability benefit, including unfavourable findings. Revise limitations to
+% reflect the documented study design rather than an assumed future protocol.

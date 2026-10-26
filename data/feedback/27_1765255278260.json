@@ -1,8 +1,0 @@
-{
-  "questionId": "27",
-  "userQuery": "im having a trouble and i would like to open an email from an unknown source, what should i do ?",
-  "botResponse": "If you receive a suspicious email: 1) Don't click links or download attachments, 2) Verify sender email address, 3) Hover over links to check actual URL, 4) Report as phishing, 5) Delete the email.\n\n👍 Let me know if you need more information.",
-  "feedback": "helpful",
-  "timestamp": "2025-12-09T04:41:18.260Z",
-  "category": "user_feedback"
-}

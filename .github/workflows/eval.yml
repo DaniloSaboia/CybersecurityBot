@@ -1,0 +1,54 @@
+name: RAG eval (nightly)
+
+# Offline checks always run. Live retrieval is explicitly opted in against
+# a dedicated, already-deployed evaluation environment, never a boot/seed
+# operation against a production database. Reports do not imply expert review.
+
+on:
+  schedule:
+    - cron: "0 2 * * *" # nightly 02:00 UTC
+  workflow_dispatch:
+
+jobs:
+  metrics-unit:
+    name: Retrieval metrics (unit)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: maven
+      - name: Test report validation gates
+        run: python3 -m unittest discover -s scripts/ci -p 'test_*.py'
+      - name: Run eval + retrieval unit tests
+        working-directory: backend
+        run: mvn -B -ntp "-Dtest=RetrievalMetricsTest,RerankerTest,HybridRankerTest,QueryRewriterTest" test
+
+  golden-set:
+    name: Golden set (live retrieval)
+    runs-on: ubuntu-latest
+    if: ${{ vars.ENABLE_LIVE_EVAL == 'true' }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run and gate live retrieval
+        env:
+          EVAL_BASE_URL: ${{ vars.EVAL_BASE_URL }}
+          EVAL_AUTH_TOKEN: ${{ secrets.EVAL_AUTH_TOKEN }}
+        run: |
+          set -euo pipefail
+          test -n "$EVAL_BASE_URL" || { printf '%s\n' 'EVAL_BASE_URL is required'; exit 1; }
+          test -n "$EVAL_AUTH_TOKEN" || { printf '%s\n' 'EVAL_AUTH_TOKEN is required'; exit 1; }
+          case "$EVAL_BASE_URL" in https://*) ;; *) printf '%s\n' 'Evaluation requires HTTPS'; exit 1;; esac
+          curl --fail-with-body --silent --show-error --max-time 300 \
+            -X POST "${EVAL_BASE_URL%/}/api/eval/retrieval" \
+            -H "Authorization: Bearer $EVAL_AUTH_TOKEN" -o eval-report.json
+          python3 scripts/ci/quality_gate.py retrieval eval-report.json
+      - name: Preserve retrieval report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: live-retrieval-report
+          path: eval-report.json
+          retention-days: 30

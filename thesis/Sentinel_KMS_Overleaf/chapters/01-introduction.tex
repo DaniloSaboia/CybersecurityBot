@@ -1,0 +1,60 @@
+\chapter{Introduction}\label{ch:introduction}
+
+Responding to a cybersecurity incident requires decisions about what has happened, which assets are affected and what action is appropriate. Analysts need to interpret the available evidence, relate it to operational conditions and select a defensible response. This dissertation investigates how knowledge management supported by machine learning can assist that work by making relevant knowledge easier to find, assess and reuse.
+
+\section{Motivation and context}
+Incident response involves detecting and analysing incidents, limiting their impact and restoring affected operations. The National Institute of Standards and Technology (NIST) places these activities within wider cybersecurity risk management, connecting response with preparation and continuous improvement. Its recommendations emphasise the use of incident experience to improve procedures and inform subsequent decisions~\cite{nist2025incident}. This relationship between action and learning provides the starting point for the present research: knowledge produced through one investigation should remain useful when another incident requires a response.
+
+Consider an analyst investigating a suspected account compromise. An external advisory may describe the threat, an internal procedure may specify the permitted response, and a previous incident report may explain why a similar action was ineffective in a particular environment. These sources answer different parts of the same question. To use them together, the analyst needs to establish their relevance, recognise their limitations and understand whether the circumstances of the earlier case still apply. Finding a document is only part of this task; interpreting it is also necessary.
+
+We use \emph{knowledge management} to mean the deliberate capture, organisation, maintenance and reuse of knowledge for this decision-making purpose. The knowledge of interest includes documented procedures, explanations of earlier decisions and lessons derived from incident experience. Capturing an outcome without its rationale can leave later readers unable to judge its applicability. Maintaining that context gives knowledge reuse a more specific purpose than accumulating documents.
+
+Knowledge-sharing research considers both the factors affecting exchanges between individuals and the relationship between organisational processes and their intended outcomes~\cite{ref095,ref093}. Research on cyber threat intelligence sharing likewise identifies organisational and trust-related obstacles that extend beyond technical compatibility~\cite{ref098}. These perspectives motivate an approach that treats the contribution and maintenance of knowledge as part of the incident-response problem, alongside the ability to retrieve it.
+
+\section{Research problem and approach}
+The problem addressed is the gap between retaining cybersecurity information and making it usable when a response decision is needed. Relevant knowledge may be dispersed across documents written for different audiences, expressed in different terms or detached from the experience that explains it. A response procedure can therefore be available without its relevance being apparent. The research concerns how a knowledge-management system can help analysts connect an incident question to applicable knowledge and understand the basis for using it.
+
+Knowledge maintenance is central to this problem. Advice may become inappropriate as systems, threats or organisational procedures change. NIST notes that the diversity and changing detail of incident response make a single static publication insufficient for maintaining operational guidance~\cite{nist2025incident}. In this study, we therefore treat currency and context as conditions of useful knowledge reuse. We also include provenance, meaning the identifiable origin and supporting basis of the knowledge presented, and confidentiality, meaning that knowledge is available only to its authorised audience.
+
+We investigate machine-learning models trained on language data as a means of relating an analyst's question to relevant material and producing explanations informed by that material. Research on retrieval-supported language generation provides a basis for combining learned language capabilities with external knowledge sources~\cite{lewis2020rag}. We adopt this as a research direction for making documented experience accessible in the context of an analyst's question. The question is whether this support helps people reach justified decisions with less effort, while retaining the information needed to assess the guidance.
+
+This approach connects knowledge management with decision support. A useful explanation needs to preserve the conditions under which advice applies and distinguish supported recommendations from uncertainty. Analysts retain responsibility for assessing operational consequences and choosing an action. Reliability and confidentiality are consequently requirements for knowledge reuse, considered together with relevance and ease of use.
+
+\section{Objectives and research questions}
+The overall objective is to design, implement and evaluate a knowledge-management system (KMS) that uses machine learning to optimise knowledge reuse during cybersecurity incident response. We define \emph{optimisation} in practical terms: reducing the time and effort needed to locate applicable knowledge and helping analysts make correct, well-supported decisions. This definition gives decision quality equal importance to speed.
+
+The specific objectives are to identify the knowledge and maintenance practices needed for incident-response tasks; to develop an approach that connects that knowledge with relevant, traceable guidance; and to evaluate its performance and usability within the conditions governing access to the knowledge. These objectives lead to the principal research question:
+
+\begin{quote}
+How can a knowledge-management system use machine learning to support faster, better-informed incident-response decisions while preserving the reliability and confidentiality of the knowledge used?
+\end{quote}
+
+Three research questions organise the investigation:
+\begin{enumerate}[label=RQ\arabic*:]
+\item What knowledge must be captured, organised and maintained to support incident-response decisions?
+\item How can machine-learning-based retrieval and language generation turn that knowledge into relevant, traceable guidance?
+\item How does the resulting system perform in retrieval, response quality, task efficiency and usability, subject to access and provenance controls?
+\end{enumerate}
+
+Together, these questions connect the knowledge-management requirements to the proposed support for analysts and to its evaluation. They keep the research focused on the use of knowledge in a response task rather than on language generation in isolation.
+
+\section{Research methodology}
+We adopt Design Science Research Methodology (DSRM), which organises research around the creation and evaluation of an artefact intended to address a practical problem. Peffers et al. define six activities: problem identification and motivation, definition of solution objectives, design and development, demonstration, evaluation, and communication~\cite{peffers2007}. This approach suits the investigation because the KMS provides a means of examining how knowledge-management requirements and machine-learning support work together in incident-response tasks.
+
+Problem identification began with a literature review of incident response and knowledge sharing. We then conducted semi-structured interviews with a research specialist to identify use cases, user roles and system requirements. This qualitative input informed the definition of solution objectives and the knowledge-management requirements examined under RQ1. Design and development address those objectives through the research artefact; Chapter~\ref{ch:system} explains the design choices and their relationship to the problem.
+
+Demonstration concerns how the approach applies to incident-response situations. Evaluation examines how well it meets the stated objectives~\cite{peffers2007}. We use this distinction to connect examples of knowledge reuse with a separate assessment of performance and usefulness. Communication brings the research argument, design rationale, methods and findings together in this dissertation so that readers can assess the relationship between the problem and the conclusions.
+
+The evaluation framework combines model-oriented and human-centred perspectives. Retrieval quality concerns whether the material found is relevant and sufficient for the question. Response quality concerns correctness, completeness and support for the explanation in its sources. Task efficiency concerns the time and effort required to reach a justified response decision, while usability concerns how readily people can find, interpret and assess the guidance. Access restrictions and provenance are conditions across these dimensions: relevant material must be appropriate for the intended reader, and the basis of advice must remain inspectable.
+
+These dimensions are considered together when interpreting performance. Task completion time must be interpreted alongside the correctness and support of the resulting decision. Similarly, a response that reads clearly still requires assessment of its correctness and applicability. The evaluation therefore connects properties of retrieval and generated guidance with the analyst's use of that guidance, rather than treating either perspective as sufficient on its own. Chapter~\ref{ch:evaluation} presents the methods, results and interpretation.
+
+\section{Scope and contribution}
+The scope is knowledge-based decision support for cybersecurity incident response. It includes the use of procedures, threat-related documentation and recorded incident experience to inform an analyst's understanding of a situation. It also includes the capture and maintenance needed to make that material reusable. The intended users are analysts consulting knowledge and the contributors responsible for keeping it relevant.
+
+The study focuses on assistance with interpretation and response planning. Autonomous remediation and the replacement of professional judgement fall outside its scope. The contribution is an approach linking incident-response knowledge requirements to machine-learning-supported guidance, together with an evaluation of that approach. Its interpretation is tied to the knowledge, tasks and participants considered in the study, providing a basis for discussing where the approach is useful and what limits its application.
+
+\section{Dissertation organisation}
+Chapter~\ref{ch:literature} establishes the conceptual background through incident response, knowledge management and machine learning. Chapter~\ref{ch:system} presents the KMS requirements, design and development.
+
+Chapter~\ref{ch:evaluation} examines the evaluation dimensions and findings. Chapter~\ref{ch:conclusion} discusses contributions, limitations and further work. Supporting scenarios and evaluation-record definitions appear in the appendices.

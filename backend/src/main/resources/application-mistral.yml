@@ -1,0 +1,15 @@
+# Mistral cloud provider stack. Active when SPRING_PROFILES_ACTIVE=mistral.
+spring:
+  ai:
+    model:
+      chat: mistral
+      embedding: mistral
+    mistralai:
+      api-key: ${MISTRAL_API_KEY:}
+      chat:
+        options:
+          model: ${MISTRAL_CHAT_MODEL:mistral-large-latest}
+          temperature: 0.2
+      embedding:
+        options:
+          model: ${MISTRAL_EMBED_MODEL:mistral-embed}

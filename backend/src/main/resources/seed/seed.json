@@ -1,0 +1,506 @@
+{
+  "categories": [
+    {
+      "id": "threat-intel",
+      "label": "Threat Intel & IOCs",
+      "abbr": "TI",
+      "docCount": 184,
+      "sortOrder": 0
+    },
+    {
+      "id": "policies",
+      "label": "Policies & SOPs",
+      "abbr": "POL",
+      "docCount": 96,
+      "sortOrder": 1
+    },
+    {
+      "id": "postmortems",
+      "label": "Incident Postmortems",
+      "abbr": "IR",
+      "docCount": 41,
+      "sortOrder": 2
+    },
+    {
+      "id": "playbooks",
+      "label": "Playbooks & Runbooks",
+      "abbr": "PB",
+      "docCount": 73,
+      "sortOrder": 3
+    },
+    {
+      "id": "advisories",
+      "label": "Vendor Advisories (CVE)",
+      "abbr": "CVE",
+      "docCount": 312,
+      "sortOrder": 4
+    },
+    {
+      "id": "compliance",
+      "label": "Compliance Frameworks",
+      "abbr": "GRC",
+      "docCount": 58,
+      "sortOrder": 5
+    }
+  ],
+  "connectors": [
+    {
+      "id": "s3",
+      "name": "AWS S3 — sec-intel-bucket",
+      "kind": "S3",
+      "status": "connected",
+      "docs": 4120,
+      "lastLabel": "4m ago",
+      "auto": true
+    },
+    {
+      "id": "misp",
+      "name": "MISP — threat-intel-prod",
+      "kind": "API",
+      "status": "connected",
+      "docs": 9874,
+      "lastLabel": "just now",
+      "auto": true
+    },
+    {
+      "id": "confluence",
+      "name": "Confluence — /sec space",
+      "kind": "API",
+      "status": "connected",
+      "docs": 612,
+      "lastLabel": "1h ago",
+      "auto": true
+    },
+    {
+      "id": "nvd",
+      "name": "NVD CVE feed",
+      "kind": "URL",
+      "status": "connected",
+      "docs": 28110,
+      "lastLabel": "12m ago",
+      "auto": true
+    },
+    {
+      "id": "splunk",
+      "name": "Splunk — case exports",
+      "kind": "API",
+      "status": "syncing",
+      "docs": 1203,
+      "lastLabel": "syncing…",
+      "auto": true
+    },
+    {
+      "id": "sharepoint",
+      "name": "SharePoint — GRC vault",
+      "kind": "API",
+      "status": "error",
+      "docs": 0,
+      "lastLabel": "auth failed",
+      "auto": false
+    },
+    {
+      "id": "kev",
+      "name": "CISA KEV catalog",
+      "kind": "URL",
+      "status": "connected",
+      "docs": 1387,
+      "lastLabel": "30m ago",
+      "auto": true
+    },
+    {
+      "id": "attack",
+      "name": "MITRE ATT&CK Enterprise",
+      "kind": "URL",
+      "status": "connected",
+      "docs": 645,
+      "lastLabel": "2h ago",
+      "auto": true
+    }
+  ],
+  "jobs": [
+    {
+      "id": "job-7741",
+      "name": "2026-Q2-threat-landscape.pdf",
+      "source": "Manual upload",
+      "sizeLabel": "8.4 MB",
+      "stage": "embedding",
+      "pct": 64,
+      "chunks": 312,
+      "whenLabel": "now"
+    },
+    {
+      "id": "job-7740",
+      "name": "akira-advisory-cluster.json",
+      "source": "MISP — threat-intel-prod",
+      "sizeLabel": "1.1 MB",
+      "stage": "chunking",
+      "pct": 28,
+      "chunks": 0,
+      "whenLabel": "now"
+    },
+    {
+      "id": "job-7739",
+      "name": "IR-0918-evidence-bundle.zip",
+      "source": "AWS S3",
+      "sizeLabel": "42 MB",
+      "stage": "extracting",
+      "pct": 12,
+      "chunks": 0,
+      "whenLabel": "1m ago"
+    },
+    {
+      "id": "job-7738",
+      "name": "nist-csf-2.0-controls.xlsx",
+      "source": "SharePoint",
+      "sizeLabel": "640 KB",
+      "stage": "indexed",
+      "pct": 100,
+      "chunks": 88,
+      "whenLabel": "6m ago"
+    },
+    {
+      "id": "job-7737",
+      "name": "cve-2024-21413-bulletin.html",
+      "source": "NVD CVE feed",
+      "sizeLabel": "120 KB",
+      "stage": "indexed",
+      "pct": 100,
+      "chunks": 9,
+      "whenLabel": "14m ago"
+    },
+    {
+      "id": "job-7736",
+      "name": "pci-dss-v4-mapping.docx",
+      "source": "Confluence",
+      "sizeLabel": "2.2 MB",
+      "stage": "failed",
+      "pct": 0,
+      "chunks": 0,
+      "whenLabel": "22m ago",
+      "error": "Unsupported encoding (UTF-16)"
+    }
+  ],
+  "articles": [
+    {
+      "id": "TI-2291",
+      "title": "APT29 / Midnight Blizzard — credential phishing via device-code flow",
+      "category": "threat-intel",
+      "severity": "critical",
+      "tags": [
+        "APT29",
+        "phishing",
+        "Azure AD",
+        "device-code",
+        "TTP"
+      ],
+      "source": "MISP feed · threat-intel-prod",
+      "updated": "2026-06-06",
+      "author": "intel-pipeline",
+      "confidence": "High",
+      "reads": 1284,
+      "snippet": "Active campaign abusing OAuth device-code authentication to harvest Entra ID tokens. Targets identity admins via Teams lures.",
+      "iocs": [
+        {
+          "type": "domain",
+          "value": "login.micros0ft-device[.]com"
+        },
+        {
+          "type": "ip",
+          "value": "185.220.101.47"
+        },
+        {
+          "type": "sha256",
+          "value": "9f2c…a71b (DeviceCodeHarvester.dll)"
+        },
+        {
+          "type": "email",
+          "value": "it-support@m1crosoft-help[.]net"
+        }
+      ],
+      "body": [
+        {
+          "h": "Summary",
+          "p": "A sustained campaign attributed with high confidence to APT29 is abusing the OAuth 2.0 device authorization grant to phish Entra ID (Azure AD) tokens. Operators initiate a device-code flow, then social-engineer a target into entering the code on a legitimate Microsoft login page — yielding tokens without ever capturing a password or triggering most MFA prompts."
+        },
+        {
+          "h": "Observed TTPs",
+          "p": "Initial contact via Microsoft Teams external chat impersonating internal IT. Lures reference a 'mandatory security update.' Post-compromise, operators enumerate mailbox rules and register a rogue authenticator app for persistence."
+        },
+        {
+          "h": "Detection guidance",
+          "p": "Alert on device-code grants originating from unusual ASN ranges, and on `Add registration` events for authentication methods within 10 minutes of an interactive sign-in. Correlate with the IOCs below."
+        }
+      ],
+      "related": [
+        "PB-118",
+        "POL-204",
+        "CVE-2024-21413"
+      ]
+    },
+    {
+      "id": "CVE-2024-21413",
+      "title": "Microsoft Outlook RCE (Moniker Link) — CVE-2024-21413",
+      "category": "advisories",
+      "severity": "critical",
+      "tags": [
+        "CVE",
+        "Outlook",
+        "RCE",
+        "patch"
+      ],
+      "source": "NVD sync · vendor-advisories",
+      "updated": "2026-05-29",
+      "author": "advisory-bot",
+      "confidence": "Confirmed",
+      "reads": 2041,
+      "cvss": "9.8",
+      "snippet": "Crafted Moniker links bypass Protected View, enabling credential leak and remote code execution in Outlook. Patch available.",
+      "iocs": [],
+      "body": [
+        {
+          "h": "Impact",
+          "p": "CVSS 9.8. A specially crafted email using the file:// moniker with an exclamation mark bypasses Outlook's Protected View, causing NTLM credential disclosure and potential remote code execution on preview."
+        },
+        {
+          "h": "Affected",
+          "p": "Microsoft Outlook 2016 and later, including Microsoft 365 Apps. Exploitation requires no user interaction beyond previewing the message."
+        },
+        {
+          "h": "Remediation",
+          "p": "Apply the February cumulative update. As compensating control, block outbound SMB (TCP 445) at the perimeter and enforce NTLM auditing. See linked playbook for the emergency-patch runbook."
+        }
+      ],
+      "related": [
+        "PB-118",
+        "TI-2291"
+      ]
+    },
+    {
+      "id": "IR-0907",
+      "title": "Postmortem: ransomware staging on EDR-exempt build server (RETRO)",
+      "category": "postmortems",
+      "severity": "high",
+      "tags": [
+        "ransomware",
+        "lateral-movement",
+        "postmortem",
+        "EDR-gap"
+      ],
+      "source": "IR case · jira IR-0907",
+      "updated": "2026-05-18",
+      "author": "k.osei",
+      "confidence": "Internal",
+      "reads": 612,
+      "snippet": "Threat actor dwelled 9 days using a CI build host excluded from EDR. Root cause: stale exclusion list. Contained pre-encryption.",
+      "iocs": [
+        {
+          "type": "ip",
+          "value": "10.40.12.9 (internal pivot)"
+        },
+        {
+          "type": "sha256",
+          "value": "c4d9…1f02 (cobalt beacon)"
+        }
+      ],
+      "body": [
+        {
+          "h": "Timeline",
+          "p": "T+0 initial access via exposed RDP on a contractor laptop. T+2d lateral movement to a Jenkins build host that had been added to the EDR exclusion list 'temporarily' 14 months prior. T+9d staging of encryptor detected by a canary file; contained before execution."
+        },
+        {
+          "h": "Root cause",
+          "p": "An EDR exclusion intended to fix a transient build-performance issue was never removed and never reviewed. The host became an unmonitored beachhead."
+        },
+        {
+          "h": "Corrective actions",
+          "p": "All EDR exclusions now expire after 30 days and require security sign-off to renew. Quarterly exclusion-list review added to the SOC SOP. RDP brokered exclusively through the bastion."
+        }
+      ],
+      "related": [
+        "POL-204",
+        "PB-051"
+      ]
+    },
+    {
+      "id": "PB-118",
+      "title": "Playbook: Business Email Compromise (BEC) response",
+      "category": "playbooks",
+      "severity": "high",
+      "tags": [
+        "BEC",
+        "phishing",
+        "runbook",
+        "containment"
+      ],
+      "source": "Confluence · /sec/playbooks",
+      "updated": "2026-04-22",
+      "author": "soc-team",
+      "confidence": "Approved",
+      "reads": 988,
+      "snippet": "Step-by-step containment for confirmed BEC: revoke sessions, purge mailbox rules, rotate tokens, notify finance, preserve evidence.",
+      "iocs": [],
+      "body": [
+        {
+          "h": "Trigger",
+          "p": "Confirmed unauthorized access to a corporate mailbox, or a fraudulent wire request traced to an internal account."
+        },
+        {
+          "h": "Containment (first 30 min)",
+          "p": "1) Revoke all active sessions for the user. 2) Reset credentials and re-register MFA. 3) Enumerate and delete malicious inbox/forwarding rules. 4) Revoke OAuth grants for unrecognized apps. 5) Freeze any pending wire transfers via Finance."
+        },
+        {
+          "h": "Eradication & recovery",
+          "p": "Hunt for the same IOCs across all mailboxes. Review sign-in logs for the tenant. Restore mailbox rules from a known-good baseline. File a SAR if funds moved."
+        }
+      ],
+      "related": [
+        "TI-2291",
+        "POL-204"
+      ]
+    },
+    {
+      "id": "PB-051",
+      "title": "Runbook: emergency out-of-band patch deployment",
+      "category": "playbooks",
+      "severity": "medium",
+      "tags": [
+        "patching",
+        "change-mgmt",
+        "runbook"
+      ],
+      "source": "Confluence · /sec/playbooks",
+      "updated": "2026-03-30",
+      "author": "platform-sec",
+      "confidence": "Approved",
+      "reads": 433,
+      "snippet": "Compressed change process for actively-exploited CVEs: risk acceptance, phased rollout, rollback criteria, comms.",
+      "iocs": [],
+      "body": [
+        {
+          "h": "When to invoke",
+          "p": "A CVE with CVSS ≥ 8.0 is under active exploitation AND an exploit is publicly available OR observed in your telemetry."
+        },
+        {
+          "h": "Process",
+          "p": "Emergency CAB approval (one VP + security lead). Phased rollout: 5% canary → 25% → 100% with 30-min soak gates. Predefined rollback if error budget breached."
+        }
+      ],
+      "related": [
+        "CVE-2024-21413",
+        "POL-204"
+      ]
+    },
+    {
+      "id": "POL-204",
+      "title": "Identity & Access Management policy — privileged accounts",
+      "category": "policies",
+      "severity": "info",
+      "tags": [
+        "IAM",
+        "PAM",
+        "policy",
+        "least-privilege"
+      ],
+      "source": "GRC · policy-register",
+      "updated": "2026-02-11",
+      "author": "grc-office",
+      "confidence": "Ratified",
+      "reads": 1551,
+      "snippet": "Standards for privileged access: JIT elevation, phishing-resistant MFA, session recording, 90-day access reviews.",
+      "iocs": [],
+      "body": [
+        {
+          "h": "Scope",
+          "p": "All accounts with administrative entitlements over production, identity, or security tooling."
+        },
+        {
+          "h": "Requirements",
+          "p": "Just-in-time elevation via PAM with a maximum 4-hour grant. Phishing-resistant MFA (FIDO2) mandatory. All privileged sessions recorded. Standing access prohibited except break-glass, which is monitored and alerts on use."
+        },
+        {
+          "h": "Review cadence",
+          "p": "Entitlements recertified every 90 days by the resource owner. Orphaned accounts disabled within 24h of detection."
+        }
+      ],
+      "related": [
+        "IR-0907",
+        "COMP-NIST"
+      ]
+    },
+    {
+      "id": "COMP-NIST",
+      "title": "NIST CSF 2.0 — control mapping & evidence index",
+      "category": "compliance",
+      "severity": "info",
+      "tags": [
+        "NIST",
+        "CSF",
+        "controls",
+        "evidence"
+      ],
+      "source": "GRC · compliance-vault",
+      "updated": "2026-01-28",
+      "author": "grc-office",
+      "confidence": "Ratified",
+      "reads": 704,
+      "snippet": "Crosswalk of internal controls to NIST CSF 2.0 functions (Govern, Identify, Protect, Detect, Respond, Recover) with evidence links.",
+      "iocs": [],
+      "body": [
+        {
+          "h": "Purpose",
+          "p": "Single source of truth mapping every internal control to NIST CSF 2.0 and SOC 2 trust criteria, with links to evidence artifacts for audit."
+        },
+        {
+          "h": "Coverage",
+          "p": "Govern 100%, Identify 94%, Protect 91%, Detect 88%, Respond 96%, Recover 82%. Gaps tracked in the GRC backlog with owners and due dates."
+        }
+      ],
+      "related": [
+        "POL-204"
+      ]
+    },
+    {
+      "id": "TI-2310",
+      "title": "Akira ransomware — SonicWall SSL-VPN exploitation cluster",
+      "category": "threat-intel",
+      "severity": "high",
+      "tags": [
+        "Akira",
+        "ransomware",
+        "SonicWall",
+        "VPN",
+        "initial-access"
+      ],
+      "source": "MISP feed · threat-intel-prod",
+      "updated": "2026-06-02",
+      "author": "intel-pipeline",
+      "confidence": "Medium",
+      "reads": 540,
+      "snippet": "Uptick in Akira intrusions via unpatched SonicWall SSL-VPN. Rapid encryption within 24-48h of access. Mitigations enclosed.",
+      "iocs": [
+        {
+          "type": "ip",
+          "value": "45.61.136.12"
+        },
+        {
+          "type": "domain",
+          "value": "akira-decrypt[.]onion"
+        }
+      ],
+      "body": [
+        {
+          "h": "Summary",
+          "p": "Multiple intrusions in the last 14 days share an initial-access vector: unpatched SonicWall SSL-VPN appliances lacking MFA. Time-to-ransom observed as short as 24 hours."
+        },
+        {
+          "h": "Mitigations",
+          "p": "Patch SonicOS to the latest firmware, enforce MFA on all VPN logins, restrict VPN management interfaces from the public internet, and hunt for the IOCs below across firewall logs."
+        }
+      ],
+      "related": [
+        "PB-051",
+        "POL-204"
+      ]
+    }
+  ]
+}

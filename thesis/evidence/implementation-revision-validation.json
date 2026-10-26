@@ -1,0 +1,17 @@
+{
+  "pages": 72,
+  "pdf_sha256": "5a731650266dc1eb012cedacbdf8ebb612a26b713d153d4eb61da6cdeb84907b",
+  "source_files": 55,
+  "source_hash_mismatches": [],
+  "stale_tex_hashes": [],
+  "reviewed_thesis_files": 12,
+  "changed_since_independent_review": [
+    "thesis/appendices.tex"
+  ],
+  "forbidden_or_unresolved_pdf_text": [],
+  "out_of_page_text": [],
+  "current_execution_record_exists": true,
+  "rendered_appendix_pages": [
+    61
+  ]
+}

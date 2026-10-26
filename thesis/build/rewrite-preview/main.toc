@@ -1,0 +1,79 @@
+\babel@toc {english}{}\relax 
+\contentsline {chapter}{Acknowledgements}{i}{chapter*.1}%
+\contentsline {chapter}{Resumo}{iii}{chapter*.2}%
+\babel@toc {portuguese}{}\relax 
+\babel@toc {english}{}\relax 
+\contentsline {chapter}{Abstract}{v}{chapter*.3}%
+\contentsline {chapter}{List of Figures}{xi}{chapter*.5}%
+\contentsline {chapter}{List of Tables}{xiii}{chapter*.6}%
+\contentsline {chapter}{List of Acronyms}{xv}{chapter*.7}%
+\contentsline {chapter}{\numberline {1}Introduction}{1}{chapter.1}%
+\contentsline {section}{\numberline {1.1}Motivation and context}{1}{section.1.1}%
+\contentsline {section}{\numberline {1.2}Research problem and approach}{2}{section.1.2}%
+\contentsline {section}{\numberline {1.3}Objectives and research questions}{2}{section.1.3}%
+\contentsline {section}{\numberline {1.4}Research methodology}{3}{section.1.4}%
+\contentsline {section}{\numberline {1.5}Scope and contribution}{4}{section.1.5}%
+\contentsline {section}{\numberline {1.6}Dissertation organisation}{4}{section.1.6}%
+\contentsline {chapter}{\numberline {2}State of the Art}{7}{chapter.2}%
+\contentsline {section}{\numberline {2.1}Incident response and organisational knowledge}{7}{section.2.1}%
+\contentsline {section}{\numberline {2.2}The incident-response knowledge lifecycle}{8}{section.2.2}%
+\contentsline {section}{\numberline {2.3}Machine learning for retrieval and generation}{9}{section.2.3}%
+\contentsline {subsection}{\numberline {2.3.1}Learned representations and model adaptation}{9}{subsection.2.3.1}%
+\contentsline {subsection}{\numberline {2.3.2}Retrieval and source-grounded generation}{9}{subsection.2.3.2}%
+\contentsline {section}{\numberline {2.4}Related cybersecurity systems}{10}{section.2.4}%
+\contentsline {section}{\numberline {2.5}Reliability, confidentiality, and adversarial content}{12}{section.2.5}%
+\contentsline {section}{\numberline {2.6}Evaluating knowledge access and response decisions}{12}{section.2.6}%
+\contentsline {section}{\numberline {2.7}Synthesis and research gap}{13}{section.2.7}%
+\contentsline {chapter}{\numberline {3}Sentinel KMS: Design and Development}{15}{chapter.3}%
+\contentsline {section}{\numberline {3.1}Design purpose and use cases}{15}{section.3.1}%
+\contentsline {section}{\numberline {3.2}Requirements and design priorities}{15}{section.3.2}%
+\contentsline {section}{\numberline {3.3}Architecture and allocation of responsibilities}{16}{section.3.3}%
+\contentsline {section}{\numberline {3.4}Knowledge organisation and maintenance}{18}{section.3.4}%
+\contentsline {subsection}{\numberline {3.4.1}Articles and curated incident playbooks}{18}{subsection.3.4.1}%
+\contentsline {subsection}{\numberline {3.4.2}Review, publication, and reuse}{18}{subsection.3.4.2}%
+\contentsline {subsection}{\numberline {3.4.3}Maintaining externally supplied knowledge}{19}{subsection.3.4.3}%
+\contentsline {section}{\numberline {3.5}Recoverable ingestion of local and remote sources}{19}{section.3.5}%
+\contentsline {section}{\numberline {3.6}Machine-learning retrieval and incident guidance}{20}{section.3.6}%
+\contentsline {subsection}{\numberline {3.6.1}Combining semantic and lexical retrieval}{20}{subsection.3.6.1}%
+\contentsline {subsection}{\numberline {3.6.2}Establishing the context for an answer}{21}{subsection.3.6.2}%
+\contentsline {subsection}{\numberline {3.6.3}Turning retrieved knowledge into response guidance}{21}{subsection.3.6.3}%
+\contentsline {subsection}{\numberline {3.6.4}Useful behaviour when generation is unavailable}{22}{subsection.3.6.4}%
+\contentsline {subsection}{\numberline {3.6.5}Keeping guidance attached to evidence}{22}{subsection.3.6.5}%
+\contentsline {section}{\numberline {3.7}Analyst interaction and knowledge reuse}{23}{section.3.7}%
+\contentsline {section}{\numberline {3.8}Confidentiality and operational choices}{26}{section.3.8}%
+\contentsline {section}{\numberline {3.9}Chapter synthesis}{26}{section.3.9}%
+\contentsline {chapter}{\numberline {4}Evaluation Design and Current Evidence}{29}{chapter.4}%
+\contentsline {section}{\numberline {4.1}Purpose and evidential boundary}{29}{section.4.1}%
+\contentsline {section}{\numberline {4.2}Available artifacts and executed checks}{30}{section.4.2}%
+\contentsline {subsection}{\numberline {4.2.1}Datasets and evaluation mechanisms}{30}{subsection.4.2.1}%
+\contentsline {subsection}{\numberline {4.2.2}What the offline run establishes}{30}{subsection.4.2.2}%
+\contentsline {subsection}{\numberline {4.2.3}Executed software verification and scripted walkthrough}{31}{subsection.4.2.3}%
+\contentsline {section}{\numberline {4.3}Prospective corpus and comparison design}{32}{section.4.3}%
+\contentsline {section}{\numberline {4.4}Metrics and operational definitions}{33}{section.4.4}%
+\contentsline {subsection}{\numberline {4.4.1}Retrieval quality}{33}{subsection.4.4.1}%
+\contentsline {subsection}{\numberline {4.4.2}Answer quality and safety}{34}{subsection.4.4.2}%
+\contentsline {section}{\numberline {4.5}Expert review and adversarial validation}{35}{section.4.5}%
+\contentsline {section}{\numberline {4.6}Statistical and ethical protocol}{36}{section.4.6}%
+\contentsline {section}{\numberline {4.7}Requirement validation and limitations}{36}{section.4.7}%
+\contentsline {chapter}{\numberline {5}Conclusion}{39}{chapter.5}%
+\contentsline {section}{\numberline {5.1}Conclusions supported by the present work}{39}{section.5.1}%
+\contentsline {section}{\numberline {5.2}Main contributions}{40}{section.5.2}%
+\contentsline {section}{\numberline {5.3}Limitations}{40}{section.5.3}%
+\contentsline {subsection}{\numberline {5.3.1}Literature and argument}{40}{subsection.5.3.1}%
+\contentsline {subsection}{\numberline {5.3.2}Implementation and deployment}{41}{subsection.5.3.2}%
+\contentsline {subsection}{\numberline {5.3.3}Evaluation and generalisation}{41}{subsection.5.3.3}%
+\contentsline {section}{\numberline {5.4}Future work and completion priorities}{41}{section.5.4}%
+\contentsline {section}{\numberline {5.5}Closing statement}{42}{section.5.5}%
+\contentsline {chapter}{\numberline {A}Implementation Evidence and Reproducibility Boundaries}{43}{appendix.A}%
+\contentsline {section}{\numberline {A.1}How the evidence should be read}{43}{section.A.1}%
+\contentsline {section}{\numberline {A.2}Worked design scenario: publication, citation, and withdrawal}{43}{section.A.2}%
+\contentsline {section}{\numberline {A.3}Evidence identity and verification limits}{44}{section.A.3}%
+\contentsline {chapter}{\numberline {B}Source Evidence and Bibliographic Method}{47}{appendix.B}%
+\contentsline {section}{\numberline {B.1}Research inputs and limits of inspection}{47}{section.B.1}%
+\contentsline {section}{\numberline {B.2}Claim-to-source examples}{47}{section.B.2}%
+\contentsline {chapter}{\numberline {C}Proposed Review and Analyst-Study Instruments}{49}{appendix.C}%
+\contentsline {section}{\numberline {C.1}Scenario selection and requirement coverage}{49}{section.C.1}%
+\contentsline {section}{\numberline {C.2}Case review form}{50}{section.C.2}%
+\contentsline {section}{\numberline {C.3}Answer review form}{50}{section.C.3}%
+\contentsline {section}{\numberline {C.4}Analyst task record}{51}{section.C.4}%
+\contentsline {chapter}{References}{53}{section*.8}%

@@ -1,8 +1,0 @@
-{
-  "questionId": "5",
-  "userQuery": "há algum sistema de segurança a distância para informar que estou em perigo",
-  "botResponse": "Sim, existem vários sistemas de segurança a distância que podem ajudá-lo a detectar e responder a ameaças de segurança. Alguns exemplos incluem:\n\n1. **Antivírus e software de detecção de malware**: Utilizam algoritmos avançados para identificar e neutralizar ameaças de malware.\n2. **Firewalls**: Bloqueiam o tráfego de rede indesejado, ajudando a proteger suas informações contra hackers.\n3. **Sistemas de segurança de rede (NPS)**: Monitoram o tráfego de rede para detectar atividades suspeitas e bloqueiam acesso a recursos críticos.\n4. **Sistemas de alerta de segurança**: Enviam notificações para o seu dispositivo ou e-mail se detectam ameaças de segurança, como malware ou atividades de phishing.\n5. **Sistemas de gerenciamento de identidade e acesso (IAM)**: Monitoram as credenciais do usuário e bloqueiam acessos não autorizados.\n6. **Sistemas de detecção de intrusão (IDS)**: Analisam o tráfego de rede para detectar padrões suspeitos e alertar sobre possíveis ameaças.\n\nAlguns exemplos específicos de sistemas de segurança a distância incluem:\n\n* **Google Safe Browsing**: Alerta sobre sites maliciosos.\n* **Microsoft Defender**: Protege contra malware, vírus e outras ameaças.\n* **Kaspersky Safe Internet Banking**: Protege suas informações financeiras contra phishing e malware.\n\nÉ importante lembrar que a segurança cibernética é um processo contínuo e que esses sistemas devem ser atualizados regularmente para garantir a proteção eficaz.",
-  "feedback": "unhelpful",
-  "timestamp": "2025-12-18T15:26:47.274Z",
-  "category": "user_feedback"
-}

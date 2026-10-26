@@ -1,0 +1,203 @@
+\begin{thebibliography}{21}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{\texttt{#1}}
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi: #1}\else
+  \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[Abraham et~al.(2025)Abraham, Bélanger, and Daultrey]{ref098}
+Chon Abraham, France Bélanger, and Sally Daultrey.
+\newblock {Promoting research on cyber threat intelligence sharing in
+  ecosystems}.
+\newblock \emph{Journal of Cybersecurity}, 11\penalty0 (1), 2025.
+\newblock \doi{10.1093/cybsec/tyaf016}.
+\newblock URL \url{https://doi.org/10.1093/cybsec/tyaf016}.
+
+\bibitem[Alhuzali(2025)]{ref033}
+Abeer Alhuzali.
+\newblock {LLM-powered threat intelligence: a retrieval-augmented generation
+  approach for cyber attack investigation}.
+\newblock \emph{PeerJ Computer Science}, 11:\penalty0 e3371, 2025.
+\newblock \doi{10.7717/peerj-cs.3371}.
+\newblock URL \url{https://doi.org/10.7717/peerj-cs.3371}.
+
+\bibitem[Chen et~al.(2024)Chen, Lin, Han, and Sun]{ref038}
+Jiawei Chen, Hongyu Lin, Xianpei Han, and Le~Sun.
+\newblock {Benchmarking Large Language Models in Retrieval-Augmented
+  Generation}.
+\newblock \emph{Proceedings of the AAAI Conference on Artificial Intelligence},
+  38\penalty0 (16):\penalty0 17754--17762, 2024.
+\newblock \doi{10.1609/aaai.v38i16.29728}.
+\newblock URL \url{https://doi.org/10.1609/aaai.v38i16.29728}.
+
+\bibitem[Cormack et~al.(2009)Cormack, Clarke, and Buettcher]{cormack2009rrf}
+Gordon~V. Cormack, Charles L.~A. Clarke, and Stefan Buettcher.
+\newblock {Reciprocal rank fusion outperforms Condorcet and individual rank
+  learning methods}.
+\newblock In \emph{Proceedings of the 32nd International ACM SIGIR Conference
+  on Research and Development in Information Retrieval}, pages 758--759.
+  Association for Computing Machinery, 2009.
+\newblock \doi{10.1145/1571941.1572114}.
+\newblock URL \url{https://doi.org/10.1145/1571941.1572114}.
+
+\bibitem[Dhingra et~al.(2022)Dhingra, Cole, Eisenschlos, Gillick, Eisenstein,
+  and Cohen]{ref060}
+Bhuwan Dhingra, Jeremy~R. Cole, Julian~Martin Eisenschlos, Daniel Gillick,
+  Jacob Eisenstein, and William~W. Cohen.
+\newblock {Time-Aware Language Models as Temporal Knowledge Bases}.
+\newblock \emph{Transactions of the Association for Computational Linguistics},
+  10:\penalty0 257--273, 2022.
+\newblock \doi{10.1162/tacl_a_00459}.
+\newblock URL \url{https://doi.org/10.1162/tacl_a_00459}.
+
+\bibitem[Es et~al.(2024)Es, James, Espinosa~Anke, and Schockaert]{ref039}
+Shahul Es, Jithin James, Luis Espinosa~Anke, and Steven Schockaert.
+\newblock {RAGAs: Automated Evaluation of Retrieval Augmented Generation}.
+\newblock In \emph{Proceedings of the 18th Conference of the European Chapter
+  of the Association for Computational Linguistics: System Demonstrations},
+  pages 150--158. Association for Computational Linguistics, 2024.
+\newblock \doi{10.18653/v1/2024.eacl-demo.16}.
+\newblock URL \url{https://doi.org/10.18653/v1/2024.eacl-demo.16}.
+
+\bibitem[Greshake et~al.(2023)Greshake, Abdelnabi, Mishra, Endres, Holz, and
+  Fritz]{ref045}
+Kai Greshake, Sahar Abdelnabi, Shailesh Mishra, Christoph Endres, Thorsten
+  Holz, and Mario Fritz.
+\newblock {Not What You've Signed Up For: Compromising Real-World
+  LLM-Integrated Applications with Indirect Prompt Injection}.
+\newblock In \emph{Proceedings of the 16th ACM Workshop on Artificial
+  Intelligence and Security}, pages 79--90. ACM, 2023.
+\newblock \doi{10.1145/3605764.3623985}.
+\newblock URL \url{https://doi.org/10.1145/3605764.3623985}.
+
+\bibitem[Ibiyo et~al.(2025)Ibiyo, Louangdy, Nguyen, Di~Sipio, and
+  Di~Ruscio]{ref023}
+Motunrayo~Osatohanmen Ibiyo, Thinakone Louangdy, Phuong~T. Nguyen, Claudio
+  Di~Sipio, and Davide Di~Ruscio.
+\newblock {Detecting Malicious Source Code in PyPI Packages with LLMs: Does RAG
+  Come in Handy}.
+\newblock In \emph{Proceedings of the 29th International Conference on
+  Evaluation and Assessment in Software Engineering}, pages 653--658. ACM,
+  2025.
+\newblock \doi{10.1145/3756681.3757042}.
+\newblock URL \url{https://doi.org/10.1145/3756681.3757042}.
+
+\bibitem[Ipe(2003)]{ref095}
+Minu Ipe.
+\newblock {Knowledge Sharing in Organizations: A Conceptual Framework}.
+\newblock \emph{Human Resource Development Review}, 2\penalty0 (4):\penalty0
+  337--359, 2003.
+\newblock \doi{10.1177/1534484303257985}.
+\newblock URL \url{https://doi.org/10.1177/1534484303257985}.
+
+\bibitem[Lewis et~al.(2020)Lewis, Perez, Piktus, Petroni, Karpukhin, Goyal,
+  K\"{u}ttler, Lewis, Yih, Rockt\"{a}schel, Riedel, and Kiela]{lewis2020rag}
+Patrick Lewis, Ethan Perez, Aleksandra Piktus, Fabio Petroni, Vladimir
+  Karpukhin, Naman Goyal, Heinrich K\"{u}ttler, Mike Lewis, Wen-tau Yih, Tim
+  Rockt\"{a}schel, Sebastian Riedel, and Douwe Kiela.
+\newblock {Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks}.
+\newblock In \emph{Advances in Neural Information Processing Systems},
+  volume~33, 2020.
+\newblock URL
+  \url{https://proceedings.neurips.cc/paper/2020/hash/6b493230205f780e1bc26945df7481e5-Abstract.html}.
+
+\bibitem[Li et~al.(2024)Li, Shi, Pan, Zhao, and Sun]{ref076}
+Hongyi Li, Ze~Shi, Chengwei Pan, Di~Zhao, and Nan Sun.
+\newblock {Cybersecurity knowledge graphs construction and quality assessment}.
+\newblock \emph{Complex \& Intelligent Systems}, 10\penalty0 (1):\penalty0
+  1201--1217, 2024.
+\newblock \doi{10.1007/s40747-023-01205-1}.
+\newblock URL \url{https://doi.org/10.1007/s40747-023-01205-1}.
+
+\bibitem[Loumachi et~al.(2025)Loumachi, Ghanem, and Ferrag]{ref011}
+Fatma~Yasmine Loumachi, Mohamed~Chahine Ghanem, and Mohamed~Amine Ferrag.
+\newblock {Advancing Cyber Incident Timeline Analysis Through
+  Retrieval-Augmented Generation and Large Language Models}.
+\newblock \emph{Computers}, 14\penalty0 (2):\penalty0 67, 2025.
+\newblock \doi{10.3390/computers14020067}.
+\newblock URL \url{https://doi.org/10.3390/computers14020067}.
+
+\bibitem[Nelson et~al.(2025)Nelson, Rekhi, Souppaya, and
+  Scarfone]{nist2025incident}
+Alex Nelson, Sanjay Rekhi, Murugiah Souppaya, and Karen Scarfone.
+\newblock {Incident Response Recommendations and Considerations for
+  Cybersecurity Risk Management: A CSF 2.0 Community Profile}.
+\newblock Technical Report NIST SP 800-61r3, National Institute of Standards
+  and Technology, April 2025.
+\newblock URL \url{https://doi.org/10.6028/NIST.SP.800-61r3}.
+
+\bibitem[Osman et~al.(2022)Osman, Mohd~Noah, and Saad]{ref094}
+Mohamad~Amin Osman, Shahrul~Azman Mohd~Noah, and Saidah Saad.
+\newblock {Ontology-Based Knowledge Management Tools for Knowledge Sharing in
+  Organization—A Review}.
+\newblock \emph{IEEE Access}, 10:\penalty0 43267--43283, 2022.
+\newblock \doi{10.1109/ACCESS.2022.3163758}.
+\newblock URL \url{https://doi.org/10.1109/ACCESS.2022.3163758}.
+
+\bibitem[Peffers et~al.(2007)Peffers, Tuunanen, Rothenberger, and
+  Chatterjee]{peffers2007}
+Ken Peffers, Tuure Tuunanen, Marcus~A. Rothenberger, and Samir Chatterjee.
+\newblock {A Design Science Research Methodology for Information Systems
+  Research}.
+\newblock \emph{Journal of Management Information Systems}, 24\penalty0
+  (3):\penalty0 45--77, 2007.
+\newblock \doi{10.2753/MIS0742-1222240302}.
+\newblock URL \url{https://doi.org/10.2753/MIS0742-1222240302}.
+
+\bibitem[Reimers and Gurevych(2019)]{reimers2019sentencebert}
+Nils Reimers and Iryna Gurevych.
+\newblock {Sentence-BERT: Sentence Embeddings using Siamese BERT-Networks}.
+\newblock In \emph{Proceedings of the 2019 Conference on Empirical Methods in
+  Natural Language Processing and the 9th International Joint Conference on
+  Natural Language Processing (EMNLP-IJCNLP)}, pages 3982--3992, Hong Kong,
+  China, November 2019. Association for Computational Linguistics.
+\newblock \doi{10.18653/v1/D19-1410}.
+\newblock URL \url{https://aclanthology.org/D19-1410/}.
+
+\bibitem[Saad-Falcon et~al.(2024)Saad-Falcon, Khattab, Potts, and
+  Zaharia]{ref040}
+Jon Saad-Falcon, Omar Khattab, Christopher Potts, and Matei Zaharia.
+\newblock {ARES: An Automated Evaluation Framework for Retrieval-Augmented
+  Generation Systems}.
+\newblock In \emph{Proceedings of the 2024 Conference of the North American
+  Chapter of the Association for Computational Linguistics: Human Language
+  Technologies (Volume 1: Long Papers)}, pages 338--354. Association for
+  Computational Linguistics, 2024.
+\newblock \doi{10.18653/v1/2024.naacl-long.20}.
+\newblock URL \url{https://doi.org/10.18653/v1/2024.naacl-long.20}.
+
+\bibitem[Sharma et~al.(2025)Sharma, Ghawaly, McCleary, Webb, and
+  Baggili]{ref030}
+Binaya Sharma, James Ghawaly, Kyle McCleary, Andrew~M. Webb, and Ibrahim
+  Baggili.
+\newblock {ForensicLLM: A local large language model for digital forensics}.
+\newblock \emph{Forensic Science International: Digital Investigation},
+  52:\penalty0 301872, 2025.
+\newblock \doi{10.1016/j.fsidi.2025.301872}.
+\newblock URL \url{https://doi.org/10.1016/j.fsidi.2025.301872}.
+
+\bibitem[Simoni et~al.(2025)Simoni, Saracino, P, and Conti]{ref001}
+Marco Simoni, Andrea Saracino, Vinod P, and Mauro Conti.
+\newblock {MoRSE: Bridging the Gap in Cybersecurity Expertise with Retrieval
+  Augmented Generation}.
+\newblock In \emph{Proceedings of the 40th ACM/SIGAPP Symposium on Applied
+  Computing}, pages 1213--1222. ACM, 2025.
+\newblock \doi{10.1145/3672608.3707898}.
+\newblock URL \url{https://doi.org/10.1145/3672608.3707898}.
+
+\bibitem[Takahashi and Kadobayashi(2015)]{ref074}
+Takeshi Takahashi and Youki Kadobayashi.
+\newblock {Reference Ontology for Cybersecurity Operational Information}.
+\newblock \emph{The Computer Journal}, 58\penalty0 (10):\penalty0 2297--2312,
+  2015.
+\newblock \doi{10.1093/comjnl/bxu101}.
+\newblock URL \url{https://doi.org/10.1093/comjnl/bxu101}.
+
+\bibitem[Yeboah(2023)]{ref093}
+Asiamah Yeboah.
+\newblock {Knowledge sharing in organization: A systematic review}.
+\newblock \emph{Cogent Business \& Management}, 10\penalty0 (1), 2023.
+\newblock \doi{10.1080/23311975.2023.2195027}.
+\newblock URL \url{https://doi.org/10.1080/23311975.2023.2195027}.
+
+\end{thebibliography}

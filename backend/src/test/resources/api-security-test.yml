@@ -1,0 +1,34 @@
+# Hermetic integration configuration: deliberately does not import .env.
+spring:
+  ai:
+    model:
+      chat: none
+      embedding: none
+      moderation: none
+      image: none
+      audio:
+        speech: none
+        transcription: none
+    vectorstore:
+      pgvector:
+        initialize-schema: false
+        schema-name: public
+        table-name: vector_store
+        dimensions: 1024
+  datasource:
+    hikari:
+      connection-init-sql: SET search_path TO public, extensions
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: none
+app:
+  cors:
+    allowed-origins: http://localhost:5173
+  seed:
+    enabled: false
+  ingest:
+    worker-enabled: false
+    simulate-latency-ms: 60000
+  nvd:
+    sync-enabled: false

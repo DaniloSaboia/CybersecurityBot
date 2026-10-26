@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Structured logging for Sentinel KMS.
+
+  LOG_JSON=true  -> one JSON object per line (logstash encoder) for collectors
+                    like Loki / ELK / CloudWatch. Set by default in the Docker
+                    image; enable anywhere with the environment variable.
+  default        -> human-friendly console pattern for local development.
+-->
+<configuration>
+    <springProperty scope="context" name="appName" source="spring.application.name" defaultValue="sentinel-kms"/>
+    <springProperty scope="context" name="logJson" source="LOG_JSON" defaultValue="false"/>
+
+    <!-- Avoid Janino expressions and unsupported conditionals inside appenders.
+         LOG_JSON must be the literal true or false (the documented contract). -->
+    <appender name="CONSOLE_true" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <customFields>{"app":"${appName}"}</customFields>
+            <includeMdcKeyName>traceId</includeMdcKeyName>
+            <includeMdcKeyName>spanId</includeMdcKeyName>
+        </encoder>
+    </appender>
+    <appender name="CONSOLE_false" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} %-5level [%thread] %logger{24} — %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <root level="INFO">
+        <appender-ref ref="CONSOLE_${logJson}"/>
+    </root>
+</configuration>

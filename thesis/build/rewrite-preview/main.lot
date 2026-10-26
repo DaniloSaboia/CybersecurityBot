@@ -1,0 +1,18 @@
+\babel@toc {english}{}\relax 
+\babel@toc {portuguese}{}\relax 
+\babel@toc {english}{}\relax 
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {2.1}{\ignorespaces Knowledge sources and evaluation focus in selected cybersecurity studies.}}{11}{table.2.1}%
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {3.1}{\ignorespaces Requirements guiding the design of Sentinel.}}{16}{table.3.1}%
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {4.1}{\ignorespaces Observed engineering verification on the modified working tree, 29 September 2026; test counts are not participants or evaluated security questions. The report gate is a distinct synthetic-check layer, not part of the application-suite totals.}}{31}{table.4.1}%
+\contentsline {table}{\numberline {4.2}{\ignorespaces Requirement ID to implementation/test evidence and current status, linked to Chapter~\ref {ch:system}, Table~\ref {tab:system-requirements}. Passing tests establish selected assertions only; empirical acceptance remains pending.}}{38}{table.4.2}%
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {A.1}{Design-scenario checkpoints and their evidential status; these are not outcomes of an executed end-to-end case.}}{44}{table.A.1}%
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {B.1}{Illustrative claim-to-source boundaries in the literature argument.}}{47}{table.B.1}%
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {C.1}{\ignorespaces Reader-facing scenario prompts mapped to the requirement identifiers in Table~\ref {tab:evaluation-status}; no expert or analyst outcomes are reported.}}{49}{table.C.1}%

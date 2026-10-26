@@ -1,0 +1,73 @@
+{
+  "recorded_at_utc": "2026-09-29T23:24:48.636560+00:00",
+  "validation_passed": true,
+  "errors": [],
+  "chapters": 5,
+  "supplied_reference_records": 100,
+  "total_bibtex_records_including_supplementary": 105,
+  "unique_cited_references": 21,
+  "cited_keys": [
+    "cormack2009rrf",
+    "lewis2020rag",
+    "nist2025incident",
+    "peffers2007",
+    "ref001",
+    "ref011",
+    "ref023",
+    "ref030",
+    "ref033",
+    "ref038",
+    "ref039",
+    "ref040",
+    "ref045",
+    "ref060",
+    "ref074",
+    "ref076",
+    "ref093",
+    "ref094",
+    "ref095",
+    "ref098",
+    "reimers2019sentencebert"
+  ],
+  "uncited_unresolved_records": [
+    "ref002",
+    "ref010",
+    "ref049",
+    "ref050",
+    "ref051",
+    "ref057",
+    "ref059",
+    "ref063",
+    "ref064",
+    "ref065"
+  ],
+  "bibliography_matches_citations": true,
+  "example_dissertation_absent": true,
+  "underfull_box_warnings": 0,
+  "pdf_sha256": "4ff247bf1c32b9020fa1b4ddf84320a38a356bf1bb52d049a23140dfbf90d29b",
+  "figure_sha256": {
+    "main-assistant-start-mocked.png": "e4cd5b8ed0586c4547561c787e5feaceeafed90bf5b2fd784c290fd83c463ee6",
+    "main-cited-answer-mocked.png": "77cc1c5a3976ce8308af3d954efe8ea544d40846765d39db382466415e7b8c8a",
+    "main-evidence-detail-mocked.png": "6144e9d2b66322ceb69e1fd267f1c279c93291c27eb63f694218a84c2c38d112",
+    "main-evidence-dialog-mocked.png": "23dd8af566347e26a5355d2571a28f631f70e5336b89ffdc2adeaf66f28a39b3",
+    "main-ingestion-mocked.png": "35acac4d3483d1518b960b0a3ede93d20fe22a9d6f1a96cbead373c070892eae",
+    "main-knowledge-base-mocked.png": "0e97f7bf37a7a96e63793bd6d0bf42d71ca0972fbbc694648b08fe3078dfec44"
+  },
+  "tex_sha256": {
+    "acronyms.tex": "1cf8b0a0ab43844b1f6e5ddacd37d81c272d963c1e98b81cb5bd6c0a69b00c3e",
+    "appendices.tex": "af7117ab1f5cc3f54e92befd480deb3a011051ede2a5c15f147f1ac2cc0feca9",
+    "frontmatter.tex": "5f1cec5108261e2992d7227d72937caa9866dfe498c3fca06798e128056e0b41",
+    "main.tex": "96104e7fe94ad486260c615b995ed058c93b32597c664879407d3f91967c1782",
+    "metadata.tex": "1f58037acac4d3c8920ed7c4fb4c580bfc79dbfe2f90936c52d03a7e747b190e",
+    "chapters/01-introduction.tex": "245b354b00e0d9b136550a7273252cced5d3431632e9f397879aaac1714a5e45",
+    "chapters/02-literature.tex": "0b7f594182c3e59ae8167e3e1938341ff749a8ba646fd3b80492bbf4ede4ac3f",
+    "chapters/03-system.tex": "8fcafb5ddbc5630079cfd968a1f2258fa2b52dc6910d0df7ff58025895914f22",
+    "chapters/04-evaluation.tex": "622b3f017a9af6947e9ff939a0182900b587996f41ea9649ba978a8e7ea4c226",
+    "chapters/05-conclusion.tex": "9bc4336071d1b1031c656d9903164ca64bc4e01a5c5f78b7a72fd2ef9f629951"
+  },
+  "limitations": [
+    "Structural/citation-link validation is not semantic entailment review",
+    "The researcher confirms completed model and human studies; their records await integration",
+    "Personal and institutional metadata remain unconfirmed; this is not a submission-ready manuscript"
+  ]
+}

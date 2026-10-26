@@ -1,0 +1,159 @@
+server:
+  port: 8080
+  shutdown: graceful
+
+spring:
+  config:
+    # Treat the repository-level .env as a Spring properties file when running
+    # Maven from backend/, while still allowing a service-local .env.
+    import: "optional:file:.env[.properties],optional:file:../.env[.properties]"
+  application:
+    name: sentinel-kms
+  profiles:
+    # default provider stack; override with SPRING_PROFILES_ACTIVE=local
+    active: ${SPRING_PROFILES_ACTIVE:mistral}
+
+  task:
+    scheduling:
+      pool:
+        size: 4
+
+  servlet:
+    multipart:
+      # uploads above this are rejected before hitting the ingest pipeline
+      max-file-size: ${UPLOAD_MAX_FILE_SIZE:20MB}
+      max-request-size: 25MB
+
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://host.docker.internal:54322/postgres}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgres}
+    hikari:
+      maximum-pool-size: 10
+      # Supabase installs pgvector in `extensions`; make its types/operators
+      # resolvable for Spring AI and the direct hybrid-search SQL.
+      connection-init-sql: SET search_path TO public, extensions
+
+  jpa:
+    open-in-view: false
+    hibernate:
+      # The Supabase migration is the source of truth. We do NOT let Hibernate
+      # touch the schema. (validate can false-positive on text[]/jsonb columns;
+      # tighten to `validate` once you've confirmed it passes for your PG.)
+      ddl-auto: none
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+          lob:
+            non_contextual_creation: true
+
+  ai:
+    # ---- provider selection (overridden per-profile) ----
+    model:
+      chat: ${AI_CHAT_PROVIDER:openai}
+      embedding: ${AI_EMBEDDING_PROVIDER:mistral}
+      # Unused starter modalities otherwise auto-create clients requiring keys.
+      moderation: none
+      image: none
+      audio:
+        speech: none
+        transcription: none
+    openai:
+      base-url: ${OPENROUTER_BASE_URL:https://openrouter.ai/api/v1}
+      api-key: ${OPENROUTER_API_KEY:}
+      chat:
+        completions-path: /chat/completions
+        options:
+          model: ${OPENROUTER_CHAT_MODEL:openrouter/free}
+          temperature: 0.2
+    # ---- pgvector store (schema created by the Supabase migration) ----
+    vectorstore:
+      pgvector:
+        initialize-schema: false
+        schema-name: public
+        table-name: vector_store
+        dimensions: 1024
+        index-type: HNSW
+        distance-type: COSINE_DISTANCE
+
+# ---- application-specific knobs ----
+app:
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173,http://localhost:3000}
+  security:
+    jwks-uri: ${SUPABASE_JWKS_URI:http://host.docker.internal:54321/auth/v1/.well-known/jwks.json}
+    # Supabase access tokens carry aud:"authenticated"; validating it also
+    # rejects anon/service keys used as bearer tokens. Empty disables the check.
+    jwt-audience: ${SUPABASE_JWT_AUDIENCE:authenticated}
+    # Optional stricter check; blank by default because the local issuer varies
+    # (127.0.0.1 vs localhost vs host.docker.internal).
+    jwt-issuer: ${SUPABASE_JWT_ISSUER:}
+  rag:
+    top-k: ${RAG_TOP_K:6}
+    min-score: ${RAG_MIN_SCORE:0.30}
+    max-context-chars: 9000
+    # recent turns replayed into the prompt for multi-turn memory
+    history-turns: ${RAG_HISTORY_TURNS:4}
+    # rewrite multi-turn follow-ups into standalone retrieval questions
+    query-rewrite-enabled: ${RAG_QUERY_REWRITE:true}
+    # LLM relevance re-ranking of the fused candidate window (extra model call)
+    rerank-enabled: ${RAG_RERANK:false}
+    rerank-window: ${RAG_RERANK_WINDOW:10}
+  ratelimit:
+    # per-user, per-minute caps on the LLM-backed surfaces
+    chat-per-minute: ${RATELIMIT_CHAT_PER_MINUTE:12}
+    ingest-per-minute: ${RATELIMIT_INGEST_PER_MINUTE:6}
+  metrics:
+    # /actuator/prometheus requires auth by default; open only on trusted networks
+    open: ${METRICS_OPEN:false}
+  ingest:
+    chunk-size: 1200
+    chunk-overlap: 150
+    # simulate stage latency so the UI shows progress on seeded/demo jobs
+    simulate-latency-ms: 1200
+    # upload extension allowlist (Tika handles all of these)
+    allowed-extensions: pdf,txt,md,html,htm,doc,docx,json,csv,eml,log,xml,rtf,ppt,pptx,xls,xlsx
+    # URL imports: response body cap (bytes)
+    url-max-bytes: 2097152
+  feeds:
+    daily-enabled: ${FEED_SYNC_ENABLED:false}
+    daily-cron: ${FEED_SYNC_CRON:0 0 3 * * *}
+    zone: ${FEED_SYNC_ZONE:UTC}
+    max-changes-per-run: ${FEED_SYNC_MAX_CHANGES:10}
+    poll-ms: 7000
+  nvd:
+    # NVD throttles anonymous requests hard; an API key lifts the limit
+    api-key: ${NVD_API_KEY:}
+    sync-enabled: ${NVD_SYNC_ENABLED:false}
+    sync-cron: "0 0 3 * * *"
+    sync-days: 2
+    sync-max: 50
+  seed:
+    # Opt in only for a demonstration environment. Connectors are provisioned regardless.
+    enabled: ${DEMO_SEED_ENABLED:false}
+  knowledge-pack:
+    # Curated response guidance is independent of the optional demo seed.
+    enabled: ${KNOWLEDGE_PACK_ENABLED:true}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+  metrics:
+    tags:
+      application: ${spring.application.name}
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+
+logging:
+  level:
+    com.sentinel.kms: INFO
+    org.springframework.ai: INFO
