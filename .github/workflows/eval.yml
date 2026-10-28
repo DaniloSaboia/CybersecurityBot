@@ -47,7 +47,7 @@ jobs:
           python3 scripts/ci/quality_gate.py retrieval eval-report.json
       - name: Preserve retrieval report
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: live-retrieval-report
           path: eval-report.json
