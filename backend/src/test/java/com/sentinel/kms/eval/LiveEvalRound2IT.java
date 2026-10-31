@@ -286,13 +286,24 @@ class LiveEvalRound2IT {
         m.put("article", articleId);
         try {
             lifecycle.expire(ADMIN, articleId, new KnowledgeLifecycleDtos.TransitionRequest(
-                    stateVersion(articleId), null, null, "evaluation_revocation"));
+                    stateVersion(articleId), null, null, "EVALUATION_REVOCATION"));
             m.put("expired", true);
         } catch (Exception e) {
             m.put("expired", false);
             m.put("error", e.toString());
         }
         return m;
+    }
+
+    /** Expires every still-active fixture article whose id starts with the prefix (fixtures cannot be deleted). */
+    List<Map<String, Object>> expireAll(String prefix) {
+        var out = new ArrayList<Map<String, Object>>();
+        for (String id : jdbc.queryForList(
+                "select article_id from article_governance where article_id like ? and lifecycle_status = 'active' order by 1",
+                String.class, prefix + "%")) {
+            out.add(expire(id));
+        }
+        return out;
     }
 
     // ---------------------------------------------------------------- 1. corpus
@@ -543,6 +554,9 @@ class LiveEvalRound2IT {
                     + "on conflict (workspace_id, subject) do nothing", UUID.randomUUID().toString(), m[0], m[1], m[2]);
         }
 
+        // Fixtures of earlier runs cannot be deleted; hide them before measuring.
+        out.put("preClean", expireAll("EVAL-"));
+
         // 6a. Indirect injection: payloads inside ingested passages.
         var injArticles = new ArrayList<Article>();
         for (Injection inj : INJECTIONS) {
@@ -682,10 +696,8 @@ class LiveEvalRound2IT {
 
         // 6e. Cleanup: hide the fixtures so the corpus returns to the eight seed articles.
         var cleanup = new ArrayList<Map<String, Object>>();
-        for (Injection inj : INJECTIONS) {
-            cleanup.add(expire(inj.id()));
-        }
-        cleanup.add(expire(wsb));
+        cleanup.addAll(expireAll("INJ-"));
+        cleanup.addAll(expireAll("EVAL-"));
         out.put("cleanup", cleanup);
         out.put("visibleAfterCleanup", articleIds(retrieve("what documents do we have", null, null, 50, EVAL_USER)));
         write("disclosureSafety", out);
