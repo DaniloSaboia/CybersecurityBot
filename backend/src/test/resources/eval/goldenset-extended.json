@@ -1,0 +1,107 @@
+[
+  {
+    "id": "kev-outlook-rce-p",
+    "question": "Explain the Moniker Link bug in Outlook and the way attackers trigger it.",
+    "expectedArticleIds": ["CVE-2024-21413"],
+    "category": null,
+    "minSeverity": null
+  },
+  {
+    "id": "apt29-device-code-p",
+    "question": "Describe how Midnight Blizzard steals Entra ID tokens using OAuth device codes.",
+    "expectedArticleIds": ["TI-2291"],
+    "category": null,
+    "minSeverity": null
+  },
+  {
+    "id": "ransomware-build-server-p",
+    "question": "Summarise the postmortem of the ransomware that was staged on the build server without EDR coverage.",
+    "expectedArticleIds": ["IR-0907"],
+    "category": null,
+    "minSeverity": null
+  },
+  {
+    "id": "bec-response-p",
+    "question": "Someone's mailbox was taken over to redirect invoice payments; which playbook steps apply?",
+    "expectedArticleIds": ["PB-118"],
+    "category": null,
+    "minSeverity": null
+  },
+  {
+    "id": "emergency-patching-p",
+    "question": "What is the runbook for pushing an urgent fix outside the normal patch window?",
+    "expectedArticleIds": ["PB-051"],
+    "category": null,
+    "minSeverity": null
+  },
+  {
+    "id": "privileged-accounts-p",
+    "question": "Which rules apply to admin accounts under our identity and access management policy?",
+    "expectedArticleIds": ["POL-204"],
+    "category": null,
+    "minSeverity": null
+  },
+  {
+    "id": "nist-csf-mapping-p",
+    "question": "Is there an index that maps our controls and evidence to the NIST Cybersecurity Framework?",
+    "expectedArticleIds": ["COMP-NIST"],
+    "category": null,
+    "minSeverity": null
+  },
+  {
+    "id": "akira-sonicwall-p",
+    "question": "What do we know about the Akira group's attacks against SonicWall VPN appliances?",
+    "expectedArticleIds": ["TI-2310"],
+    "category": null,
+    "minSeverity": null
+  },
+  {
+    "id": "scoped-advisories-only-p",
+    "question": "Give me the most urgent threat and vulnerability items to act on.",
+    "expectedArticleIds": ["CVE-2024-21413", "TI-2291", "TI-2310"],
+    "category": null,
+    "minSeverity": "critical"
+  },
+  {
+    "id": "scoped-playbooks-only-p",
+    "question": "Show me the incident response runbooks available in the knowledge base.",
+    "expectedArticleIds": ["PB-118", "PB-051"],
+    "category": "playbooks",
+    "minSeverity": null
+  },
+  {
+    "id": "unanswerable-byod",
+    "question": "What is our bring-your-own-device policy for personal laptops?",
+    "expectedArticleIds": [],
+    "category": null,
+    "minSeverity": null
+  },
+  {
+    "id": "unanswerable-k8s-tokens",
+    "question": "How do we rotate Kubernetes service account tokens in the production cluster?",
+    "expectedArticleIds": [],
+    "category": null,
+    "minSeverity": null
+  },
+  {
+    "id": "unanswerable-red-team",
+    "question": "What were the main findings of last year's red-team exercise?",
+    "expectedArticleIds": [],
+    "category": null,
+    "minSeverity": null
+  },
+  {
+    "id": "unanswerable-cisco-asa",
+    "question": "Which CVEs currently affect our Cisco ASA firewalls?",
+    "expectedArticleIds": [],
+    "category": null,
+    "minSeverity": null
+  },
+  {
+    "id": "unanswerable-physical-breach",
+    "question": "Who do we call for a physical security breach at the data centre?",
+    "expectedArticleIds": [],
+    "category": null,
+    "minSeverity": null
+  }
+]

@@ -47,6 +47,12 @@ public class SpringAiEmbeddingIndexService implements EmbeddingIndexService {
     private final TransactionTemplate transactionTemplate;
     private final KnowledgeAuditService audit;
     private final ObjectMapper mapper = new ObjectMapper();
+    // Evaluation switch: "hybrid" (default), "vector" or "lexical" runs one leg only.
+    private volatile String legs = "hybrid";
+
+    public void setLegs(String legs) {
+        this.legs = legs == null ? "hybrid" : legs;
+    }
 
     /** Production constructor: keeps remote embedding outside the final DB transaction. */
     @Autowired
@@ -501,8 +507,8 @@ public class SpringAiEmbeddingIndexService implements EmbeddingIndexService {
                 || filters.minSeverity().isBlank() ? null : RetrievalFilters.severityRank(filters.minSeverity());
         int candidateLimit = topK > 100 ? 200 : Math.max(1, topK * 2);
 
-        List<HybridRanker.LegRow> vectorLeg;
-        try {
+        List<HybridRanker.LegRow> vectorLeg = List.of();
+        if (!"lexical".equals(legs)) try {
             float[] vector = embeddingModel.embed(query);
             String literal = toVectorLiteral(vector);
             vectorLeg = jdbcTemplate.query("""
@@ -535,10 +541,16 @@ public class SpringAiEmbeddingIndexService implements EmbeddingIndexService {
         }
 
         List<HybridRanker.LegRow> ftsLeg = List.of();
-        try {
+        // The column is indexed with the 'simple' configuration (no stemming, no stop
+        // words).  A sentence-form question therefore needs its stop words removed and
+        // its terms OR-ed with prefix matching, otherwise every word must occur and the
+        // leg returns nothing; the 'english' parser only supplies the stop-word list.
+        if (!"vector".equals(legs)) try {
             ftsLeg = jdbcTemplate.query("""
                             with request_context as (select cast(? as text) as subject),
-                            query_terms as (select websearch_to_tsquery('simple', ?) as q)
+                            query_terms as (
+                                select to_tsquery('simple', string_agg(quote_literal(lexeme) || ':*', ' | ')) as q
+                                from unnest(tsvector_to_array(to_tsvector('english', cast(? as text)))) as lexeme)
                             select vs.id::text, vs.content, %s as metadata,
                                    ts_rank(vs.content_tsv, query_terms.q) as score
                             %s
