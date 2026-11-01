@@ -9,6 +9,7 @@ import org.springframework.ai.document.Document;
 import org.springframework.ai.embedding.EmbeddingModel;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
@@ -19,6 +20,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -52,6 +54,16 @@ public class SpringAiEmbeddingIndexService implements EmbeddingIndexService {
 
     public void setLegs(String legs) {
         this.legs = legs == null ? "hybrid" : legs;
+    }
+
+    // Passages of each retrieved article revision returned with its hit (0 disables). One
+    // section per passage means a deadline or approval rule in a later section is never
+    // ranked on its own; the held-out answer run showed those facts were missed.
+    private volatile int articlePassages = 8;
+
+    @Value("${app.rag.article-passages:8}")
+    public void setArticlePassages(int articlePassages) {
+        this.articlePassages = Math.max(0, articlePassages);
     }
 
     /** Production constructor: keeps remote embedding outside the final DB transaction. */
@@ -578,7 +590,57 @@ public class SpringAiEmbeddingIndexService implements EmbeddingIndexService {
         for (HybridRanker.LegRow row : HybridRanker.merge(vectorLeg, ftsLeg, topK)) {
             out.add(new RetrievedChunk(row.content(), row.score(), parseMetadata(row.metadataJson())));
         }
+        if (articlePassages > 0 && !out.isEmpty()) {
+            out = withArticlePassages(subject, out);
+        }
         recordRetrievalAudit(subject, vectorLeg.size(), ftsLeg.size(), out.size());
+        return out;
+    }
+
+    /**
+     * Replaces each article hit by its revision's passages in document order, at the rank of the
+     * article's first hit, so the article order of the ranking is unchanged. The siblings pass the
+     * same governed joins as the legs; if that lookup fails the hit is kept alone.
+     */
+    private List<RetrievedChunk> withArticlePassages(String subject, List<RetrievedChunk> hits) {
+        List<RetrievedChunk> out = new ArrayList<>();
+        Set<String> expanded = new HashSet<>();
+        for (RetrievedChunk hit : hits) {
+            Object revision = hit.metadata() == null ? null : hit.metadata().get("article_revision_id");
+            if (revision == null || hit.articleId() == null) {
+                out.add(hit);
+                continue;
+            }
+            if (!expanded.add(revision.toString())) {
+                continue;
+            }
+            List<HybridRanker.LegRow> siblings = List.of();
+            try {
+                siblings = jdbcTemplate.query("""
+                                with request_context as (select cast(? as text) as subject)
+                                select vs.id::text, vs.content, %s as metadata, 0.0 as score
+                                %s
+                                where %s
+                                  and vs.metadata->>'article_revision_id' = ?
+                                  and (vs.metadata->>'chunk_index') ~ '^[0-9]+$'
+                                order by (vs.metadata->>'chunk_index')::integer
+                                limit ?""".formatted(governedMetadataJson(), governedFromClause(),
+                                visibleArticlePredicate()),
+                        (rs, n) -> new HybridRanker.LegRow(
+                                rs.getString("id"), rs.getString("content"),
+                                rs.getString("metadata"), rs.getDouble("score"), false),
+                        subject, revision.toString(), articlePassages);
+            } catch (Exception e) {
+                siblings = List.of();
+            }
+            if (siblings == null || siblings.isEmpty()) {
+                out.add(hit);
+                continue;
+            }
+            for (HybridRanker.LegRow row : siblings) {
+                out.add(new RetrievedChunk(row.content(), hit.score(), parseMetadata(row.metadataJson())));
+            }
+        }
         return out;
     }
 

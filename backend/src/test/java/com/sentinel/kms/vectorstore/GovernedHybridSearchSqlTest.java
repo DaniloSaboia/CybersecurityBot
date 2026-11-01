@@ -80,4 +80,39 @@ class GovernedHybridSearchSqlTest {
 
         verifyNoInteractions(embeddingModel, jdbc);
     }
+
+    @Test
+    void articleHitIsReplacedByItsGovernedPassagesInDocumentOrder() {
+        String meta = "{\"article_id\":\"PB-051\",\"article_revision_id\":\"rev:PB-051:1\",\"chunk_index\":%d}";
+        when(embeddingModel.embed("emergency patch")).thenReturn(new float[]{1f, 0f});
+        when(jdbc.query(anyString(), any(RowMapper.class), any(Object[].class))).thenAnswer(call -> {
+            String statement = call.getArgument(0);
+            if (statement.contains("order by (vs.metadata->>'chunk_index')::integer")) {
+                return List.of(new HybridRanker.LegRow("a", "title", meta.formatted(0), 0, false),
+                        new HybridRanker.LegRow("b", "when to invoke", meta.formatted(1), 0, false),
+                        new HybridRanker.LegRow("c", "approval", meta.formatted(2), 0, false));
+            }
+            return statement.contains("ts_rank")
+                    ? List.of(new HybridRanker.LegRow("c", "approval", meta.formatted(2), 0.4, true))
+                    : List.of();
+        });
+
+        SpringAiEmbeddingIndexService service =
+                new SpringAiEmbeddingIndexService(vectorStore, jdbc, embeddingModel);
+
+        List<RetrievedChunk> out = service.hybridSearch("emergency patch", 3, 0.2d, "analyst-a");
+
+        assertThat(out).extracting(RetrievedChunk::content).containsExactly("title", "when to invoke", "approval");
+        ArgumentCaptor<String> sql = ArgumentCaptor.forClass(String.class);
+        verify(jdbc, atLeast(3)).query(sql.capture(), any(RowMapper.class), any(Object[].class));
+        assertThat(sql.getAllValues()).filteredOn(s -> s.contains("chunk_index')::integer"))
+                .singleElement().satisfies(s -> {
+                    assertThat(s).contains("article_governance");
+                    assertThat(s).contains("evidence.id = vs.metadata->>'evidence_snapshot_id'");
+                });
+
+        service.setArticlePassages(0);
+        assertThat(service.hybridSearch("emergency patch", 3, 0.2d, "analyst-a"))
+                .extracting(RetrievedChunk::content).containsExactly("approval");
+    }
 }
