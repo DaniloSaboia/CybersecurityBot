@@ -1,0 +1,22 @@
+[
+  {"id": "H01", "question": "Someone with admin rights on our ESX hosts could do things without them showing in the logs. Is that a known exploited issue, and by when does CISA want it fixed?"},
+  {"id": "H02", "question": "Which exploited flaw lets someone run code on a GitLab server through a CI/CD configuration, and do they need an account?"},
+  {"id": "H03", "question": "Is there an exploited SQL injection in an SD-WAN orchestrator? Which product, and what is the impact?"},
+  {"id": "H04", "question": "Planting a DLL in a folder an application searches leads to code execution. Which product has this, and must the attacker be local or remote?"},
+  {"id": "H05", "question": "What can a remote attacker achieve against the Brotli decoder with a crafted compressed stream?"},
+  {"id": "H06", "question": "Under what condition does the Collabora Online command injection give remote code execution?"},
+  {"id": "H07", "question": "Which Atlassian products are affected by the exploited file-exposure vulnerability?"},
+  {"id": "H08", "question": "How could AWS credentials leak on the JBoss EAP Amazon machine image?"},
+  {"id": "H09", "question": "A contractor left and their admin account is still enabled. How fast must it be disabled, and how often are entitlements reviewed?"},
+  {"id": "H10", "question": "Which exploited vulnerability can be combined with the two PHP remote code execution flaws, and what does the combination achieve?"},
+  {"id": "H11", "question": "Explain the AhsayCBS attack chain: which flaw gets the attacker in, and which one runs commands?"},
+  {"id": "H12", "question": "Of the three Ivanti Connect Secure entries, which has the latest CISA deadline?"},
+  {"id": "H13", "question": "Our Cisco firewall reloads after crafted traffic. Is there a known exploited issue, and does it meet the criteria for the out-of-band patch runbook?"},
+  {"id": "H14", "question": "For the Outlook Moniker Link bug, what is the compensating control, and who has to approve the emergency patch?"},
+  {"id": "H15", "question": "Which function of our NIST CSF mapping has the lowest coverage?"},
+  {"id": "H16", "question": "Two kernel fixes deal with renamed directories in different filesystems. Which ones, and what is the risk?"},
+  {"id": "H17", "question": "What CVSS score was given to the Ivanti Connect Secure authentication bypass?"},
+  {"id": "H18", "question": "What topics were covered in the ISC Stormcast of 29 October?"},
+  {"id": "H19", "question": "Which malware family did the Wednesday ClickFix campaign deliver?"},
+  {"id": "H20", "question": "What is our patching deadline for medium-severity vulnerabilities?"}
+]
